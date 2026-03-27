@@ -1,0 +1,66 @@
+{
+  "name": "Chat Simulator",
+  "version": "1.0.0",
+  "type": "page",
+  "entry": "index.tsx",
+  "config": {
+    "skin_preset": "discord",
+    "supported_skins": ["discord", "whatsapp", "telegram"],
+    "features": {
+      "enable_platform_switching": true,
+      "enable_script_import": true,
+      "allow_custom_avatars": true,
+      "enable_message_editing": true,
+      "enable_message_deletion": true,
+      "enable_new_chat_reset": true,
+      "enable_message_side_control": true,
+      "enable_time_editing": true,
+      "enable_attachment_uploads": true,
+      "enable_background_customization": true,
+      "enable_playback_preview": true,
+      "enable_png_export": true,
+      "enable_ratio_presets": true,
+      "enable_quality_presets": true
+    }
+  },
+  "seo": {
+    "title": "Chat Simulator | Discord, WhatsApp & Telegram Chat Simulator",
+    "description": "Chat Simulator lets you create realistic Discord, WhatsApp, and Telegram chat screenshots with editable names, avatars, message timing, left or right bubble placement, attachments, playback preview, and high-quality PNG export.",
+    "keywords": [
+      "chat simulator",
+      "chat simulator",
+      "fake chat generator",
+      "chat screenshot generator",
+      "discord chat simulator",
+      "discord fake chat",
+      "whatsapp chat simulator",
+      "whatsapp fake chat",
+      "telegram chat simulator",
+      "telegram fake chat",
+      "group chat generator",
+      "conversation generator",
+      "fake message generator"
+    ]
+  },
+  "usage": {
+    "title": "How to Use Chat Simulator",
+    "description": "Build realistic Discord, WhatsApp, and Telegram conversations with editable identities, platform-specific layouts, playback preview, and polished PNG export.",
+    "content": "### Quick Start\n\nBuild a realistic chat screenshot in minutes with the tools already available in Chat Simulator.\n\n1. Choose your platform from the top selector.\n2. Click **Show settings** to customize the chat title, description, group photo, wallpaper, export ratio, and export quality.\n3. Set the active identity: speaker name, avatar, and **Message side**.\n4. Type messages to build the conversation. On supported layouts, use the attachment controls to add images or files as temporary front-end-only assets.\n5. Hover any message to edit the text, avatar, or message time, or remove it completely.\n6. Use **Play chat** to preview message pacing before export.\n7. Click **Export PNG** to generate the final screenshot.\n\n> **Tip:** Settings stay outside the preview and are automatically kept out of the exported image so the final asset looks like a real chat capture.\n\n### Supported Platforms\n\n- **Discord**: dark server-style layout with channel header, intro block, identity labels, editable chat content, and PNG export.\n- **WhatsApp**: mobile-style group or private chat layout with platform-specific header, date separators, read states, attachments, and export-ready chat previews.\n- **Telegram**: Telegram-inspired header, wallpaper area, date rules, outgoing message states, and platform-specific input bar.\n\n### Supported Features\n\n- Switch between **Discord**, **WhatsApp**, and **Telegram** from the top toolbar.\n- Create a new conversation instantly with **New chat**.\n- Edit or delete any message directly from the chat preview.\n- Upload temporary **speaker avatars**, **group photos**, and **background images** without sending files to a server.\n- Set the active speaker name and choose **Message side** to place the next message on the left or right.\n- Edit individual **message timestamps** so each platform shows the correct time style.\n- Update group or channel name, subtitle or description, and avatar from the settings panel.\n- Use temporary **attachments** for supported layouts, including images and files rendered in the conversation preview.\n- Preview the conversation with **Play chat**, including human-like pacing between messages.\n- Export a clean **PNG screenshot** with ratio and quality presets.\n- On desktop, exports download as a file; on phones and tablets, exports are sent to the system share sheet when supported.\n- Export logic is optimized for uploaded assets and theme-heavy sites, helping avoid broken colors or tainted-canvas issues."
+  },
+  "platformRoadmap": {
+    "title": "Platform Feature Roadmap",
+    "description": "These are the next chat styles planned for expansion inside Chat Simulator. They are roadmap items, not live platform skins yet.",
+    "content": "### Planned Platforms\n\n- **iMessage**: Apple-style iPhone conversation layout with blue and gray bubbles, mobile framing, and screenshot-ready chat composition.\n- **Instagram**: Instagram DM-style chat simulation with creator-friendly layouts, media-aware messaging, and modern social UI details.\n- **Facebook**: Facebook chat and comment-style conversation layouts for social proof mockups, post replies, and classic Messenger-adjacent flows.\n- **Twitter**: X/Twitter DM-style message simulation for private conversation screenshots and social content mockups.\n- **TikTok**: TikTok direct message and creator chat-style layouts designed for social content concepts and creator-style messaging scenes."
+  },
+  "recommendations": {
+    "title": "",
+    "description": "",
+    "tools": []
+  },
+  "geo": {
+    "latitude": "37.7749",
+    "longitude": "-122.4194",
+    "region": "US-CA",
+    "placename": "San Francisco, California"
+  }
+}

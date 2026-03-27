@@ -1,0 +1,505 @@
+/* src/tools/chat-simulator/skins/discord.css */
+/* Discord 风格皮肤 —— 像素级还原 Discord 深色主题 */
+
+.skin-theme-discord {
+  --ds-chat-bg: #313338;
+  --ds-sidebar-bg: #2b2d31;
+  --ds-bubble-bg: transparent;
+  --ds-text-primary: #dbdee1;
+  --ds-text-secondary: #949ba4;
+  --ds-text-muted: #72767d;
+  --ds-text-link: #00a8fc;
+  --ds-font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --ds-font-size: 16px;
+  --ds-line-height: 1.375rem;
+  --ds-border-radius: 4px;
+  --ds-border-color: #3f4147;
+  --ds-accent-color: #5865f2;
+  --ds-hover-bg: rgba(4, 4, 5, 0.07);
+  --ds-system-bg: transparent;
+  --ds-system-divider: #3e4046;
+  --ds-input-bg: #383a40;
+  --ds-input-border: #1e1f22;
+  --ds-header-bg: #313338;
+  --ds-header-border: #1f2023;
+  --ds-scrollbar-thumb: #1a1b1e;
+  --ds-scrollbar-track: #2b2d31;
+  --ds-mention-bg: rgba(88, 101, 242, 0.15);
+  --ds-mention-text: #c9cdfb;
+  --ds-timestamp-size: 0.6875rem;
+  --ds-username-size: 1rem;
+  --ds-message-size: 1rem;
+  --ds-avatar-size: 40px;
+  --ds-avatar-radius: 50%;
+  --ds-group-gap: 1.0625rem;
+  --ds-message-padding-left: 72px;
+  --ds-message-padding-y: 0.125rem;
+}
+
+/* ============================================
+   容器与全局
+   ============================================ */
+.skin-theme-discord .ds-chat-container {
+  background-color: var(--ds-chat-bg);
+  color: var(--ds-text-primary);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size);
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-control-toolbar {
+  padding: 2px 0 4px;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-control-button {
+  background-color: #5865f2;
+  border: 1px solid #6d78f7;
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(88, 101, 242, 0.18);
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-platform-trigger {
+  min-width: 132px;
+  justify-content: space-between;
+  padding-right: 12px;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-platform-trigger-icon {
+  opacity: 0.9;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-platform-menu-content {
+  background: rgba(30, 31, 34, 0.98);
+  border-color: #3f4147;
+  box-shadow: 0 18px 40px rgba(17, 18, 20, 0.3);
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-platform-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  color: #f2f3f5;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-platform-menu-item:hover {
+  background: rgba(88, 101, 242, 0.18);
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-platform-menu-item.is-active {
+  background: rgba(88, 101, 242, 0.24);
+  color: #ffffff;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-platform-menu-check {
+  color: #c9cdfb;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-control-button:hover {
+  background-color: #4752c4;
+  border-color: #5865f2;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-control-button:disabled {
+  box-shadow: none;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-input-shell {
+  min-height: 44px;
+  background-color: #383a40 !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  color: #f2f3f5 !important;
+  box-shadow: none !important;
+  padding: 0 16px !important;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-input-textarea {
+  min-height: 24px;
+  background-color: transparent !important;
+  color: #f2f3f5 !important;
+  -webkit-text-fill-color: #f2f3f5 !important;
+  line-height: 1.375rem;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-input-textarea::placeholder {
+  color: #949ba4 !important;
+  -webkit-text-fill-color: #949ba4;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-identity-panel {
+  background-color: #232428 !important;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-identity-input {
+  background-color: #111214 !important;
+  color: #f2f3f5 !important;
+  -webkit-text-fill-color: #f2f3f5 !important;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-identity-input::placeholder {
+  color: #8e9297 !important;
+  -webkit-text-fill-color: #8e9297;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-message-editor {
+  background-color: #2b2d31 !important;
+  border-color: #1e1f22 !important;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-message-editor textarea {
+  background-color: #2b2d31 !important;
+  color: #f2f3f5 !important;
+  -webkit-text-fill-color: #f2f3f5 !important;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-message-editor .ds-editor-time-label {
+  color: #949ba4 !important;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-message-editor .ds-editor-time-input {
+  background-color: #1e1f22 !important;
+  border-color: #3f4147 !important;
+  color: #f2f3f5 !important;
+  -webkit-text-fill-color: #f2f3f5 !important;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-message-editor textarea::placeholder {
+  color: #949ba4 !important;
+  -webkit-text-fill-color: #949ba4;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-chat-messages {
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-chat-intro {
+  padding-bottom: 8px;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-channel-intro {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 12px 24px rgba(0, 0, 0, 0.16);
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-channel-intro-copy {
+  flex: 1;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-settings-card {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 12px 24px rgba(0, 0, 0, 0.16);
+}
+
+/* ============================================
+   滚动条 (Discord 的细窄滚动条)
+   ============================================ */
+.skin-theme-discord .ds-chat-messages {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-scrollbar-thumb) var(--ds-scrollbar-track);
+}
+
+.skin-theme-discord .ds-chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.skin-theme-discord .ds-chat-messages::-webkit-scrollbar-thumb {
+  background: var(--ds-scrollbar-thumb);
+  border-radius: 4px;
+}
+
+.skin-theme-discord .ds-chat-messages::-webkit-scrollbar-track {
+  background: var(--ds-scrollbar-track);
+}
+
+/* ============================================
+   Header (频道信息栏)
+   ============================================ */
+.skin-theme-discord .ds-tool-header {
+  background-color: var(--ds-header-bg);
+  border-color: var(--ds-header-border);
+  color: var(--ds-text-primary);
+  height: 48px;
+  box-shadow: 0 1px 0 rgba(4, 4, 5, 0.2), 0 1.5px 0 rgba(6, 6, 7, 0.05), 0 2px 0 rgba(4, 4, 5, 0.05);
+  font-weight: 600;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(17, 18, 20, 0.7);
+}
+
+.skin-theme-discord .ds-tool-header::before {
+  display: none;
+  content: '';
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-header-button {
+  background-color: rgba(88, 101, 242, 0.18);
+  border: 1px solid rgba(88, 101, 242, 0.3);
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-header-button:hover {
+  background-color: rgba(88, 101, 242, 0.28);
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-platform-select {
+  appearance: none;
+  padding-right: 2.75rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.92) 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) calc(50% - 2px),
+    calc(100% - 11px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-control-button.ds-platform-select {
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.92) 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) calc(50% - 2px),
+    calc(100% - 11px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.skin-theme-discord .ds-message-actions {
+  border-color: var(--ds-border-color);
+}
+
+.skin-theme-discord .ds-message-editor textarea::placeholder {
+  color: var(--ds-text-muted);
+}
+
+/* ============================================
+   Message Group (一组同用户连续消息)
+   ============================================ */
+.skin-theme-discord .ds-message-group {
+  padding: var(--ds-message-padding-y) 48px var(--ds-message-padding-y) var(--ds-message-padding-left);
+  position: relative;
+  margin-top: var(--ds-group-gap);
+}
+
+.skin-theme-discord .ds-chat-intro + .ds-message-group,
+.skin-theme-discord .ds-chat-intro + .ds-system-message {
+  margin-top: 8px;
+}
+
+.skin-theme-discord .ds-message-group:hover {
+  background-color: var(--ds-hover-bg);
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-message-group-outgoing {
+  justify-content: flex-end;
+  padding-left: 48px;
+  padding-right: 24px;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-message-group-outgoing > .flex-shrink-0 {
+  display: none;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-message-group-body-outgoing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-message-meta-row-outgoing {
+  justify-content: flex-end;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-message-bubble-outgoing .ds-message-content {
+  display: inline-block;
+  max-width: min(72vw, 540px);
+  border-radius: 12px;
+  background: rgba(88, 101, 242, 0.18);
+  padding: 8px 12px;
+}
+
+/* 头像 — 绝对定位到左侧 */
+.skin-theme-discord .ds-message-group > .flex-shrink-0 {
+  position: absolute;
+  left: 16px;
+  top: 2px;
+  width: var(--ds-avatar-size);
+}
+
+.skin-theme-discord .ds-message-group .ds-sender-info {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+/* 头像圆形 */
+.skin-theme-discord .ds-avatar-default,
+.skin-theme-discord .ds-sender-avatar > div {
+  width: var(--ds-avatar-size) !important;
+  height: var(--ds-avatar-size) !important;
+  border-radius: var(--ds-avatar-radius);
+  cursor: pointer;
+}
+
+/* 用户名行 */
+.skin-theme-discord .ds-sender-meta {
+  display: none;
+}
+
+.skin-theme-discord .ds-message-group > .flex-1 > .ds-message-bubble:first-child::before {
+  display: inline;
+}
+
+/* ============================================
+   消息文本
+   ============================================ */
+.skin-theme-discord .ds-message-content p {
+  color: var(--ds-text-primary);
+  font-size: var(--ds-message-size);
+  line-height: var(--ds-line-height);
+  margin: 0;
+  word-wrap: break-word;
+}
+
+/* Stacked 消息（同组后续）：无额外间距 */
+.skin-theme-discord .ds-message-stacked {
+  margin-top: 0;
+}
+
+/* ============================================
+   时间戳 (Discord 悬浮显示)
+   ============================================ */
+.skin-theme-discord .ds-sender-timestamp {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-timestamp-size);
+  font-weight: 500;
+}
+
+/* ============================================
+   系统消息 (分割线 + 居中文本)
+   ============================================ */
+.skin-theme-discord .ds-system-message {
+  position: relative;
+  margin: 16px 0;
+}
+
+.skin-theme-discord .ds-system-message span {
+  background-color: var(--ds-chat-bg);
+  color: var(--ds-text-muted);
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  position: relative;
+  z-index: 1;
+  border-radius: 0;
+  font-weight: 600;
+}
+
+.skin-theme-discord .ds-system-message::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  right: 16px;
+  height: 1px;
+  background-color: var(--ds-system-divider);
+}
+
+/* ============================================
+   输入框 (Discord 底部输入)
+   ============================================ */
+.tool-root-chat-simulator.skin-theme-discord .ds-chat-footer {
+  padding: 0 16px 24px;
+  background:
+    linear-gradient(180deg, rgba(49, 51, 56, 0) 0%, rgba(49, 51, 56, 0.82) 22%, rgba(49, 51, 56, 1) 100%);
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-chat-footer-inner {
+  background: transparent;
+}
+
+.skin-theme-discord .ds-input-bar {
+  background-color: var(--ds-input-bg);
+  border-radius: 8px;
+  padding: 0 16px;
+  min-height: 44px;
+}
+
+.skin-theme-discord .ds-input-textarea {
+  color: var(--ds-text-primary);
+  font-family: var(--ds-font-family);
+  font-size: 1rem;
+  padding: 11px 0;
+}
+
+.skin-theme-discord .ds-input-textarea::placeholder {
+  color: var(--ds-text-muted);
+}
+
+/* ============================================
+   附件与反应 (Discord 样式)
+   ============================================ */
+.skin-theme-discord .ds-attachment-image {
+  max-width: 400px;
+  max-height: 300px;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+
+.skin-theme-discord .ds-attachment-file {
+  background-color: #2b2d31;
+  border-color: #232428;
+  color: var(--ds-text-link);
+  border-radius: 8px;
+  padding: 10px 16px;
+}
+
+.skin-theme-discord .ds-message-reactions {
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .tool-root-chat-simulator.skin-theme-discord .ds-platform-trigger {
+    min-width: 122px;
+    min-height: 40px;
+    font-size: 0.8125rem;
+    padding-left: 12px;
+  }
+
+  .tool-root-chat-simulator.skin-theme-discord .ds-platform-menu-content {
+    min-width: 156px;
+    border-radius: 14px;
+  }
+
+  .tool-root-chat-simulator.skin-theme-discord .ds-platform-menu-item {
+    padding: 11px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .tool-root-chat-simulator.skin-theme-discord .ds-channel-intro {
+    margin-top: 14px;
+  }
+
+  .tool-root-chat-simulator.skin-theme-discord .ds-channel-intro-layout {
+    gap: 12px;
+  }
+
+  .tool-root-chat-simulator.skin-theme-discord .ds-channel-intro-title {
+    letter-spacing: -0.02em;
+  }
+
+  .tool-root-chat-simulator.skin-theme-discord .ds-channel-intro-description {
+    line-height: 1.6;
+  }
+}

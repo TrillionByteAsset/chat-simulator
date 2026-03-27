@@ -1,0 +1,25 @@
+.skin-theme-default {
+  --ds-bg-color: #f9fafb;
+  --ds-text-primary: #111827;
+  --ds-text-secondary: #4b5563;
+  --ds-border: #e5e7eb;
+}
+
+.tool-root-example-tool .example-tool-container {
+  background-color: var(--ds-bg-color);
+  color: var(--ds-text-primary);
+  border: 1px solid var(--ds-border);
+}
+
+.tool-root-example-tool .example-tool-title {
+  color: var(--ds-text-primary);
+}
+
+.tool-root-example-tool .example-tool-desc {
+  color: var(--ds-text-secondary);
+}
+
+.tool-root-example-tool .example-border {
+  border-color: var(--ds-border);
+  background-color: color-mix(in srgb, var(--ds-bg-color), transparent 20%);
+}

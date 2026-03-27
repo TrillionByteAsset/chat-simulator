@@ -1,0 +1,19 @@
+{
+  "name": "Example Tool",
+  "version": "1.0.0",
+  "type": "page",
+  "entry": "index.tsx",
+  "config": {
+    "skin_preset": "default",
+    "supported_skins": ["default", "discord", "wechat"]
+  },
+  "seo": {
+    "title": "Example Tool - Plug and Play",
+    "description": "An example tool that renders dynamically in the platform.",
+    "keywords": ["example", "tool", "dynamic tool"]
+  },
+  "geo": {
+    "region": "US-CA",
+    "placename": "San Francisco"
+  }
+}
