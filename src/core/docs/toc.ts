@@ -1,7 +1,11 @@
-import type { TOCItemType as FumadocsTOCItemType } from 'fumadocs-core/server';
+import type { ReactNode } from 'react';
 import { slug } from 'github-slugger';
 
-export type TOCItemType = FumadocsTOCItemType;
+export interface TOCItemType {
+  title: ReactNode;
+  url: string;
+  depth: number;
+}
 
 /**
  * Generate TOC (Table of Contents) from markdown/MDX content

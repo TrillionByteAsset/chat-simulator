@@ -1,25 +1,60 @@
-@import 'tailwindcss';
-@import 'fumadocs-ui/css/neutral.css';
-@import 'fumadocs-ui/css/preset.css';
-
-body {
-  background-color: var(--background);
+.docs {
+  color: var(--foreground);
 }
 
 .docs strong {
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.docs h1,
+.docs h2,
+.docs h3,
+.docs h4,
+.docs h5,
+.docs h6 {
+  color: var(--foreground);
+  font-weight: 700;
+  line-height: 1.2;
+  scroll-margin-top: 6rem;
+}
+
+.docs h2 {
+  font-size: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.docs h3 {
+  font-size: 1.25rem;
+  margin-top: 2rem;
+}
+
+.docs p,
+.docs li,
+.docs blockquote {
+  line-height: 1.8;
+}
+
+.docs ul,
+.docs ol {
+  margin-left: 1.25rem;
+  padding-left: 0.5rem;
 }
 
 .docs ul li {
   list-style-type: square;
-  margin-left: 1em;
-  line-height: 2em;
 }
 
-.docs h2 {
-  font-size: 1.5em;
+.docs ol li {
+  list-style-type: decimal;
 }
 
 .docs a:not([href^='#']) {
   color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.docs pre,
+.docs code {
+  font-size: 0.95em;
 }
