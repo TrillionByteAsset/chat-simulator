@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionCookie } from 'better-auth/cookies';
 import createIntlMiddleware from 'next-intl/middleware';
 
 import { routing } from '@/core/i18n/config';
 
 const intlMiddleware = createIntlMiddleware(routing);
+const SESSION_COOKIE_NAMES = [
+  'better-auth.session_token',
+  '__Secure-better-auth.session_token',
+  'better-auth-session_token',
+  '__Secure-better-auth-session_token',
+];
 
-export async function proxy(request: NextRequest) {
+function hasSessionCookie(request: NextRequest) {
+  return SESSION_COOKIE_NAMES.some((name) =>
+    Boolean(request.cookies.get(name)?.value)
+  );
+}
+
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Handle internationalization first
@@ -26,7 +37,7 @@ export async function proxy(request: NextRequest) {
     pathWithoutLocale.startsWith('/activity')
   ) {
     // Check if session cookie exists
-    const sessionCookie = getSessionCookie(request);
+    const sessionCookie = hasSessionCookie(request);
 
     // If no session token found, redirect to sign-in
     if (!sessionCookie) {

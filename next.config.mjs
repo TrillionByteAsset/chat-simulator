@@ -44,6 +44,13 @@ const nextConfig = {
       },
     ];
   },
+  // Keep packages with workerd-specific entrypoints external so OpenNext can
+  // resolve the correct runtime variant for Cloudflare Workers.
+  serverExternalPackages: [
+    '@libsql/client',
+    '@libsql/isomorphic-ws',
+    'postgres',
+  ],
   turbopack: {
     resolveAlias: {
       // fs: {
