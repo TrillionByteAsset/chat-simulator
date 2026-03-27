@@ -7,10 +7,6 @@ compatibility_flags = ["nodejs_compat"]
 binding = "ASSETS"
 directory = ".open-next/assets"
 
-[[hyperdrive]]
-binding = "HYPERDRIVE"
-id = ""
-localConnectionString = ""
 
 [observability]
 enabled = true
