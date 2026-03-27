@@ -185,6 +185,7 @@ pnpm build
 pnpm run cf:typegen
 pnpm run cf:preview
 ```
+把`wrangler.toml.example`复制一份到`wrangler.toml`，并根据实际情况来修改`wrangler.toml`文件的内容，并把该文件提交到仓库内
 
 3. 把仓库推到 GitHub 或 GitLab
 4. 在 Cloudflare Workers Builds 里连接仓库
