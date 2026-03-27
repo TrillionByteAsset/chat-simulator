@@ -1,0 +1,38 @@
+name = "chat-simulator"
+main = ".open-next/worker.js"
+compatibility_date = "2026-03-27"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+binding = "ASSETS"
+directory = ".open-next/assets"
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = ""
+localConnectionString = ""
+
+[observability]
+enabled = true
+
+[vars]
+# app
+NEXT_PUBLIC_APP_URL = "https://chat-simulator.top"
+NEXT_PUBLIC_APP_NAME = "Chat Simulator"
+
+# theme
+NEXT_PUBLIC_THEME = "tools"
+NEXT_PUBLIC_DEFAULT_TOOL = "chat-simulator"
+
+# appearance
+NEXT_PUBLIC_APPEARANCE = "system"
+
+# database
+DATABASE_PROVIDER = "postgresql"
+DATABASE_URL = ""
+DB_SINGLETON_ENABLED = "true"
+DB_MAX_CONNECTIONS = "1"
+
+# auth secret
+# openssl rand -base64 32
+AUTH_SECRET = "A2+ASSQppkANvk2VUDivD6DKNRBUzu5W16VRz4sOpQU="
