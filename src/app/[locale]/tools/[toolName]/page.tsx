@@ -35,11 +35,13 @@ export default async function ToolPage({
   const ToolStage = await getThemeBlock('tool-stage');
   const ToolIntro = await getThemeBlock('tool-intro');
   const OtherTools = await getThemeBlock('other-tools');
+  const pageHeading = manifest.seo?.h1 || manifest.name;
+  const pageDescription = manifest.seo?.description || '';
 
   return (
     <>
       {/* UE Section 2: 工具功能区（运行工具的区域） */}
-      <ToolStage>
+      <ToolStage heading={pageHeading} description={pageDescription}>
         <DynamicLoader toolName={toolName} themeName="default" />
       </ToolStage>
 

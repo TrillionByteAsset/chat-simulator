@@ -1,6 +1,6 @@
 import { envConfigs } from '@/config';
 import { getThemeBlock } from '@/core/theme';
-import DynamicLoader from '@/core/tooling-engine/DynamicLoader';
+import DynamicLoader, { getToolManifest } from '@/core/tooling-engine/DynamicLoader';
 import type { DynamicPage as DynamicPageType } from '@/shared/types/blocks/landing';
 
 /**
@@ -19,14 +19,17 @@ export default async function DynamicPage({
   data?: Record<string, any>;
 }) {
   const defaultTool = envConfigs.default_tool || 'chat-simulator';
+  const manifest = await getToolManifest(defaultTool);
 
   const ToolStage = await getThemeBlock('tool-stage');
   const ToolIntro = await getThemeBlock('tool-intro');
   const OtherTools = await getThemeBlock('other-tools');
+  const pageHeading = manifest?.seo?.h1 || manifest?.name || page.title || '';
+  const pageDescription = manifest?.seo?.description || page.description || '';
 
   return (
     <>
-      <ToolStage>
+      <ToolStage heading={pageHeading} description={pageDescription}>
         <DynamicLoader toolName={defaultTool} themeName="tools" />
       </ToolStage>
 

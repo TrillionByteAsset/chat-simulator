@@ -96,7 +96,7 @@ export async function ToolIntro({ toolName }: { toolName?: string }) {
   };
 
   return (
-    <section className="container py-12 md:py-16">
+    <section className="container pt-4 pb-12 md:pt-4 md:pb-16">
       <div className="space-y-8">
         {hasUsage
           ? renderSection({

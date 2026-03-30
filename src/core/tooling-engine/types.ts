@@ -11,6 +11,7 @@ export interface ToolGEO {
 
 export interface ToolSEO {
   title: string;
+  h1?: string;
   description: string;
   keywords?: string[];
   openGraph?: {

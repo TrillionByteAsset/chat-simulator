@@ -25,21 +25,17 @@
   },
   "seo": {
     "title": "Chat Simulator | Discord, WhatsApp & Telegram Chat Simulator",
-    "description": "Chat Simulator lets you create realistic Discord, WhatsApp, and Telegram chat screenshots with editable names, avatars, message timing, left or right bubble placement, attachments, playback preview, and high-quality PNG export.",
+    "h1": "Discord, WhatsApp & Telegram Chat Simulator",
+    "description": "Create realistic Discord, WhatsApp, and Telegram chat screenshots with editable names, avatars, timing, attachments, playback preview, and PNG export.",
     "keywords": [
-      "chat simulator",
       "chat simulator",
       "fake chat generator",
       "chat screenshot generator",
       "discord chat simulator",
-      "discord fake chat",
       "whatsapp chat simulator",
-      "whatsapp fake chat",
       "telegram chat simulator",
-      "telegram fake chat",
-      "group chat generator",
-      "conversation generator",
-      "fake message generator"
+      "fake message generator",
+      "group chat generator"
     ]
   },
   "usage": {
@@ -58,9 +54,6 @@
     "tools": []
   },
   "geo": {
-    "latitude": "37.7749",
-    "longitude": "-122.4194",
-    "region": "US-CA",
-    "placename": "San Francisco, California"
+    "placename": "Worldwide"
   }
 }
