@@ -5,6 +5,7 @@ export type PlatformType =
   | 'discord'
   | 'whatsapp'
   | 'telegram'
+  | 'custom'
   | 'messenger'
   | 'instagram'
   | 'facebook'
@@ -20,10 +21,11 @@ export interface ChatUser {
   id: string;
   name: string;
   avatar: string;
+  defaultSide?: MessageSide;
   status?: UserStatus;
-  role?: string;       // e.g. 'Admin', 'Bot', 'Guest'
-  badges?: string[];   // Discord badge icons
-  color?: string;      // Name display color (Discord role color)
+  role?: string; // e.g. 'Admin', 'Bot', 'Guest'
+  badges?: string[]; // Discord badge icons
+  color?: string; // Name display color (Discord role color)
 }
 
 export interface Attachment {
@@ -31,14 +33,14 @@ export interface Attachment {
   type: 'image' | 'video' | 'file' | 'audio';
   url: string;
   name: string;
-  size?: number;       // bytes
+  size?: number; // bytes
   thumbnail?: string;
 }
 
 export interface Reaction {
   emoji: string;
   count: number;
-  users: string[];     // user IDs who reacted
+  users: string[]; // user IDs who reacted
 }
 
 export interface ChatMessage {
@@ -47,11 +49,11 @@ export interface ChatMessage {
   authorName: string;
   avatarUrl: string;
   content: string;
-  timestamp: string;   // ISO 8601
+  timestamp: string; // ISO 8601
   isSystemMessage?: boolean;
   attachments?: Attachment[];
   reactions?: Reaction[];
-  replyTo?: string;    // reference message id
+  replyTo?: string; // reference message id
   metadata?: Record<string, unknown>; // platform-specific extensions
 }
 
@@ -62,7 +64,7 @@ export interface ChatMessage {
 export interface MessageGroup {
   sender: ChatUser;
   messages: ChatMessage[];
-  timestamp: string;   // group 的首条消息时间
+  timestamp: string; // group 的首条消息时间
 }
 
 /**

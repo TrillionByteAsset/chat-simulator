@@ -2,46 +2,43 @@
   "page": {
     "show_sections": [
       "hero",
-      "logos",
       "introduce",
       "benefits",
       "usage",
       "features",
-      "stats",
-      "testimonials",
       "faq",
       "cta"
     ],
     "sections": {
       "hero": {
         "id": "hero",
-        "title": "Create Chat Simulations in minutes, not hours",
-        "highlight_text": "in minutes",
-        "description": "Chat Simulator Pro helps you build realistic Discord, WhatsApp, and Telegram conversations with editable identities, timing controls, attachments, and export-ready layouts.",
+        "title": "Create realistic chat screenshots for Discord, WhatsApp, and Telegram",
+        "highlight_text": "realistic chat screenshots",
+        "description": "Chat Simulator is a browser-based tool for building editable chat mockups with local-first uploads, message timing controls, and export options for both web and mobile layouts.",
         "announcement": {
-          "badge": "New",
-          "title": "🎉 Chat Simulator Pro",
-          "url": "/pricing"
+          "badge": "Browser Tool",
+          "title": "Local-first chat screenshot builder",
+          "url": "/privacy"
         },
-        "tip": "🎁 Special offer for the first 1000 users",
+        "tip": "Images, avatars, and files are processed in the browser before export.",
         "buttons": [
           {
-            "title": "Get Started",
+            "title": "Open Chat Simulator",
             "icon": "Zap",
-            "url": "/pricing",
+            "url": "/tools/chat-simulator",
             "target": "_self",
             "variant": "default"
           },
           {
-            "title": "Read Document",
+            "title": "Read FAQ",
             "icon": "BookOpenText",
-            "url": "/docs",
-            "target": "_blank",
+            "url": "/faq",
+            "target": "_self",
             "variant": "outline"
           }
         ],
         "show_avatars": true,
-        "avatars_tip": "999+ users are using Chat Simulator Pro",
+        "avatars_tip": "Built for creators, product demos, parody concepts, and mock conversation layouts",
         "show_award": false,
         "image": {
           "src": "/imgs/features/admin.png",
@@ -104,17 +101,17 @@
       "introduce": {
         "block": "features-list",
         "id": "introduce",
-        "title": "What is Chat Simulator Pro",
-        "label": "Introduce",
-        "description": "Chat Simulator Pro is a NextJS boilerplate for building AI SaaS startups, including templates, components, and documentation.",
+        "title": "What Chat Simulator helps you do",
+        "label": "Overview",
+        "description": "Use Chat Simulator to create polished conversation mockups in your browser without design tools, image editors, or complex setup.",
         "image": {
           "src": "/imgs/features/landing-page.png",
           "alt": "introduce"
         },
         "items": [
           {
-            "title": "Ready-to-use Templates",
-            "description": "Choose from dozens of production-ready AI SaaS templates to quickly start your project.",
+            "title": "Match familiar chat layouts",
+            "description": "Switch between Discord, WhatsApp, and Telegram-inspired layouts so your screenshots look closer to the platform people recognize.",
             "icon": "RiNextjsFill",
             "image": {
               "src": "/imgs/features/1.png",
@@ -122,8 +119,8 @@
             }
           },
           {
-            "title": "Infrastructure Setup",
-            "description": "Get instant access to scalable infrastructure with best practices built-in.",
+            "title": "Edit people, timing, and content",
+            "description": "Control speaker names, avatars, message sides, timestamps, and attachments directly inside the preview.",
             "icon": "RiDatabase2Line",
             "image": {
               "src": "/imgs/features/2.png",
@@ -131,8 +128,8 @@
             }
           },
           {
-            "title": "Quick Deployment",
-            "description": "Deploy your AI SaaS application to production in hours, not days.",
+            "title": "Export for web or mobile",
+            "description": "Generate screenshots in desktop-style or phone-style layout, then export as PNG or JPG when the conversation looks right.",
             "icon": "RiCloudyFill",
             "image": {
               "src": "/imgs/features/3.png",
@@ -140,8 +137,8 @@
             }
           },
           {
-            "title": "AI Integration",
-            "description": "Integrate AI into your project with ease using our built-in AI SDK.",
+            "title": "Keep uploads local-first",
+            "description": "Images, files, and avatars are prepared in the browser for editing and export instead of being turned into stored user chats.",
             "icon": "RiRobot2Line",
             "image": {
               "src": "/imgs/features/4.png",
@@ -154,13 +151,13 @@
       "benefits": {
         "block": "features-accordion",
         "id": "benefits",
-        "title": "Why Choose Chat Simulator Pro",
+        "title": "Why people use Chat Simulator",
         "label": "Benefits",
-        "description": "Get everything you need to launch your AI startup - from ready-to-use templates to technical support.",
+        "description": "The tool is designed to be easy to understand, quick to edit, and suitable for harmless mockups, creative content, and product visuals.",
         "items": [
           {
-            "title": "Complete Framework",
-            "description": "Built on Next.js with authentication, payments, and AI integration - everything works out of the box.",
+            "title": "Useful for mockups and content concepts",
+            "description": "Create conversation visuals for social posts, product explainers, landing pages, and harmless parody screenshots.",
             "icon": "RiNextjsFill",
             "image": {
               "src": "/imgs/features/user-billing.png",
@@ -168,8 +165,8 @@
             }
           },
           {
-            "title": "Rich Templates Library",
-            "description": "Choose from various AI SaaS templates to kickstart your project - chatbots, image generation, and more.",
+            "title": "Fast to tweak without leaving the browser",
+            "description": "Adjust names, profile images, timestamps, backgrounds, and export settings from a single editing interface.",
             "icon": "RiClapperboardAiLine",
             "image": {
               "src": "/imgs/features/admin-settings.png",
@@ -177,8 +174,8 @@
             }
           },
           {
-            "title": "Technical Guidance",
-            "description": "Get dedicated support and join our developer community to ensure your successful launch.",
+            "title": "Clear privacy and policy pages",
+            "description": "The site includes About, FAQ, Privacy, and Terms pages so visitors can review how the tool works and how site-level services are described.",
             "icon": "RiCodeFill",
             "image": {
               "src": "/imgs/features/landing-page.png",
@@ -190,8 +187,8 @@
       "usage": {
         "block": "features-step",
         "id": "usage",
-        "title": "How to Launch with Chat Simulator Pro",
-        "description": "Get your AI SaaS startup running in three simple steps:",
+        "title": "How to create a chat screenshot",
+        "description": "A simple workflow for building and exporting a conversation mockup:",
         "image": {
           "src": "/imgs/features/1.png",
           "alt": "usage"
@@ -200,32 +197,32 @@
         "text_align": "center",
         "items": [
           {
-            "title": "Get Chat Simulator Pro",
-            "description": "Buy Chat Simulator Pro with a one-time payment. Check your email for the code and documentation.",
+            "title": "Pick a chat style",
+            "description": "Start with Discord, WhatsApp, or Telegram, or load one of the built-in funny example cases for a faster starting point.",
             "image": {
               "src": "/imgs/features/5.png",
               "alt": "usage"
             }
           },
           {
-            "title": "Start Your Project",
-            "description": "Read the documentation and clone the code of Chat Simulator Pro. Start building your AI SaaS startup.",
+            "title": "Edit the conversation",
+            "description": "Customize people, avatars, channel details, timestamps, images, and files until the mockup matches the scene you want.",
             "image": {
               "src": "/imgs/features/6.png",
               "alt": "usage"
             }
           },
           {
-            "title": "Customize Your Project",
-            "description": "Modify the template with your data and contents. Specific AI functionality needs.",
+            "title": "Preview pacing",
+            "description": "Use playback to see how messages appear in sequence before exporting the final image.",
             "image": {
               "src": "/imgs/features/7.png",
               "alt": "usage"
             }
           },
           {
-            "title": "Deploy to Production",
-            "description": "Deploy your project to production with a few steps and start serving customers immediately.",
+            "title": "Export the final image",
+            "description": "Choose PNG or JPG, then export in web or mobile layout depending on where you plan to use the screenshot.",
             "image": {
               "src": "/imgs/features/8.png",
               "alt": "usage"
@@ -236,115 +233,115 @@
       },
       "features": {
         "id": "features",
-        "title": "Key Features of Chat Simulator Pro",
-        "description": "Everything you need to launch your AI SaaS startup quickly and efficiently.",
+        "title": "Core features",
+        "description": "These are the editing and export capabilities available in the current tool.",
         "items": [
           {
-            "title": "Next.js Boilerplate",
-            "description": "Production-ready Next.js templates with SEO-friendly structure and i18n support.",
+            "title": "Platform-specific chat layouts",
+            "description": "Use Discord, WhatsApp, and Telegram-inspired conversation views with native-feeling headers and message structure.",
             "icon": "RiNextjsFill"
           },
           {
-            "title": "Authentication & Payments",
-            "description": "Integrated Google OAuth, one-tap login, and Stripe payment processing.",
+            "title": "Editable chat identities",
+            "description": "Change names, avatars, default message side, and per-message details without rebuilding the whole thread.",
             "icon": "RiKey2Fill"
           },
           {
-            "title": "Data Infrastructure",
-            "description": "Built-in Supabase integration for reliable and scalable data storage.",
+            "title": "Image and file attachments",
+            "description": "Add screenshots, images, or files into the chat flow to make examples feel more complete and realistic.",
             "icon": "RiDatabase2Line"
           },
           {
-            "title": "One-Click Deployment",
-            "description": "Seamless deployment to Vercel or Cloudflare with automated setup.",
+            "title": "Web and mobile export modes",
+            "description": "Generate screenshots that match a desktop composition or a phone-style viewport before export.",
             "icon": "RiCloudy2Fill"
           },
           {
-            "title": "Business Analytics",
-            "description": "Integrated Google Analytics and Search Console for tracking growth.",
+            "title": "Local-first asset handling",
+            "description": "Uploaded avatars, images, and files are prepared in the browser rather than treated like permanent user account data.",
             "icon": "RiBarChart2Line"
           },
           {
-            "title": "AI-Ready Infrastructure",
-            "description": "Pre-configured AI integration with built-in credits system and API sales.",
+            "title": "Fun case templates",
+            "description": "Apply playful built-in scenarios, then remix them into your own custom conversation screenshots.",
             "icon": "RiRobot2Line"
           }
         ]
       },
       "stats": {
         "id": "stats",
-        "title": "People Love Chat Simulator Pro",
-        "description": "because it is easy to use and quick to customize.",
+        "title": "Quick facts",
+        "description": "A few grounded details about what the tool supports today.",
         "items": [
           {
-            "title": "999+",
-            "description": "Customers"
+            "title": "3",
+            "description": "Live chat layouts"
           },
           {
-            "title": "200+",
-            "description": "Blocks"
+            "title": "6",
+            "description": "Funny starter cases"
           },
           {
-            "title": "50+",
-            "description": "Templates"
+            "title": "2",
+            "description": "Export layouts"
           }
         ],
         "className": "bg-muted"
       },
       "testimonials": {
         "id": "testimonials",
-        "title": "What Users Say About Chat Simulator Pro",
-        "description": "Hear from developers and founders who launched their AI startups with Chat Simulator Pro.",
+        "title": "Common ways people use it",
+        "description": "Typical scenarios where a chat screenshot builder is useful.",
         "items": [
           {
-            "name": "David Chen",
-            "role": "Founder of AIWallpaper.shop",
-            "quote": "Chat Simulator Pro saved us months of development time. We launched our AI wallpaper business in just 2 days and got our first paying customer within a week!",
+            "name": "Product mockup",
+            "role": "Explaining a feature",
+            "quote": "Use a conversation screenshot to show how a message flow, notification, or support sequence might look inside a landing page or pitch deck.",
             "image": {
               "src": "/imgs/avatars/1.png",
               "alt": "david"
             }
           },
           {
-            "name": "Rachel Kim",
-            "role": "CTO at HeyBeauty.ai",
-            "quote": "The pre-built AI infrastructure is a game-changer. We didn't have to worry about architecture - just focused on our AI beauty tech and went live fast.",
+            "name": "Social content",
+            "role": "Creative concepting",
+            "quote": "Build a playful conversation visual for a meme, campaign concept, or parody-style post without opening a design app.",
             "image": {
               "src": "/imgs/avatars/2.png",
               "alt": "rachel"
             }
           },
           {
-            "name": "Marcus Thompson",
-            "role": "Solo Developer",
-            "quote": "As a solo developer, Chat Simulator Pro gave me everything I needed - auth, payments, AI integration, and beautiful UI. Launched my SaaS in a weekend!",
+            "name": "Content planning",
+            "role": "Storyboard drafting",
+            "quote": "Test a conversation idea, pacing, or visual joke before sharing it with collaborators or turning it into a polished creative asset.",
             "image": {
               "src": "/imgs/avatars/3.png",
               "alt": "marcus"
             }
           },
           {
-            "name": "Sofia Garcia",
-            "role": "CEO of Melodisco",
-            "quote": "The templates are production-ready and highly customizable. We built our AI music platform in hours instead of months. Incredible time-to-market!",
+            "name": "Presentation support",
+            "role": "Internal demos",
+            "quote": "Create screenshots for internal decks, UX reviews, or feature discussions where a realistic chat visual explains the idea faster than plain text.",
             "image": {
               "src": "/imgs/avatars/4.png",
               "alt": "sofia"
             }
           },
           {
-            "name": "James Wilson",
-            "role": "Tech Lead at GPTs.works",
-            "quote": "Chat Simulator Pro's infrastructure is rock-solid. We scaled from 0 to 10k users without touching the backend. Best investment for our AI startup.",
+            "name": "Marketing asset",
+            "role": "Screenshot variations",
+            "quote": "Export both web-style and mobile-style compositions when you need the same conversation adapted to different content placements.",
             "image": {
               "src": "/imgs/avatars/5.png",
               "alt": "james"
             }
           },
           {
-            "name": "Anna Zhang",
-            "role": "Startup Founder",
-            "quote": "From idea to launch in 3 days! Chat Simulator Pro's templates and deployment tools made it possible to test our AI business concept incredibly fast.",
+            "name": "Fun template remix",
+            "role": "Idea generation",
+            "quote": "Start from one of the built-in funny cases, then rewrite the messages, avatars, and timing to fit your own joke or scenario.",
             "image": {
               "src": "/imgs/avatars/6.png",
               "alt": "anna"
@@ -354,50 +351,50 @@
       },
       "faq": {
         "id": "faq",
-        "title": "Frequently Asked Questions About Chat Simulator Pro",
-        "description": "Have another question? Contact us on Discord or by email.",
+        "title": "Frequently asked questions",
+        "description": "Have another question? Review the policy pages or contact us by email.",
         "items": [
           {
-            "question": "What exactly is Chat Simulator Pro and how does it work?",
-            "answer": "Chat Simulator Pro is a comprehensive NextJS boilerplate designed specifically for building AI SaaS startups. It provides ready-to-use templates, infrastructure setup, and deployment tools that help you launch your AI business in hours instead of days."
+            "question": "What is Chat Simulator?",
+            "answer": "Chat Simulator is a browser-based tool for creating mock chat screenshots in Discord, WhatsApp, and Telegram-style layouts. You can edit names, avatars, timestamps, attachments, and export settings from one interface."
           },
           {
-            "question": "Do I need advanced technical skills to use Chat Simulator Pro?",
-            "answer": "While basic programming knowledge is helpful, Chat Simulator Pro is designed to be developer-friendly. Our templates and documentation make it easy to get started, even if you're not an expert in AI or cloud infrastructure."
+            "question": "Are uploaded images and files stored as user chats?",
+            "answer": "The editing flow is designed to process uploaded avatars, images, and files in the browser first so you can preview and export mockups without turning them into persistent user chat histories."
           },
           {
-            "question": "What types of AI SaaS can I build with Chat Simulator Pro?",
-            "answer": "Chat Simulator Pro supports a wide range of AI applications, from content generation to data analysis tools. Our templates cover popular use cases like AI chatbots, content generators, image processing apps, and more."
+            "question": "Can I export both desktop-style and phone-style screenshots?",
+            "answer": "Yes. The export panel supports both web-style and mobile-style layout modes, plus PNG or JPG output and multiple aspect ratios."
           },
           {
-            "question": "How long does it typically take to launch with Chat Simulator Pro?",
-            "answer": "With Chat Simulator Pro, you can have a working prototype in hours and a production-ready application in hours. Our one-click deployment and pre-configured infrastructure significantly reduce the traditional months-long development cycle."
+            "question": "What can I customize in a conversation?",
+            "answer": "You can change the chat title, people, avatars, timestamps, message side, backgrounds, images, files, and export settings. Some controls vary by platform layout."
           },
           {
-            "question": "What's included in the Chat Simulator Pro infrastructure?",
-            "answer": "Chat Simulator Pro provides a complete infrastructure stack including authentication, database setup, API integration, payment processing, and scalable cloud deployment. Everything is pre-configured following industry best practices."
+            "question": "Is this tool meant for real private messaging?",
+            "answer": "No. The tool is designed for mockups, creative examples, demonstrations, and screenshot concepts rather than storing or replacing real private messaging services."
           },
           {
-            "question": "Can I customize the templates to match my brand?",
-            "answer": "Absolutely! All Chat Simulator Pro templates are fully customizable. You can modify the design, features, and functionality to match your brand identity and specific business requirements while maintaining the robust underlying infrastructure."
+            "question": "Where can I read more about policies and contact details?",
+            "answer": "You can review the About, FAQ, Privacy, and Terms pages linked in the footer. The site contact email is also listed there."
           }
         ]
       },
       "cta": {
         "id": "cta",
         "title": "Create your first chat simulation",
-        "description": "Start here and build polished conversation mockups with Chat Simulator Pro.",
+        "description": "Open the editor, try a funny template, and export a polished chat mockup in minutes.",
         "buttons": [
           {
-            "title": "Get Chat Simulator Pro",
-            "url": "https://example.com",
-            "target": "_blank",
+            "title": "Open Chat Simulator",
+            "url": "/tools/chat-simulator",
+            "target": "_self",
             "icon": "Zap"
           },
           {
-            "title": "Read Document",
-            "url": "/docs",
-            "target": "_blank",
+            "title": "Read Privacy",
+            "url": "/privacy",
+            "target": "_self",
             "variant": "outline",
             "icon": "BookOpenText"
           }

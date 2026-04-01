@@ -18,14 +18,14 @@ export async function generateMetadata({
   }
 
   return getToolSitePageMetadata({
-    kind: 'about',
+    kind: 'faq',
     locale,
     manifest,
-    canonicalPath: `/tools/${toolName}/about`,
+    canonicalPath: `/tools/${toolName}/faq`,
   });
 }
 
-export default async function ToolAboutPage({
+export default async function ToolFaqPage({
   params,
 }: {
   params: Promise<{ locale: string; toolName: string }>;
@@ -37,5 +37,5 @@ export default async function ToolAboutPage({
     notFound();
   }
 
-  return <ToolSitePage kind="about" locale={locale} manifest={manifest} />;
+  return <ToolSitePage kind="faq" locale={locale} manifest={manifest} />;
 }

@@ -3,7 +3,15 @@
 'use client';
 
 import { create } from 'zustand';
-import { ChatMessage, ChatUser, ChatChannel, MessageGroup, PlatformType, MessageSide } from '../types/chat';
+
+import {
+  ChatChannel,
+  ChatMessage,
+  ChatUser,
+  MessageGroup,
+  MessageSide,
+  PlatformType,
+} from '../types/chat';
 
 const DEFAULT_AUTHOR: ChatUser = {
   id: 'user-you',
@@ -25,11 +33,21 @@ interface ChatSimulatorState {
   // ---- 操作 ----
   setMessages: (messages: ChatMessage[]) => void;
   addMessage: (message: ChatMessage) => void;
-  updateMessage: (messageId: string, content: string, options?: { timestamp?: string }) => void;
+  updateMessage: (
+    messageId: string,
+    content: string,
+    options?: { timestamp?: string; allowEmptyContent?: boolean }
+  ) => void;
   updateAuthorAvatar: (authorName: string, avatarUrl: string) => void;
   deleteMessage: (messageId: string) => void;
   setUsers: (users: Record<string, ChatUser>) => void;
   upsertUser: (user: ChatUser) => void;
+  updateUser: (
+    userId: string,
+    updates: Partial<
+      Pick<ChatUser, 'name' | 'avatar' | 'defaultSide' | 'color'>
+    >
+  ) => void;
   setChannel: (channel: ChatChannel) => void;
   setSkin: (skin: PlatformType) => void;
   startNewChat: (channelName?: string) => void;
@@ -44,7 +62,11 @@ function groupMessages(messages: ChatMessage[]): MessageGroup[] {
 
   const getMessageSide = (message: ChatMessage): MessageSide => {
     const side = message.metadata?.side;
-    return side === 'left' || side === 'right' ? side : message.sender.id === 'current-speaker' ? 'right' : 'left';
+    return side === 'left' || side === 'right'
+      ? side
+      : message.sender.id === 'current-speaker'
+        ? 'right'
+        : 'left';
   };
 
   for (const msg of messages) {
@@ -54,9 +76,12 @@ function groupMessages(messages: ChatMessage[]): MessageGroup[] {
     if (
       lastGroup &&
       lastGroup.sender.id === msg.sender.id &&
-      lastGroup.messages[lastGroup.messages.length - 1]?.authorName === msg.authorName &&
-      lastGroup.messages[lastGroup.messages.length - 1]?.avatarUrl === msg.avatarUrl &&
-      getMessageSide(lastGroup.messages[lastGroup.messages.length - 1]) === getMessageSide(msg) &&
+      lastGroup.messages[lastGroup.messages.length - 1]?.authorName ===
+        msg.authorName &&
+      lastGroup.messages[lastGroup.messages.length - 1]?.avatarUrl ===
+        msg.avatarUrl &&
+      getMessageSide(lastGroup.messages[lastGroup.messages.length - 1]) ===
+        getMessageSide(msg) &&
       !msg.isSystemMessage
     ) {
       lastGroup.messages.push(msg);
@@ -72,7 +97,10 @@ function groupMessages(messages: ChatMessage[]): MessageGroup[] {
   return groups;
 }
 
-function createWelcomeMessage(channelName = 'general', activeSkin: PlatformType = 'discord'): ChatMessage {
+function createWelcomeMessage(
+  channelName = 'general',
+  activeSkin: PlatformType = 'discord'
+): ChatMessage {
   const normalizedChannel = channelName.trim() || 'general';
 
   return {
@@ -116,7 +144,15 @@ export const useChatSimulatorStore = create<ChatSimulatorState>((set, get) => ({
 
   updateMessage: (messageId, content, options) => {
     const trimmedContent = content.trim();
-    if (!trimmedContent) {
+    const existingMessage = get().messages.find(
+      (message) => message.id === messageId
+    );
+
+    if (!existingMessage) {
+      return;
+    }
+
+    if (!trimmedContent && !options?.allowEmptyContent) {
       return;
     }
 
@@ -172,7 +208,7 @@ export const useChatSimulatorStore = create<ChatSimulatorState>((set, get) => ({
               avatar: avatarUrl,
             }
           : user,
-      ]),
+      ])
     );
 
     set({
@@ -183,7 +219,9 @@ export const useChatSimulatorStore = create<ChatSimulatorState>((set, get) => ({
   },
 
   deleteMessage: (messageId) => {
-    const newMessages = get().messages.filter((message) => message.id !== messageId);
+    const newMessages = get().messages.filter(
+      (message) => message.id !== messageId
+    );
     set({
       messages: newMessages,
       messageGroups: groupMessages(newMessages),
@@ -200,16 +238,74 @@ export const useChatSimulatorStore = create<ChatSimulatorState>((set, get) => ({
       },
     })),
 
+  updateUser: (userId, updates) => {
+    const existingUser = get().users[userId];
+
+    if (!existingUser) {
+      return;
+    }
+
+    const nextUser = {
+      ...existingUser,
+      ...updates,
+      name: (updates.name ?? existingUser.name).trim() || existingUser.name,
+    };
+    const nextMessages = get().messages.map((message) => {
+      if (message.sender.id !== userId) {
+        return message;
+      }
+
+      return {
+        ...message,
+        sender: {
+          ...message.sender,
+          name: nextUser.name,
+          avatar: nextUser.avatar,
+          defaultSide: nextUser.defaultSide,
+          color: nextUser.color,
+        },
+        authorName: nextUser.name,
+        avatarUrl: nextUser.avatar,
+        metadata: {
+          ...message.metadata,
+          side:
+            nextUser.defaultSide ??
+            (message.metadata?.side === 'left' ||
+            message.metadata?.side === 'right'
+              ? message.metadata.side
+              : message.sender.id === 'current-speaker'
+                ? 'right'
+                : 'left'),
+        },
+      };
+    });
+
+    set((state) => ({
+      users: {
+        ...state.users,
+        [userId]: nextUser,
+      },
+      messages: nextMessages,
+      messageGroups: groupMessages(nextMessages),
+    }));
+  },
+
   setChannel: (channel) => set({ channel }),
 
   setSkin: (skin) => set({ activeSkin: skin }),
 
   startNewChat: (channelName) => {
-    const { activeSkin, channel } = get();
-    const users = {
-      [DEFAULT_AUTHOR.id]: DEFAULT_AUTHOR,
-    };
-    const messages = [createWelcomeMessage(channelName, activeSkin)];
+    const { activeSkin, channel, users: currentUsers } = get();
+    const users =
+      Object.keys(currentUsers).length > 0
+        ? currentUsers
+        : {
+            [DEFAULT_AUTHOR.id]: DEFAULT_AUTHOR,
+          };
+    const messages =
+      activeSkin === 'custom'
+        ? []
+        : [createWelcomeMessage(channelName, activeSkin)];
 
     set({
       ...initialState,

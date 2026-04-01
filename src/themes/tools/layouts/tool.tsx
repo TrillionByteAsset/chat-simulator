@@ -1,8 +1,10 @@
 import { ReactNode } from 'react';
+import { getLocalizedToolManifest } from '@/tools/shared/localized-tool-manifest';
+import { getLocale } from 'next-intl/server';
 
-import { envConfigs } from '@/config';
 import { getThemeBlock } from '@/core/theme';
 import { getToolManifest } from '@/core/tooling-engine/DynamicLoader';
+import { envConfigs } from '@/config';
 import {
   Footer as FooterType,
   Header as HeaderType,
@@ -21,18 +23,20 @@ export default async function ToolLayout({
   header: HeaderType;
   footer: FooterType;
 }) {
+  const locale = await getLocale();
   const defaultTool = envConfigs.default_tool || 'chat-simulator';
-  const manifest = await getToolManifest(defaultTool);
+  const manifest = getLocalizedToolManifest(
+    await getToolManifest(defaultTool),
+    locale
+  );
 
   const ToolHeader = await getThemeBlock('tool-header');
   const ToolFooter = await getThemeBlock('tool-footer');
 
   return (
-    <div className="min-h-screen w-screen flex flex-col">
+    <div className="flex min-h-screen w-screen flex-col">
       {manifest && <ToolHeader manifest={manifest} />}
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
       {manifest && <ToolFooter manifest={manifest} />}
     </div>
   );

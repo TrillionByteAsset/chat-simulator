@@ -1,8 +1,12 @@
 import MarkdownIt from 'markdown-it';
+
 import 'github-markdown-css/github-markdown.css';
 
-import { envConfigs } from '@/config';
+import { getLocalizedToolManifest } from '@/tools/shared/localized-tool-manifest';
+import { getLocale } from 'next-intl/server';
+
 import { getToolManifest } from '@/core/tooling-engine/DynamicLoader';
+import { envConfigs } from '@/config';
 
 // 初始化 Markdown 解析器
 const md = new MarkdownIt({ html: true, breaks: true });
@@ -14,8 +18,12 @@ const md = new MarkdownIt({ html: true, breaks: true });
  * - 按需渲染 title、description 和 markdown 语法支持的 content
  */
 export async function ToolIntro({ toolName }: { toolName?: string }) {
+  const locale = await getLocale();
   const targetTool = toolName || envConfigs.default_tool || 'chat-simulator';
-  const manifest = await getToolManifest(targetTool);
+  const manifest = getLocalizedToolManifest(
+    await getToolManifest(targetTool),
+    locale
+  );
 
   const usage = manifest?.usage;
   const platformRoadmap = manifest?.platformRoadmap;
@@ -59,22 +67,22 @@ export async function ToolIntro({ toolName }: { toolName?: string }) {
 
     return (
       <div
-        className={`rounded-[28px] border border-foreground/10 bg-card/90 p-7 shadow-[0_24px_70px_-38px_rgba(0,0,0,0.45)] backdrop-blur md:p-10 ${cardClassName}`}
+        className={`border-foreground/10 bg-card/90 rounded-[28px] border p-7 shadow-[0_24px_70px_-38px_rgba(0,0,0,0.45)] backdrop-blur md:p-10 ${cardClassName}`}
       >
         <div className="[font-family:ui-sans-serif,system-ui,sans-serif]">
-          <p className="text-[0.76rem] font-semibold uppercase tracking-[0.14em] text-primary/75">
+          <p className="text-primary/75 text-[0.76rem] font-semibold tracking-[0.14em] uppercase">
             {eyebrow}
           </p>
 
           {hasTitle ? (
-            <h2 className="mt-3 font-serif text-[2.05rem] leading-[1.14] tracking-[-0.025em] text-foreground md:text-[2.75rem]">
+            <h2 className="text-foreground mt-3 font-serif text-[2.05rem] leading-[1.14] tracking-[-0.025em] md:text-[2.75rem]">
               {title}
             </h2>
           ) : null}
 
           {hasDesc ? (
             <p
-              className={`text-[15px] leading-[1.92] tracking-[0.002em] text-muted-foreground md:text-[16px] md:leading-[1.98] ${
+              className={`text-muted-foreground text-[15px] leading-[1.92] tracking-[0.002em] md:text-[16px] md:leading-[1.98] ${
                 hasTitle ? 'mt-4' : 'mt-2'
               }`}
             >
@@ -85,7 +93,7 @@ export async function ToolIntro({ toolName }: { toolName?: string }) {
           {hasContent ? (
             <div className={hasDesc || hasTitle ? 'mt-8' : ''}>
               <div
-                className="markdown-body !bg-transparent !text-inherit [font-family:ui-sans-serif,system-ui,sans-serif] text-[15px] leading-[1.94] tracking-[0.002em] text-foreground md:text-[16px] md:leading-[2] [&_.highlight]:!bg-transparent [&_blockquote]:rounded-2xl [&_blockquote]:border-0 [&_blockquote]:bg-muted/60 [&_blockquote]:px-5 [&_blockquote]:py-4 [&_blockquote]:text-muted-foreground [&_blockquote_p]:!my-0 [&_code]:rounded-md [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.92em] [&_h3]:mb-4 [&_h3]:mt-0 [&_h3]:font-serif [&_h3]:text-[1.85rem] [&_h3]:leading-[1.22] [&_h3]:tracking-[-0.024em] [&_h4]:mb-3 [&_h4]:mt-8 [&_h4]:text-[1.04rem] [&_h4]:font-semibold [&_h4]:tracking-[-0.01em] [&_hr]:my-8 [&_hr]:border-foreground/10 [&_li]:my-3.5 [&_ol]:my-5 [&_ol]:pl-6 [&_p]:my-5 [&_pre]:rounded-2xl [&_pre]:border [&_pre]:border-foreground/10 [&_pre]:bg-muted [&_pre]:p-4 [&_strong]:font-semibold [&_strong]:tracking-[0.003em] [&_ul]:my-5 [&_ul]:pl-6"
+                className="markdown-body text-foreground [&_blockquote]:bg-muted/60 [&_blockquote]:text-muted-foreground [&_code]:bg-muted [&_hr]:border-foreground/10 [&_pre]:border-foreground/10 [&_pre]:bg-muted !bg-transparent [font-family:ui-sans-serif,system-ui,sans-serif] text-[15px] leading-[1.94] tracking-[0.002em] !text-inherit md:text-[16px] md:leading-[2] [&_.highlight]:!bg-transparent [&_blockquote]:rounded-2xl [&_blockquote]:border-0 [&_blockquote]:px-5 [&_blockquote]:py-4 [&_blockquote_p]:!my-0 [&_code]:rounded-md [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.92em] [&_h2]:mt-0 [&_h2]:mb-5 [&_h2]:font-serif [&_h2]:text-[2rem] [&_h2]:leading-[1.18] [&_h2]:tracking-[-0.025em] [&_h2:not(:first-child)]:mt-12 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:font-serif [&_h3]:text-[1.55rem] [&_h3]:leading-[1.24] [&_h3]:tracking-[-0.02em] [&_h4]:mt-8 [&_h4]:mb-3 [&_h4]:text-[1.04rem] [&_h4]:font-semibold [&_h4]:tracking-[-0.01em] [&_hr]:my-8 [&_li]:my-3.5 [&_ol]:my-5 [&_ol]:pl-6 [&_p]:my-5 [&_pre]:rounded-2xl [&_pre]:border [&_pre]:p-4 [&_strong]:font-semibold [&_strong]:tracking-[0.003em] [&_ul]:my-5 [&_ul]:pl-6"
                 dangerouslySetInnerHTML={{ __html: html }}
               />
             </div>
@@ -100,7 +108,9 @@ export async function ToolIntro({ toolName }: { toolName?: string }) {
       <div className="space-y-8">
         {hasUsage
           ? renderSection({
-              eyebrow: 'How To Use',
+              eyebrow: locale.toLowerCase().startsWith('zh')
+                ? '如何使用'
+                : 'How To Use',
               title: usage.title,
               description: usage.description,
               html: htmlContent,
@@ -109,7 +119,9 @@ export async function ToolIntro({ toolName }: { toolName?: string }) {
 
         {hasRoadmap
           ? renderSection({
-              eyebrow: 'Platform Roadmap',
+              eyebrow: locale.toLowerCase().startsWith('zh')
+                ? '未来功能'
+                : 'Platform Roadmap',
               title: platformRoadmap?.title,
               description: platformRoadmap?.description,
               html: roadmapHtmlContent,

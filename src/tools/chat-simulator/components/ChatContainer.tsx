@@ -3,6 +3,7 @@
 'use client';
 
 import React from 'react';
+
 import { MessageGroup } from '../types/chat';
 
 export interface ChatContainerProps {
@@ -14,7 +15,10 @@ export interface ChatContainerProps {
   messageListClassName?: string;
   messageListStyle?: React.CSSProperties;
   renderGroup: (group: MessageGroup, index: number) => React.ReactNode;
-  renderSystemMessage?: (message: MessageGroup, index: number) => React.ReactNode;
+  renderSystemMessage?: (
+    message: MessageGroup,
+    index: number
+  ) => React.ReactNode;
 }
 
 /**
@@ -33,22 +37,54 @@ export default function ChatContainer({
   renderSystemMessage,
 }: ChatContainerProps) {
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const previousStateRef = React.useRef<{
+    userMessageCount: number;
+    lastUserMessageId: string | null;
+  } | null>(null);
 
-  // 新消息到达时自动滚动到底部
+  const nonSystemMessages = messageGroups.flatMap((group) =>
+    group.messages.filter((message) => !message.isSystemMessage)
+  );
+  const userMessageCount = nonSystemMessages.length;
+  const lastUserMessageId =
+    nonSystemMessages[nonSystemMessages.length - 1]?.id ?? null;
+
   React.useEffect(() => {
-    if (scrollRef.current) {
+    const previousState = previousStateRef.current;
+    const hasNewMessages =
+      !previousState ||
+      userMessageCount > previousState.userMessageCount ||
+      (lastUserMessageId !== previousState.lastUserMessageId &&
+        userMessageCount > previousState.userMessageCount);
+
+    if (scrollRef.current && hasNewMessages) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messageGroups]);
+
+    previousStateRef.current = {
+      userMessageCount,
+      lastUserMessageId,
+    };
+  }, [lastUserMessageId, userMessageCount]);
+
+  const systemMessageCount = messageGroups.reduce(
+    (total, group) =>
+      total +
+      group.messages.filter((message) => message.isSystemMessage).length,
+    0
+  );
 
   return (
-    <div className={`ds-chat-container flex h-full min-h-0 flex-col ${className}`}>
+    <div
+      className={`ds-chat-container flex h-full min-h-0 flex-col ${className}`}
+    >
       {header && <div className="ds-chat-header flex-shrink-0">{header}</div>}
 
       <div
         ref={scrollRef}
         className={`ds-chat-messages min-h-0 flex-1 overflow-y-auto ${messageListClassName}`}
         style={messageListStyle}
+        data-system-message-count={systemMessageCount}
       >
         {intro && <div className="ds-chat-intro">{intro}</div>}
         {messageGroups.map((group, index) => {

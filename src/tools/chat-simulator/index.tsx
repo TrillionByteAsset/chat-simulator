@@ -5,9 +5,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Camera,
-  ChevronDown,
   Check,
   CheckCheck,
+  ChevronDown,
   Columns2,
   Download,
   Hash,
@@ -21,46 +21,73 @@ import {
   Play,
   Plus,
   Search,
-  Smile,
   SlidersHorizontal,
+  Smile,
   Square,
   UserRound,
   Video,
   X,
 } from 'lucide-react';
+import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
-import { AttachmentArea, ChatContainer, InputBar, MessageBubble, SenderInfo, TelegramInputBar } from './components';
-import { DEMO_SCRIPT, DEMO_USERS } from './data/demoScript';
-import { useChatSimulatorStore } from './store';
-import { Attachment, ChatChannel, ChatMessage, ChatUser, MessageGroup, MessageSide, PlatformType } from './types/chat';
-import { deliverExportedFile } from './utils/exportDelivery';
-import { exportElementToPngBlob } from './utils/exportToPng';
-import { parseScript } from './utils/scriptParser';
 
+import type { ToolManifest } from '@/core/tooling-engine/types';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/ui/dialog';
+
+import {
+  AttachmentArea,
+  ChatContainer,
+  DiscordInputBar,
+  InputBar,
+  MessageBubble,
+  SenderInfo,
+  TelegramInputBar,
+} from './components';
+import {
+  CHAT_SIMULATOR_APPLY_TEMPLATE_EVENT,
+  type ChatSimulatorCaseTemplate,
+} from './data/caseTemplates';
+import { DEMO_SCRIPT, DEMO_USERS } from './data/demoScript';
+import {
+  getChatSimulatorLocalizedManifest,
+  getChatSimulatorUiText,
+  isChineseLocale,
+} from './localization';
+import { useChatSimulatorStore } from './store';
+import {
+  Attachment,
+  ChatChannel,
+  ChatMessage,
+  ChatUser,
+  MessageGroup,
+  MessageSide,
+  PlatformType,
+} from './types/chat';
+import { deliverExportedFile } from './utils/exportDelivery';
+import { exportElementToImageBlob } from './utils/exportToPng';
+import { parseScript } from './utils/scriptParser';
 // 动态加载对应的皮肤样式
 import './skins/discord.css';
+import './skins/custom.css';
 import './skins/telegram.css';
 import './skins/whatsapp.css';
 
 interface ChatSimulatorProps {
-  manifest: {
-    name: string;
-    version?: string;
-    config: {
-      skin_preset: string;
-      [key: string]: any;
-    };
-    seo: {
-      description: string;
-      [key: string]: any;
-    };
-    [key: string]: any;
-  };
+  manifest: ToolManifest;
   themeName?: string;
 }
 
 type ExportAspectRatioPreset = 'auto' | '9:16' | '4:5' | '1:1' | '16:9';
 type ExportQualityPreset = 'standard' | 'high' | 'ultra';
+type ExportLayoutPreset = 'web' | 'mobile';
+type ExportFileFormat = 'png' | 'jpg';
 
 const CURRENT_SPEAKER_ID = 'current-speaker';
 const DEFAULT_SPEAKER_NAME = 'You';
@@ -70,6 +97,7 @@ const PLATFORM_LABELS: Record<PlatformType, string> = {
   discord: 'Discord',
   whatsapp: 'WhatsApp',
   telegram: 'Telegram',
+  custom: 'Custom',
   messenger: 'Messenger',
   instagram: 'Instagram',
   facebook: 'Facebook',
@@ -81,6 +109,7 @@ const PLATFORM_DEFAULT_BACKGROUNDS: Partial<Record<PlatformType, string>> = {
   discord: '#313338',
   telegram: '#bcd79d',
   whatsapp: '#e5ddd5',
+  custom: '#17181c',
 };
 const EXPORT_ASPECT_RATIO_OPTIONS: Array<{
   value: ExportAspectRatioPreset;
@@ -118,14 +147,43 @@ const EXPORT_QUALITY_OPTIONS: Array<{
     pixelRatio: 3,
   },
 ];
+const EXPORT_LAYOUT_OPTIONS: Array<{
+  value: ExportLayoutPreset;
+  label: string;
+  description: string;
+  renderWidth: number | null;
+  renderHeight: number | null;
+  defaultAspectRatio: number | null;
+}> = [
+  {
+    value: 'web',
+    label: 'Web',
+    description: 'Keep the desktop/web composition.',
+    renderWidth: null,
+    renderHeight: null,
+    defaultAspectRatio: null,
+  },
+  {
+    value: 'mobile',
+    label: 'Mobile',
+    description: 'Render the chat in a phone-sized viewport before export.',
+    renderWidth: 430,
+    renderHeight: 932,
+    defaultAspectRatio: 9 / 19.5,
+  },
+];
 
 function sleep(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 async function waitForNextPaint() {
-  await new Promise((resolve) => window.requestAnimationFrame(() => resolve(null)));
-  await new Promise((resolve) => window.requestAnimationFrame(() => resolve(null)));
+  await new Promise((resolve) =>
+    window.requestAnimationFrame(() => resolve(null))
+  );
+  await new Promise((resolve) =>
+    window.requestAnimationFrame(() => resolve(null))
+  );
 }
 
 function getPlaybackDelay(messages: ChatMessage[], index: number) {
@@ -144,12 +202,23 @@ function getPlaybackDelay(messages: ChatMessage[], index: number) {
 }
 
 function getExportAspectRatioValue(preset: ExportAspectRatioPreset) {
-  return EXPORT_ASPECT_RATIO_OPTIONS.find((option) => option.value === preset)?.aspectRatio ?? null;
+  return (
+    EXPORT_ASPECT_RATIO_OPTIONS.find((option) => option.value === preset)
+      ?.aspectRatio ?? null
+  );
+}
+
+function getExportLayoutConfig(preset: ExportLayoutPreset) {
+  return (
+    EXPORT_LAYOUT_OPTIONS.find((option) => option.value === preset) ??
+    EXPORT_LAYOUT_OPTIONS[0]
+  );
 }
 
 function getExportQualityConfig(preset: ExportQualityPreset) {
   return (
-    EXPORT_QUALITY_OPTIONS.find((option) => option.value === preset) ?? EXPORT_QUALITY_OPTIONS[1]
+    EXPORT_QUALITY_OPTIONS.find((option) => option.value === preset) ??
+    EXPORT_QUALITY_OPTIONS[1]
   );
 }
 
@@ -157,12 +226,55 @@ function getPlatformBackgroundColor(platform: PlatformType) {
   return PLATFORM_DEFAULT_BACKGROUNDS[platform] ?? DEFAULT_BACKGROUND_COLOR;
 }
 
+function getPlatformSettingsSurfaceColor(platform: PlatformType) {
+  switch (platform) {
+    case 'custom':
+      return '#1c1e24';
+    case 'telegram':
+      return '#2f3e49';
+    case 'whatsapp':
+      return '#111b21';
+    case 'discord':
+    default:
+      return '#232428';
+  }
+}
+
+function getPlatformSettingsInsetColor(platform: PlatformType) {
+  switch (platform) {
+    case 'custom':
+      return '#111318';
+    case 'telegram':
+      return '#243847';
+    case 'whatsapp':
+      return '#0b141a';
+    case 'discord':
+    default:
+      return '#111214';
+  }
+}
+
+function normalizeSpeakerColor(color?: string) {
+  return color || '#5865f2';
+}
+
 function buildCurrentSpeaker(name: string, avatarUrl: string): ChatUser {
   return {
     id: CURRENT_SPEAKER_ID,
     name: name.trim() || DEFAULT_SPEAKER_NAME,
     avatar: avatarUrl,
+    defaultSide: DEFAULT_MESSAGE_SIDE,
     color: '#5865f2',
+  };
+}
+
+function createIdentityDraft(index: number, locale?: string): ChatUser {
+  return {
+    id: `user-custom-${Date.now()}-${index}`,
+    name: isChineseLocale(locale) ? `新人物 ${index}` : `New person ${index}`,
+    avatar: '',
+    defaultSide: 'left',
+    color: '#f59e0b',
   };
 }
 
@@ -170,7 +282,8 @@ function buildDefaultChannel(name: string, description: string): ChatChannel {
   return {
     id: 'channel-general',
     name: name.trim() || 'general',
-    description: description.trim() || 'A place to coordinate and share updates.',
+    description:
+      description.trim() || 'A place to coordinate and share updates.',
     type: 'text',
   };
 }
@@ -276,6 +389,38 @@ function formatTelegramDateLabel(timestamp: string) {
   });
 }
 
+function formatCustomMessageTimestamp(timestamp: string) {
+  const date = new Date(timestamp);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const now = new Date();
+  const isToday =
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate();
+
+  const timeLabel = date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+  if (isToday) {
+    return timeLabel;
+  }
+
+  const dateLabel = date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+
+  return `${dateLabel} ${timeLabel}`;
+}
+
 function getDateKey(timestamp: string) {
   const date = new Date(timestamp);
 
@@ -307,7 +452,10 @@ function shouldInsertDateSeparator(platform: PlatformType, timestamp: string) {
   return !isSameCalendarDay(date, new Date());
 }
 
-function interleaveDateSeparators(groups: MessageGroup[], platform: PlatformType): MessageGroup[] {
+function interleaveDateSeparators(
+  groups: MessageGroup[],
+  platform: PlatformType
+): MessageGroup[] {
   const result: MessageGroup[] = [];
   let lastDateKey = '';
 
@@ -322,7 +470,11 @@ function interleaveDateSeparators(groups: MessageGroup[], platform: PlatformType
       return;
     }
 
-    if (currentDateKey && currentDateKey !== lastDateKey && shouldInsertDateSeparator(platform, group.timestamp)) {
+    if (
+      currentDateKey &&
+      currentDateKey !== lastDateKey &&
+      shouldInsertDateSeparator(platform, group.timestamp)
+    ) {
       result.push({
         sender: { id: `system-date-${index}`, name: 'System', avatar: '' },
         timestamp: group.timestamp,
@@ -347,7 +499,11 @@ function interleaveDateSeparators(groups: MessageGroup[], platform: PlatformType
   return result;
 }
 
-function getBubblePositionClass(messageCount: number, messageIndex: number, prefix: string) {
+function getBubblePositionClass(
+  messageCount: number,
+  messageIndex: number,
+  prefix: string
+) {
   if (messageCount <= 1) {
     return `${prefix}-single`;
   }
@@ -381,9 +537,12 @@ function groupMessagesForDisplay(messages: ChatMessage[]): MessageGroup[] {
     if (
       lastGroup &&
       lastGroup.sender.id === message.sender.id &&
-      lastGroup.messages[lastGroup.messages.length - 1]?.authorName === message.authorName &&
-      lastGroup.messages[lastGroup.messages.length - 1]?.avatarUrl === message.avatarUrl &&
-      getMessageSide(lastGroup.messages[lastGroup.messages.length - 1]) === getMessageSide(message) &&
+      lastGroup.messages[lastGroup.messages.length - 1]?.authorName ===
+        message.authorName &&
+      lastGroup.messages[lastGroup.messages.length - 1]?.avatarUrl ===
+        message.avatarUrl &&
+      getMessageSide(lastGroup.messages[lastGroup.messages.length - 1]) ===
+        getMessageSide(message) &&
       !message.isSystemMessage
     ) {
       lastGroup.messages.push(message);
@@ -399,13 +558,22 @@ function groupMessagesForDisplay(messages: ChatMessage[]): MessageGroup[] {
   return groups;
 }
 
-export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProps) {
+export default function ChatSimulator({
+  manifest,
+  themeName,
+}: ChatSimulatorProps) {
+  const locale = useLocale();
+  const isZh = isChineseLocale(locale);
+  const uiText = getChatSimulatorUiText(locale);
+  const localizedManifest = getChatSimulatorLocalizedManifest(manifest, locale);
   const {
     messages,
     messageGroups,
+    users,
     setMessages,
     setUsers,
     upsertUser,
+    updateUser,
     channel,
     activeSkin,
     setChannel,
@@ -419,27 +587,38 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [editingTimestamp, setEditingTimestamp] = useState('');
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editingAuthorName, setEditingAuthorName] = useState('');
   const [editingAvatarUrl, setEditingAvatarUrl] = useState('');
-  const [currentSpeakerName, setCurrentSpeakerName] = useState(DEFAULT_SPEAKER_NAME);
-  const [currentAvatarUrl, setCurrentAvatarUrl] = useState('');
-  const [currentMessageSide, setCurrentMessageSide] = useState<MessageSide>(DEFAULT_MESSAGE_SIDE);
-  const [backgroundColor, setBackgroundColor] = useState(DEFAULT_BACKGROUND_COLOR);
+  const [selectedIdentityId, setSelectedIdentityId] =
+    useState<string>(CURRENT_SPEAKER_ID);
+  const [backgroundColor, setBackgroundColor] = useState(
+    DEFAULT_BACKGROUND_COLOR
+  );
   const [backgroundImageUrl, setBackgroundImageUrl] = useState('');
-  const [isSettingsVisible, setIsSettingsVisible] = useState(false);
+  const [isSettingsVisible, setIsSettingsVisible] = useState(true);
   const [isPlatformMenuOpen, setIsPlatformMenuOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [visibleMessageCount, setVisibleMessageCount] = useState(messages.length);
+  const [visibleMessageCount, setVisibleMessageCount] = useState(
+    messages.length
+  );
   const [isExportingImage, setIsExportingImage] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [exportFileFormat, setExportFileFormat] =
+    useState<ExportFileFormat>('png');
+  const [exportLayoutPreset, setExportLayoutPreset] =
+    useState<ExportLayoutPreset>('web');
   const [exportAspectRatioPreset, setExportAspectRatioPreset] =
     useState<ExportAspectRatioPreset>('auto');
-  const [exportQualityPreset, setExportQualityPreset] = useState<ExportQualityPreset>('high');
+  const [exportQualityPreset, setExportQualityPreset] =
+    useState<ExportQualityPreset>('high');
   const currentAvatarInputRef = useRef<HTMLInputElement>(null);
   const channelIconInputRef = useRef<HTMLInputElement>(null);
   const backgroundImageInputRef = useRef<HTMLInputElement>(null);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
+  const imageAttachmentInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const currentAvatarObjectUrlRef = useRef<string | null>(null);
+  const identityAvatarObjectUrlsRef = useRef<Record<string, string>>({});
   const channelAvatarObjectUrlRef = useRef<string | null>(null);
   const backgroundImageObjectUrlRef = useRef<string | null>(null);
   const editingAvatarObjectUrlRef = useRef<string | null>(null);
@@ -447,65 +626,77 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
   const playbackRunRef = useRef(0);
   const captureRef = useRef<HTMLDivElement>(null);
   const platformMenuRef = useRef<HTMLDivElement>(null);
-  const supportedSkins = (manifest.config.supported_skins || ['discord']) as PlatformType[];
+  const supportedSkins = (localizedManifest.config.supported_skins || [
+    'discord',
+  ]) as PlatformType[];
 
-  const resolvedChannel = channel ?? buildDefaultChannel(manifest.name, manifest.seo.description);
-  const channelSlug = formatChannelSlug(resolvedChannel.name);
-  const exportAspectRatio = getExportAspectRatioValue(exportAspectRatioPreset);
-  const exportQuality = getExportQualityConfig(exportQualityPreset);
-  const displayedMessages = isPlaying ? messages.slice(0, visibleMessageCount) : messages;
+  const resolvedChannel =
+    channel ??
+    buildDefaultChannel(
+      localizedManifest.name,
+      localizedManifest.seo.description
+    );
+  const identityOptions = Object.values(users).filter(
+    (user) => user.id !== 'system'
+  );
   const isWhatsApp = activeSkin === 'whatsapp';
   const isTelegram = activeSkin === 'telegram';
-  const rawDisplayedMessageGroups = isPlaying ? groupMessagesForDisplay(displayedMessages) : messageGroups;
-  const displayedMessageGroups = isWhatsApp || isTelegram
-    ? interleaveDateSeparators(rawDisplayedMessageGroups, activeSkin)
-    : rawDisplayedMessageGroups;
-  const participantCount = new Set(
-    messages
-      .filter((message) => !message.isSystemMessage)
-      .map((message) => message.authorName || message.sender.name),
-  ).size || 1;
+  const isCustom = activeSkin === 'custom';
+  const selectedIdentity = isCustom
+    ? (users[selectedIdentityId] ?? null)
+    : (users[selectedIdentityId] ??
+      users[CURRENT_SPEAKER_ID] ??
+      buildCurrentSpeaker(uiText.defaultSpeakerName, ''));
+  const channelSlug = formatChannelSlug(resolvedChannel.name);
+  const exportAspectRatioOptions = uiText.exportAspectRatioOptions;
+  const exportQualityOptions = uiText.exportQualityOptions;
+  const exportLayoutOptions = uiText.exportLayoutOptions;
+  const exportLayout =
+    exportLayoutOptions.find((option) => option.value === exportLayoutPreset) ??
+    exportLayoutOptions[0];
+  const exportAspectRatio =
+    exportAspectRatioPreset === 'auto'
+      ? exportLayout.defaultAspectRatio
+      : (exportAspectRatioOptions.find(
+          (option) => option.value === exportAspectRatioPreset
+        )?.aspectRatio ?? null);
+  const exportQuality =
+    exportQualityOptions.find(
+      (option) => option.value === exportQualityPreset
+    ) ?? exportQualityOptions[1];
+  const exportMimeType =
+    exportFileFormat === 'jpg' ? 'image/jpeg' : 'image/png';
+  const displayedMessages = isPlaying
+    ? messages.slice(0, visibleMessageCount)
+    : messages;
+  const rawDisplayedMessageGroups = isPlaying
+    ? groupMessagesForDisplay(displayedMessages)
+    : messageGroups;
+  const displayedMessageGroups =
+    isWhatsApp || isTelegram
+      ? interleaveDateSeparators(rawDisplayedMessageGroups, activeSkin)
+      : rawDisplayedMessageGroups;
+  const participantCount =
+    new Set(
+      messages
+        .filter((message) => !message.isSystemMessage)
+        .map((message) => message.authorName || message.sender.name)
+    ).size || 1;
   const firstParticipantAvatar =
-    messages.find((message) => !message.isSystemMessage && message.avatarUrl)?.avatarUrl ||
-    currentAvatarUrl ||
+    messages.find((message) => !message.isSystemMessage && message.avatarUrl)
+      ?.avatarUrl ||
+    selectedIdentity?.avatar ||
     DEMO_USERS.Alex.avatar;
+  const platformMenuSkins = supportedSkins.filter((skin) => skin !== 'custom');
   const headerAvatarUrl =
     resolvedChannel.icon || (isWhatsApp ? firstParticipantAvatar : '');
-  const settingsCopy = isWhatsApp
-    ? {
-        channelTitle: 'Chat settings',
-        channelDescription: 'Edit the chat name, photo, and subtitle shown in the WhatsApp header.',
-        channelNameLabel: 'Chat name',
-        channelDescriptionLabel: 'Chat subtitle',
-        channelDescriptionPlaceholder: 'Seen recently',
-        channelAvatarLabel: 'Chat photo',
-        channelAvatarButton: 'Upload photo',
-        environmentDescription: 'Tune the wallpaper with a custom image or a softer WhatsApp-like background color.',
-        exportDescription: 'Choose the output ratio and clarity used by PNG export.',
-      }
-    : isTelegram
-      ? {
-          channelTitle: 'Group settings',
-          channelDescription: 'Edit the Telegram chat title, group photo, and subtitle shown in the header.',
-          channelNameLabel: 'Group name',
-          channelDescriptionLabel: 'Header subtitle',
-          channelDescriptionPlaceholder: '3 members',
-          channelAvatarLabel: 'Group photo',
-          channelAvatarButton: 'Upload photo',
-          environmentDescription: 'Adjust the Telegram wallpaper color or add a custom background image.',
-          exportDescription: 'Choose the output ratio and clarity used by PNG export.',
-        }
-    : {
-        channelTitle: 'Group settings',
-        channelDescription: 'Edit the channel name, avatar, and intro text shown in the Discord layout.',
-        channelNameLabel: 'Group name',
-        channelDescriptionLabel: 'Channel intro',
-        channelDescriptionPlaceholder: 'Tell people what this space is about.',
-        channelAvatarLabel: 'Group avatar',
-        channelAvatarButton: 'Upload icon',
-        environmentDescription: 'Tune the chat background with a custom image overlay or a Discord-like color.',
-        exportDescription: 'Choose the output ratio and clarity used by image export.',
-      };
+  const settingsCopy = isCustom
+    ? uiText.settingsCopy.custom
+    : isWhatsApp
+      ? uiText.settingsCopy.whatsapp
+      : isTelegram
+        ? uiText.settingsCopy.telegram
+        : uiText.settingsCopy.discord;
   const chatBackgroundStyle = {
     backgroundColor,
     backgroundImage: backgroundImageUrl
@@ -513,47 +704,102 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
         ? `linear-gradient(rgba(244, 240, 229, 0.72), rgba(244, 240, 229, 0.84)), url(${backgroundImageUrl})`
         : isTelegram
           ? `linear-gradient(rgba(212, 232, 191, 0.58), rgba(182, 214, 152, 0.7)), url(${backgroundImageUrl})`
-        : `linear-gradient(rgba(17, 18, 20, 0.56), rgba(17, 18, 20, 0.72)), url(${backgroundImageUrl})`
+          : isCustom
+            ? `linear-gradient(rgba(17, 19, 24, 0.34), rgba(17, 19, 24, 0.6)), url(${backgroundImageUrl})`
+            : `linear-gradient(rgba(17, 18, 20, 0.56), rgba(17, 18, 20, 0.72)), url(${backgroundImageUrl})`
       : undefined,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
   } as const;
   const previewViewportStyle = {
-    height: 'min(calc(100vh - 72px), 1440px)',
-    minHeight: '980px',
-    maxHeight: '1440px',
+    height: 'clamp(560px, calc(100vh - 18rem), 820px)',
+    minHeight: '560px',
+    maxHeight: '820px',
+  } as const;
+  const settingsSurfaceStyle = {
+    backgroundColor: getPlatformSettingsSurfaceColor(activeSkin),
+  } as const;
+  const settingsInsetStyle = {
+    backgroundColor: getPlatformSettingsInsetColor(activeSkin),
   } as const;
 
   useEffect(() => {
     const script = parseScript(DEMO_SCRIPT, DEMO_USERS);
-    setUsers(script.users);
+    const scriptUsers = Object.fromEntries(
+      Object.values(script.users).map((user) => [
+        user.id,
+        {
+          ...user,
+          name:
+            user.id === CURRENT_SPEAKER_ID
+              ? uiText.defaultSpeakerName
+              : user.name,
+          defaultSide: user.defaultSide ?? 'left',
+        },
+      ])
+    );
+    const seededUsers = {
+      ...scriptUsers,
+      [CURRENT_SPEAKER_ID]: buildCurrentSpeaker(uiText.defaultSpeakerName, ''),
+    };
+    setUsers(seededUsers);
     setMessages(script.messages);
-    setChannel(buildDefaultChannel(manifest.name, manifest.seo.description));
-    setSkin((manifest.config.skin_preset || 'discord') as PlatformType);
-    setBackgroundColor(getPlatformBackgroundColor((manifest.config.skin_preset || 'discord') as PlatformType));
+    setSelectedIdentityId(CURRENT_SPEAKER_ID);
+    setChannel(
+      buildDefaultChannel(
+        localizedManifest.name,
+        localizedManifest.seo.description
+      )
+    );
+    setSkin(
+      (localizedManifest.config.skin_preset || 'discord') as PlatformType
+    );
+    setBackgroundColor(
+      getPlatformBackgroundColor(
+        (localizedManifest.config.skin_preset || 'discord') as PlatformType
+      )
+    );
   }, [
-    manifest.config.skin_preset,
-    manifest.name,
-    manifest.seo.description,
+    localizedManifest.config.skin_preset,
+    localizedManifest.name,
+    localizedManifest.seo.description,
     setChannel,
     setMessages,
     setSkin,
     setUsers,
+    uiText.defaultSpeakerName,
   ]);
 
   useEffect(() => {
-    upsertUser(buildCurrentSpeaker(currentSpeakerName, currentAvatarUrl));
-  }, [currentAvatarUrl, currentSpeakerName, upsertUser]);
-
-  useEffect(() => {
     return () => {
-      revokeObjectUrlIfNeeded(currentAvatarObjectUrlRef.current);
+      Object.values(identityAvatarObjectUrlsRef.current).forEach((url) =>
+        revokeObjectUrlIfNeeded(url)
+      );
       revokeObjectUrlIfNeeded(channelAvatarObjectUrlRef.current);
       revokeObjectUrlIfNeeded(backgroundImageObjectUrlRef.current);
       revokeObjectUrlIfNeeded(editingAvatarObjectUrlRef.current);
-      attachmentObjectUrlsRef.current.forEach((url) => revokeObjectUrlIfNeeded(url));
+      attachmentObjectUrlsRef.current.forEach((url) =>
+        revokeObjectUrlIfNeeded(url)
+      );
     };
   }, []);
+
+  useEffect(() => {
+    if (users[selectedIdentityId]) {
+      return;
+    }
+
+    if (users[CURRENT_SPEAKER_ID]) {
+      setSelectedIdentityId(CURRENT_SPEAKER_ID);
+      return;
+    }
+
+    const firstIdentity = identityOptions[0];
+
+    if (firstIdentity) {
+      setSelectedIdentityId(firstIdentity.id);
+    }
+  }, [identityOptions, selectedIdentityId, users]);
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -587,7 +833,14 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
   }, [messages]);
 
   const handleSend = (content: string) => {
-    const currentUser = buildCurrentSpeaker(currentSpeakerName, currentAvatarUrl);
+    if (!selectedIdentity) {
+      toast.error(uiText.addPersonFirstForChat);
+      return;
+    }
+
+    const currentUser = selectedIdentity;
+    const currentMessageSide =
+      selectedIdentity.defaultSide ?? DEFAULT_MESSAGE_SIDE;
 
     addMessage({
       id: `msg-user-${Date.now()}`,
@@ -622,7 +875,14 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
       return;
     }
 
-    const currentUser = buildCurrentSpeaker(currentSpeakerName, currentAvatarUrl);
+    if (!selectedIdentity) {
+      toast.error(uiText.addPersonFirstForFiles);
+      return;
+    }
+
+    const currentUser = selectedIdentity;
+    const currentMessageSide =
+      selectedIdentity.defaultSide ?? DEFAULT_MESSAGE_SIDE;
     const attachments = buildAttachmentsFromFiles(files);
 
     addMessage({
@@ -640,7 +900,9 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
     });
   };
 
-  const handleAttachmentInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAttachmentInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = Array.from(event.target.files || []);
     handleSendAttachments(files);
     event.target.value = '';
@@ -649,6 +911,7 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
   const handleStartEdit = (message: ChatMessage) => {
     revokeObjectUrlIfNeeded(editingAvatarObjectUrlRef.current);
     editingAvatarObjectUrlRef.current = null;
+    setEditingUserId(message.sender.id);
     setEditingMessageId(message.id);
     setEditingValue(message.content);
     setEditingTimestamp(toDateTimeLocalValue(message.timestamp));
@@ -659,6 +922,7 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
   const handleCancelEdit = () => {
     revokeObjectUrlIfNeeded(editingAvatarObjectUrlRef.current);
     editingAvatarObjectUrlRef.current = null;
+    setEditingUserId(null);
     setEditingMessageId(null);
     setEditingValue('');
     setEditingTimestamp('');
@@ -667,19 +931,57 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
   };
 
   const handleSaveEdit = () => {
-    if (!editingMessageId || !editingValue.trim()) {
+    if (!editingMessageId) {
+      return;
+    }
+
+    const editingMessage = messages.find(
+      (message) => message.id === editingMessageId
+    );
+
+    if (!editingMessage) {
+      return;
+    }
+
+    const hasTextAfterEdit = editingValue.trim().length > 0;
+    const hasAttachments = (editingMessage.attachments?.length || 0) > 0;
+
+    if (!hasTextAfterEdit && !hasAttachments) {
       return;
     }
 
     updateMessage(editingMessageId, editingValue, {
       timestamp: fromDateTimeLocalValue(editingTimestamp) || undefined,
+      allowEmptyContent: hasAttachments,
     });
-    updateAuthorAvatar(editingAuthorName, editingAvatarUrl);
-    editingAvatarObjectUrlRef.current = null;
+    if (editingUserId) {
+      const previousIdentityAvatar =
+        identityAvatarObjectUrlsRef.current[editingUserId] || null;
 
-    if (editingAuthorName === currentSpeakerName) {
-      setCurrentAvatarUrl(editingAvatarUrl);
+      if (editingAvatarUrl) {
+        if (
+          previousIdentityAvatar &&
+          previousIdentityAvatar !== editingAvatarUrl
+        ) {
+          revokeObjectUrlIfNeeded(previousIdentityAvatar);
+        }
+
+        if (editingAvatarObjectUrlRef.current === editingAvatarUrl) {
+          identityAvatarObjectUrlsRef.current[editingUserId] = editingAvatarUrl;
+          editingAvatarObjectUrlRef.current = null;
+        }
+      } else if (previousIdentityAvatar) {
+        revokeObjectUrlIfNeeded(previousIdentityAvatar);
+        delete identityAvatarObjectUrlsRef.current[editingUserId];
+      }
+
+      updateUser(editingUserId, {
+        avatar: editingAvatarUrl,
+      });
+    } else {
+      updateAuthorAvatar(editingAuthorName, editingAvatarUrl);
     }
+    editingAvatarObjectUrlRef.current = null;
 
     handleCancelEdit();
   };
@@ -693,32 +995,49 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
   };
 
   const handleCreateNewChat = () => {
-    attachmentObjectUrlsRef.current.forEach((url) => revokeObjectUrlIfNeeded(url));
+    attachmentObjectUrlsRef.current.forEach((url) =>
+      revokeObjectUrlIfNeeded(url)
+    );
     attachmentObjectUrlsRef.current = [];
     startNewChat(channelSlug);
-    upsertUser(buildCurrentSpeaker(currentSpeakerName, currentAvatarUrl));
     handleCancelEdit();
   };
 
-  const handleCurrentAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCurrentAvatarSelect = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
     }
 
-    revokeObjectUrlIfNeeded(currentAvatarObjectUrlRef.current);
+    if (!selectedIdentity) {
+      return;
+    }
+
+    const previousObjectUrl =
+      identityAvatarObjectUrlsRef.current[selectedIdentity.id];
+    revokeObjectUrlIfNeeded(previousObjectUrl || null);
     const nextObjectUrl = URL.createObjectURL(file);
-    currentAvatarObjectUrlRef.current = nextObjectUrl;
-    setCurrentAvatarUrl(nextObjectUrl);
-    updateAuthorAvatar(currentSpeakerName, nextObjectUrl);
+    identityAvatarObjectUrlsRef.current[selectedIdentity.id] = nextObjectUrl;
+    updateUser(selectedIdentity.id, {
+      avatar: nextObjectUrl,
+    });
     event.target.value = '';
   };
 
   const handleClearCurrentAvatar = () => {
-    revokeObjectUrlIfNeeded(currentAvatarObjectUrlRef.current);
-    currentAvatarObjectUrlRef.current = null;
-    setCurrentAvatarUrl('');
-    updateAuthorAvatar(currentSpeakerName, '');
+    if (!selectedIdentity) {
+      return;
+    }
+
+    revokeObjectUrlIfNeeded(
+      identityAvatarObjectUrlsRef.current[selectedIdentity.id] || null
+    );
+    delete identityAvatarObjectUrlsRef.current[selectedIdentity.id];
+    updateUser(selectedIdentity.id, {
+      avatar: '',
+    });
 
     if (currentAvatarInputRef.current) {
       currentAvatarInputRef.current.value = '';
@@ -745,7 +1064,49 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
     setEditingAvatarUrl('');
   };
 
-  const handleChannelFieldChange = (field: keyof ChatChannel, value: string) => {
+  const handleIdentityNameChange = (nextName: string) => {
+    if (!selectedIdentity) {
+      return;
+    }
+
+    updateUser(selectedIdentity.id, {
+      name: nextName,
+    });
+  };
+
+  const handleIdentitySideChange = (nextSide: MessageSide) => {
+    if (!selectedIdentity) {
+      return;
+    }
+
+    updateUser(selectedIdentity.id, {
+      defaultSide: nextSide,
+    });
+  };
+
+  const handleIdentityColorChange = (nextColor: string) => {
+    if (!selectedIdentity) {
+      return;
+    }
+
+    updateUser(selectedIdentity.id, {
+      color: nextColor,
+    });
+  };
+
+  const handleAddIdentity = () => {
+    const nextIdentity = createIdentityDraft(
+      identityOptions.length + 1,
+      locale
+    );
+    upsertUser(nextIdentity);
+    setSelectedIdentityId(nextIdentity.id);
+  };
+
+  const handleChannelFieldChange = (
+    field: keyof ChatChannel,
+    value: string
+  ) => {
     setChannel({
       ...resolvedChannel,
       [field]: value,
@@ -755,7 +1116,9 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
   const handlePlatformChange = (nextSkin: PlatformType) => {
     setSkin(nextSkin);
     setIsPlatformMenuOpen(false);
-    attachmentObjectUrlsRef.current.forEach((url) => revokeObjectUrlIfNeeded(url));
+    attachmentObjectUrlsRef.current.forEach((url) =>
+      revokeObjectUrlIfNeeded(url)
+    );
     attachmentObjectUrlsRef.current = [];
     setBackgroundImageUrl('');
     revokeObjectUrlIfNeeded(backgroundImageObjectUrlRef.current);
@@ -764,9 +1127,64 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
       backgroundImageInputRef.current.value = '';
     }
     setBackgroundColor(getPlatformBackgroundColor(nextSkin));
+
+    if (nextSkin === 'custom') {
+      setMessages([]);
+      setUsers({});
+      setSelectedIdentityId(CURRENT_SPEAKER_ID);
+    }
   };
 
-  const handleChannelAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const handleApplyTemplate = (event: Event) => {
+      const template = (event as CustomEvent<ChatSimulatorCaseTemplate>).detail;
+
+      if (!template) {
+        return;
+      }
+
+      playbackRunRef.current += 1;
+      setIsPlaying(false);
+      setVisibleMessageCount(template.messages.length);
+      handleCancelEdit();
+
+      attachmentObjectUrlsRef.current.forEach((url) =>
+        revokeObjectUrlIfNeeded(url)
+      );
+      attachmentObjectUrlsRef.current = [];
+
+      revokeObjectUrlIfNeeded(backgroundImageObjectUrlRef.current);
+      backgroundImageObjectUrlRef.current = null;
+      setBackgroundImageUrl('');
+
+      if (backgroundImageInputRef.current) {
+        backgroundImageInputRef.current.value = '';
+      }
+
+      setSkin(template.platform);
+      setUsers(template.users);
+      setMessages(template.messages);
+      setChannel(template.channel);
+      setSelectedIdentityId(template.selectedIdentityId);
+      setBackgroundColor(getPlatformBackgroundColor(template.platform));
+    };
+
+    window.addEventListener(
+      CHAT_SIMULATOR_APPLY_TEMPLATE_EVENT,
+      handleApplyTemplate as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        CHAT_SIMULATOR_APPLY_TEMPLATE_EVENT,
+        handleApplyTemplate as EventListener
+      );
+    };
+  }, [handleCancelEdit, setChannel, setMessages, setSkin, setUsers]);
+
+  const handleChannelAvatarSelect = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
@@ -795,7 +1213,9 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
     }
   };
 
-  const handleBackgroundImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBackgroundImageSelect = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
@@ -858,6 +1278,7 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
       return;
     }
 
+    const exportNode = captureRef.current;
     playbackRunRef.current += 1;
     setIsPlaying(false);
     setVisibleMessageCount(messages.length);
@@ -867,15 +1288,21 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
     try {
       await sleep(80);
       await waitForNextPaint();
-      const blob = await exportElementToPngBlob(captureRef.current, {
+      const blob = await exportElementToImageBlob(exportNode, exportMimeType, {
         pixelRatio: exportQuality.pixelRatio,
         aspectRatio: exportAspectRatio,
         matteColor: backgroundColor,
+        renderWidth: exportLayout.renderWidth,
+        renderHeight: exportLayout.renderHeight,
       });
-      const file = new File([blob], `${channelSlug}-chat.png`, { type: 'image/png' });
+
+      const file = new File([blob], `${channelSlug}-chat.${exportFileFormat}`, {
+        type: exportMimeType,
+      });
       await deliverExportedFile(file);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'PNG export failed.';
+      const message =
+        error instanceof Error ? error.message : uiText.exportFailed;
 
       if (message !== 'Share canceled.') {
         toast.error(message);
@@ -883,6 +1310,11 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
     } finally {
       setIsExportingImage(false);
     }
+  };
+
+  const handleStartExport = async () => {
+    setIsExportDialogOpen(false);
+    await handleExportImage();
   };
 
   const renderGroup = (group: MessageGroup, index: number) => {
@@ -920,12 +1352,14 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
 
           <div className="tg-group-stack">
             {group.messages.map((message, messageIndex) => {
-              const messageTime = new Date(message.timestamp).toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: false,
-              });
-              const bubblePositionClass = getBubblePositionClass(group.messages.length, messageIndex, 'tg-bubble-position');
+              const messageTime = formatCustomMessageTimestamp(
+                message.timestamp
+              );
+              const bubblePositionClass = getBubblePositionClass(
+                group.messages.length,
+                messageIndex,
+                'tg-bubble-position'
+              );
 
               return (
                 <div
@@ -936,20 +1370,40 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                     message={message}
                     className={`tg-message-bubble ${isOutgoing ? 'tg-message-bubble-outgoing' : 'tg-message-bubble-incoming'}`}
                     isEditing={editingMessageId === message.id}
-                    editingValue={editingMessageId === message.id ? editingValue : message.content}
+                    editingValue={
+                      editingMessageId === message.id
+                        ? editingValue
+                        : message.content
+                    }
                     editingTimestamp={
                       editingMessageId === message.id
                         ? editingTimestamp
                         : toDateTimeLocalValue(message.timestamp)
                     }
-                    editingAvatarUrl={editingMessageId === message.id ? editingAvatarUrl : message.avatarUrl}
-                    editingAuthorName={editingMessageId === message.id ? editingAuthorName : message.authorName}
+                    editingAvatarUrl={
+                      editingMessageId === message.id
+                        ? editingAvatarUrl
+                        : message.avatarUrl
+                    }
+                    editingAuthorName={
+                      editingMessageId === message.id
+                        ? editingAuthorName
+                        : message.authorName
+                    }
                     onEditingValueChange={setEditingValue}
                     onEditingTimestampChange={setEditingTimestamp}
                     onEditingAvatarChange={handleEditingAvatarChange}
                     onEditingAvatarClear={handleEditingAvatarClear}
-                    onEdit={message.isSystemMessage ? undefined : () => handleStartEdit(message)}
-                    onDelete={message.isSystemMessage ? undefined : () => handleDeleteMessage(message.id)}
+                    onEdit={
+                      message.isSystemMessage
+                        ? undefined
+                        : () => handleStartEdit(message)
+                    }
+                    onDelete={
+                      message.isSystemMessage
+                        ? undefined
+                        : () => handleDeleteMessage(message.id)
+                    }
                     onEditSave={handleSaveEdit}
                     onEditCancel={handleCancelEdit}
                     renderContent={(content) => {
@@ -963,26 +1417,38 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                             <div className="tg-author-row">
                               <p
                                 className="tg-inline-author"
-                                style={{ color: group.sender.color || '#54a33a' }}
+                                style={{
+                                  color: group.sender.color || '#54a33a',
+                                }}
                               >
                                 {displayName}
                               </p>
                             </div>
                           ) : null}
-                          <p className="tg-message-text whitespace-pre-wrap break-words">{content}</p>
-                          <span className={`tg-message-meta ${isOutgoing ? 'tg-message-meta-outgoing' : 'tg-message-meta-incoming'}`}>
-                            <span className={`tg-message-time ${isOutgoing ? 'tg-message-time-outgoing' : 'tg-message-time-incoming'}`}>
+                          <p className="tg-message-text break-words whitespace-pre-wrap">
+                            {content}
+                          </p>
+                          <span
+                            className={`tg-message-meta ${isOutgoing ? 'tg-message-meta-outgoing' : 'tg-message-meta-incoming'}`}
+                          >
+                            <span
+                              className={`tg-message-time ${isOutgoing ? 'tg-message-time-outgoing' : 'tg-message-time-incoming'}`}
+                            >
                               {messageTime}
                             </span>
                             {isOutgoing ? (
                               <span
                                 className={`tg-message-status ${
-                                  (message.metadata?.deliveryStatus as string | undefined) === 'read'
+                                  (message.metadata?.deliveryStatus as
+                                    | string
+                                    | undefined) === 'read'
                                     ? 'tg-message-status-read'
                                     : ''
                                 }`}
                               >
-                                {(message.metadata?.deliveryStatus as string | undefined) === 'read' ? (
+                                {(message.metadata?.deliveryStatus as
+                                  | string
+                                  | undefined) === 'read' ? (
                                   <CheckCheck className="tg-message-status-icon" />
                                 ) : (
                                   <Check className="tg-message-status-icon" />
@@ -999,11 +1465,15 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                         className="tg-attachment-area"
                         renderImage={(attachment: Attachment) => (
                           <div className="tg-attachment-block">
-                            {!isOutgoing && messageIndex === 0 && !message.content.trim() ? (
+                            {!isOutgoing &&
+                            messageIndex === 0 &&
+                            !message.content.trim() ? (
                               <div className="tg-author-row tg-author-row-attachment">
                                 <p
                                   className="tg-inline-author"
-                                  style={{ color: group.sender.color || '#54a33a' }}
+                                  style={{
+                                    color: group.sender.color || '#54a33a',
+                                  }}
                                 >
                                   {displayName}
                                 </p>
@@ -1016,19 +1486,27 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                                 className="tg-attachment-image"
                                 loading="lazy"
                               />
-                              <span className={`tg-attachment-meta ${isOutgoing ? 'tg-message-meta-outgoing' : 'tg-message-meta-incoming'}`}>
-                                <span className={`tg-message-time ${isOutgoing ? 'tg-message-time-outgoing' : 'tg-message-time-incoming'}`}>
+                              <span
+                                className={`tg-attachment-meta ${isOutgoing ? 'tg-message-meta-outgoing' : 'tg-message-meta-incoming'}`}
+                              >
+                                <span
+                                  className={`tg-message-time ${isOutgoing ? 'tg-message-time-outgoing' : 'tg-message-time-incoming'}`}
+                                >
                                   {messageTime}
                                 </span>
                                 {isOutgoing ? (
                                   <span
                                     className={`tg-message-status ${
-                                      (message.metadata?.deliveryStatus as string | undefined) === 'read'
+                                      (message.metadata?.deliveryStatus as
+                                        | string
+                                        | undefined) === 'read'
                                         ? 'tg-message-status-read'
                                         : ''
                                     }`}
                                   >
-                                    {(message.metadata?.deliveryStatus as string | undefined) === 'read' ? (
+                                    {(message.metadata?.deliveryStatus as
+                                      | string
+                                      | undefined) === 'read' ? (
                                       <CheckCheck className="tg-message-status-icon" />
                                     ) : (
                                       <Check className="tg-message-status-icon" />
@@ -1041,31 +1519,47 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                         )}
                         renderVideo={(attachment: Attachment) => (
                           <div className="tg-attachment-block">
-                            {!isOutgoing && messageIndex === 0 && !message.content.trim() ? (
+                            {!isOutgoing &&
+                            messageIndex === 0 &&
+                            !message.content.trim() ? (
                               <div className="tg-author-row tg-author-row-attachment">
                                 <p
                                   className="tg-inline-author"
-                                  style={{ color: group.sender.color || '#54a33a' }}
+                                  style={{
+                                    color: group.sender.color || '#54a33a',
+                                  }}
                                 >
                                   {displayName}
                                 </p>
                               </div>
                             ) : null}
                             <div className="tg-attachment-card tg-attachment-card-image">
-                              <video src={attachment.url} controls className="tg-attachment-image" />
-                              <span className={`tg-attachment-meta ${isOutgoing ? 'tg-message-meta-outgoing' : 'tg-message-meta-incoming'}`}>
-                                <span className={`tg-message-time ${isOutgoing ? 'tg-message-time-outgoing' : 'tg-message-time-incoming'}`}>
+                              <video
+                                src={attachment.url}
+                                controls
+                                className="tg-attachment-image"
+                              />
+                              <span
+                                className={`tg-attachment-meta ${isOutgoing ? 'tg-message-meta-outgoing' : 'tg-message-meta-incoming'}`}
+                              >
+                                <span
+                                  className={`tg-message-time ${isOutgoing ? 'tg-message-time-outgoing' : 'tg-message-time-incoming'}`}
+                                >
                                   {messageTime}
                                 </span>
                                 {isOutgoing ? (
                                   <span
                                     className={`tg-message-status ${
-                                      (message.metadata?.deliveryStatus as string | undefined) === 'read'
+                                      (message.metadata?.deliveryStatus as
+                                        | string
+                                        | undefined) === 'read'
                                         ? 'tg-message-status-read'
                                         : ''
                                     }`}
                                   >
-                                    {(message.metadata?.deliveryStatus as string | undefined) === 'read' ? (
+                                    {(message.metadata?.deliveryStatus as
+                                      | string
+                                      | undefined) === 'read' ? (
                                       <CheckCheck className="tg-message-status-icon" />
                                     ) : (
                                       <Check className="tg-message-status-icon" />
@@ -1078,11 +1572,15 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                         )}
                         renderFile={(attachment: Attachment) => (
                           <div className="tg-attachment-block">
-                            {!isOutgoing && messageIndex === 0 && !message.content.trim() ? (
+                            {!isOutgoing &&
+                            messageIndex === 0 &&
+                            !message.content.trim() ? (
                               <div className="tg-author-row tg-author-row-attachment">
                                 <p
                                   className="tg-inline-author"
-                                  style={{ color: group.sender.color || '#54a33a' }}
+                                  style={{
+                                    color: group.sender.color || '#54a33a',
+                                  }}
                                 >
                                   {displayName}
                                 </p>
@@ -1093,23 +1591,35 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                               download={attachment.name}
                               className="tg-attachment-card tg-attachment-file"
                             >
-                              <span className="tg-attachment-file-name">{attachment.name}</span>
-                              <span className="tg-attachment-file-meta">
-                                {attachment.size ? `${(attachment.size / 1024).toFixed(1)} KB` : 'File'}
+                              <span className="tg-attachment-file-name">
+                                {attachment.name}
                               </span>
-                              <span className={`tg-attachment-meta ${isOutgoing ? 'tg-message-meta-outgoing' : 'tg-message-meta-incoming'}`}>
-                                <span className={`tg-message-time ${isOutgoing ? 'tg-message-time-outgoing' : 'tg-message-time-incoming'}`}>
+                              <span className="tg-attachment-file-meta">
+                                {attachment.size
+                                  ? `${(attachment.size / 1024).toFixed(1)} KB`
+                                  : 'File'}
+                              </span>
+                              <span
+                                className={`tg-attachment-meta ${isOutgoing ? 'tg-message-meta-outgoing' : 'tg-message-meta-incoming'}`}
+                              >
+                                <span
+                                  className={`tg-message-time ${isOutgoing ? 'tg-message-time-outgoing' : 'tg-message-time-incoming'}`}
+                                >
                                   {messageTime}
                                 </span>
                                 {isOutgoing ? (
                                   <span
                                     className={`tg-message-status ${
-                                      (message.metadata?.deliveryStatus as string | undefined) === 'read'
+                                      (message.metadata?.deliveryStatus as
+                                        | string
+                                        | undefined) === 'read'
                                         ? 'tg-message-status-read'
                                         : ''
                                     }`}
                                   >
-                                    {(message.metadata?.deliveryStatus as string | undefined) === 'read' ? (
+                                    {(message.metadata?.deliveryStatus as
+                                      | string
+                                      | undefined) === 'read' ? (
                                       <CheckCheck className="tg-message-status-icon" />
                                     ) : (
                                       <Check className="tg-message-status-icon" />
@@ -1122,31 +1632,47 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                         )}
                         renderAudio={(attachment: Attachment) => (
                           <div className="tg-attachment-block">
-                            {!isOutgoing && messageIndex === 0 && !message.content.trim() ? (
+                            {!isOutgoing &&
+                            messageIndex === 0 &&
+                            !message.content.trim() ? (
                               <div className="tg-author-row tg-author-row-attachment">
                                 <p
                                   className="tg-inline-author"
-                                  style={{ color: group.sender.color || '#54a33a' }}
+                                  style={{
+                                    color: group.sender.color || '#54a33a',
+                                  }}
                                 >
                                   {displayName}
                                 </p>
                               </div>
                             ) : null}
                             <div className="tg-attachment-card tg-attachment-file">
-                              <audio src={attachment.url} controls className="w-full" />
-                              <span className={`tg-attachment-meta ${isOutgoing ? 'tg-message-meta-outgoing' : 'tg-message-meta-incoming'}`}>
-                                <span className={`tg-message-time ${isOutgoing ? 'tg-message-time-outgoing' : 'tg-message-time-incoming'}`}>
+                              <audio
+                                src={attachment.url}
+                                controls
+                                className="w-full"
+                              />
+                              <span
+                                className={`tg-attachment-meta ${isOutgoing ? 'tg-message-meta-outgoing' : 'tg-message-meta-incoming'}`}
+                              >
+                                <span
+                                  className={`tg-message-time ${isOutgoing ? 'tg-message-time-outgoing' : 'tg-message-time-incoming'}`}
+                                >
                                   {messageTime}
                                 </span>
                                 {isOutgoing ? (
                                   <span
                                     className={`tg-message-status ${
-                                      (message.metadata?.deliveryStatus as string | undefined) === 'read'
+                                      (message.metadata?.deliveryStatus as
+                                        | string
+                                        | undefined) === 'read'
                                         ? 'tg-message-status-read'
                                         : ''
                                     }`}
                                   >
-                                    {(message.metadata?.deliveryStatus as string | undefined) === 'read' ? (
+                                    {(message.metadata?.deliveryStatus as
+                                      | string
+                                      | undefined) === 'read' ? (
                                       <CheckCheck className="tg-message-status-icon" />
                                     ) : (
                                       <Check className="tg-message-status-icon" />
@@ -1154,6 +1680,247 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                                   </span>
                                 ) : null}
                               </span>
+                            </div>
+                          </div>
+                        )}
+                      />
+                    )}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeSkin === 'custom') {
+      const firstMessage = group.messages[0];
+      const displayName = firstMessage.authorName || group.sender.name;
+      const avatarUrl = firstMessage.avatarUrl || group.sender.avatar;
+      const isOutgoing = getMessageSide(firstMessage) === 'right';
+
+      return (
+        <div
+          className={`custom-message-group ${isOutgoing ? 'custom-message-group-outgoing' : 'custom-message-group-incoming'}`}
+          key={index}
+        >
+          {!isOutgoing ? (
+            <div className="custom-group-avatar">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="h-9 w-9 rounded-full object-cover"
+                  title={displayName}
+                />
+              ) : (
+                <div
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold text-white"
+                  style={{ backgroundColor: group.sender.color || '#7c86ff' }}
+                  title={displayName}
+                >
+                  {displayName.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          <div
+            className={`custom-group-stack ${isOutgoing ? 'custom-group-stack-outgoing' : ''}`}
+          >
+            {group.messages.map((message, messageIndex) => {
+              const messageTime = formatCustomMessageTimestamp(
+                message.timestamp
+              );
+              const shouldShowMeta = messageIndex === 0 || isOutgoing;
+
+              return (
+                <div
+                  key={message.id}
+                  className={`custom-bubble-shell ${isOutgoing ? 'custom-bubble-shell-outgoing' : 'custom-bubble-shell-incoming'}`}
+                >
+                  <MessageBubble
+                    message={message}
+                    className={`custom-message-bubble ${isOutgoing ? 'custom-message-bubble-outgoing' : 'custom-message-bubble-incoming'}`}
+                    isEditing={editingMessageId === message.id}
+                    editingValue={
+                      editingMessageId === message.id
+                        ? editingValue
+                        : message.content
+                    }
+                    editingTimestamp={
+                      editingMessageId === message.id
+                        ? editingTimestamp
+                        : toDateTimeLocalValue(message.timestamp)
+                    }
+                    editingAvatarUrl={
+                      editingMessageId === message.id
+                        ? editingAvatarUrl
+                        : message.avatarUrl
+                    }
+                    editingAuthorName={
+                      editingMessageId === message.id
+                        ? editingAuthorName
+                        : message.authorName
+                    }
+                    onEditingValueChange={setEditingValue}
+                    onEditingTimestampChange={setEditingTimestamp}
+                    onEditingAvatarChange={handleEditingAvatarChange}
+                    onEditingAvatarClear={handleEditingAvatarClear}
+                    onEdit={
+                      message.isSystemMessage
+                        ? undefined
+                        : () => handleStartEdit(message)
+                    }
+                    onDelete={
+                      message.isSystemMessage
+                        ? undefined
+                        : () => handleDeleteMessage(message.id)
+                    }
+                    onEditSave={handleSaveEdit}
+                    onEditCancel={handleCancelEdit}
+                    renderContent={(content) => {
+                      if (!content.trim()) {
+                        return null;
+                      }
+
+                      return (
+                        <div className="custom-message-content-wrap">
+                          {shouldShowMeta && (
+                            <div className="custom-message-meta">
+                              <span
+                                className="custom-message-author"
+                                style={{
+                                  color: group.sender.color || '#f2f3f5',
+                                }}
+                              >
+                                {displayName}
+                              </span>
+                              <span className="custom-message-time">
+                                {messageTime}
+                              </span>
+                            </div>
+                          )}
+                          <p className="custom-message-text break-words whitespace-pre-wrap">
+                            {content}
+                          </p>
+                        </div>
+                      );
+                    }}
+                    renderAttachments={(attachments) => (
+                      <AttachmentArea
+                        attachments={attachments}
+                        className="custom-attachment-area"
+                        renderImage={(attachment: Attachment) => (
+                          <div className="custom-attachment-wrap">
+                            {shouldShowMeta ? (
+                              <div className="custom-message-meta custom-message-meta-attachment">
+                                <span
+                                  className="custom-message-author"
+                                  style={{
+                                    color: group.sender.color || '#f2f3f5',
+                                  }}
+                                >
+                                  {displayName}
+                                </span>
+                                <span className="custom-message-time">
+                                  {messageTime}
+                                </span>
+                              </div>
+                            ) : null}
+                            <div className="custom-attachment-card custom-attachment-card-image">
+                              <img
+                                src={attachment.url}
+                                alt={attachment.name}
+                                className="custom-attachment-image"
+                                loading="lazy"
+                              />
+                            </div>
+                          </div>
+                        )}
+                        renderVideo={(attachment: Attachment) => (
+                          <div className="custom-attachment-wrap">
+                            {shouldShowMeta ? (
+                              <div className="custom-message-meta custom-message-meta-attachment">
+                                <span
+                                  className="custom-message-author"
+                                  style={{
+                                    color: group.sender.color || '#f2f3f5',
+                                  }}
+                                >
+                                  {displayName}
+                                </span>
+                                <span className="custom-message-time">
+                                  {messageTime}
+                                </span>
+                              </div>
+                            ) : null}
+                            <div className="custom-attachment-card custom-attachment-card-image">
+                              <video
+                                src={attachment.url}
+                                controls
+                                className="custom-attachment-image"
+                              />
+                            </div>
+                          </div>
+                        )}
+                        renderFile={(attachment: Attachment) => (
+                          <div className="custom-attachment-wrap">
+                            {shouldShowMeta ? (
+                              <div className="custom-message-meta custom-message-meta-attachment">
+                                <span
+                                  className="custom-message-author"
+                                  style={{
+                                    color: group.sender.color || '#f2f3f5',
+                                  }}
+                                >
+                                  {displayName}
+                                </span>
+                                <span className="custom-message-time">
+                                  {messageTime}
+                                </span>
+                              </div>
+                            ) : null}
+                            <a
+                              href={attachment.url}
+                              download={attachment.name}
+                              className="custom-attachment-card custom-attachment-file"
+                            >
+                              <span className="custom-attachment-file-name">
+                                {attachment.name}
+                              </span>
+                              <span className="custom-attachment-file-meta">
+                                {attachment.size
+                                  ? `${(attachment.size / 1024).toFixed(1)} KB`
+                                  : 'File'}
+                              </span>
+                            </a>
+                          </div>
+                        )}
+                        renderAudio={(attachment: Attachment) => (
+                          <div className="custom-attachment-wrap">
+                            {shouldShowMeta ? (
+                              <div className="custom-message-meta custom-message-meta-attachment">
+                                <span
+                                  className="custom-message-author"
+                                  style={{
+                                    color: group.sender.color || '#f2f3f5',
+                                  }}
+                                >
+                                  {displayName}
+                                </span>
+                                <span className="custom-message-time">
+                                  {messageTime}
+                                </span>
+                              </div>
+                            ) : null}
+                            <div className="custom-attachment-card custom-attachment-file">
+                              <audio
+                                src={attachment.url}
+                                controls
+                                className="w-full"
+                              />
                             </div>
                           </div>
                         )}
@@ -1202,7 +1969,9 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
 
           <div className="wa-group-stack">
             {group.messages.map((message, messageIndex) => {
-              const messageTime = new Date(message.timestamp).toLocaleTimeString('en-US', {
+              const messageTime = new Date(
+                message.timestamp
+              ).toLocaleTimeString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',
                 hour12: false,
@@ -1217,20 +1986,40 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                     message={message}
                     className={`wa-message-bubble ${isOutgoing ? 'wa-message-bubble-outgoing' : 'wa-message-bubble-incoming'}`}
                     isEditing={editingMessageId === message.id}
-                    editingValue={editingMessageId === message.id ? editingValue : message.content}
+                    editingValue={
+                      editingMessageId === message.id
+                        ? editingValue
+                        : message.content
+                    }
                     editingTimestamp={
                       editingMessageId === message.id
                         ? editingTimestamp
                         : toDateTimeLocalValue(message.timestamp)
                     }
-                    editingAvatarUrl={editingMessageId === message.id ? editingAvatarUrl : message.avatarUrl}
-                    editingAuthorName={editingMessageId === message.id ? editingAuthorName : message.authorName}
+                    editingAvatarUrl={
+                      editingMessageId === message.id
+                        ? editingAvatarUrl
+                        : message.avatarUrl
+                    }
+                    editingAuthorName={
+                      editingMessageId === message.id
+                        ? editingAuthorName
+                        : message.authorName
+                    }
                     onEditingValueChange={setEditingValue}
                     onEditingTimestampChange={setEditingTimestamp}
                     onEditingAvatarChange={handleEditingAvatarChange}
                     onEditingAvatarClear={handleEditingAvatarClear}
-                    onEdit={message.isSystemMessage ? undefined : () => handleStartEdit(message)}
-                    onDelete={message.isSystemMessage ? undefined : () => handleDeleteMessage(message.id)}
+                    onEdit={
+                      message.isSystemMessage
+                        ? undefined
+                        : () => handleStartEdit(message)
+                    }
+                    onDelete={
+                      message.isSystemMessage
+                        ? undefined
+                        : () => handleDeleteMessage(message.id)
+                    }
                     onEditSave={handleSaveEdit}
                     onEditCancel={handleCancelEdit}
                     renderContent={(content) => {
@@ -1248,13 +2037,19 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                               {displayName}
                             </p>
                           ) : null}
-                          <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
+                          <p className="text-sm break-words whitespace-pre-wrap">
+                            {content}
+                          </p>
                           <span className="wa-message-meta">
-                            <span className="wa-message-time">{messageTime}</span>
+                            <span className="wa-message-time">
+                              {messageTime}
+                            </span>
                             {isOutgoing && (
                               <span
                                 className={`wa-message-status ${
-                                  (message.metadata?.deliveryStatus as string | undefined) === 'read'
+                                  (message.metadata?.deliveryStatus as
+                                    | string
+                                    | undefined) === 'read'
                                     ? 'wa-message-status-read'
                                     : ''
                                 }`}
@@ -1272,10 +2067,14 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                         className="wa-attachment-area"
                         renderImage={(attachment: Attachment) => (
                           <div className="wa-attachment-block">
-                            {!isOutgoing && messageIndex === 0 && !message.content.trim() ? (
+                            {!isOutgoing &&
+                            messageIndex === 0 &&
+                            !message.content.trim() ? (
                               <p
                                 className="wa-inline-author wa-inline-author-attachment"
-                                style={{ color: group.sender.color || '#128c7e' }}
+                                style={{
+                                  color: group.sender.color || '#128c7e',
+                                }}
                               >
                                 {displayName}
                               </p>
@@ -1288,11 +2087,15 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                                 loading="lazy"
                               />
                               <span className="wa-attachment-meta">
-                                <span className="wa-message-time">{messageTime}</span>
+                                <span className="wa-message-time">
+                                  {messageTime}
+                                </span>
                                 {isOutgoing ? (
                                   <span
                                     className={`wa-message-status ${
-                                      (message.metadata?.deliveryStatus as string | undefined) === 'read'
+                                      (message.metadata?.deliveryStatus as
+                                        | string
+                                        | undefined) === 'read'
                                         ? 'wa-message-status-read'
                                         : ''
                                     }`}
@@ -1306,22 +2109,34 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                         )}
                         renderVideo={(attachment: Attachment) => (
                           <div className="wa-attachment-block">
-                            {!isOutgoing && messageIndex === 0 && !message.content.trim() ? (
+                            {!isOutgoing &&
+                            messageIndex === 0 &&
+                            !message.content.trim() ? (
                               <p
                                 className="wa-inline-author wa-inline-author-attachment"
-                                style={{ color: group.sender.color || '#128c7e' }}
+                                style={{
+                                  color: group.sender.color || '#128c7e',
+                                }}
                               >
                                 {displayName}
                               </p>
                             ) : null}
                             <div className="wa-attachment-card wa-attachment-card-image">
-                              <video src={attachment.url} controls className="wa-attachment-image" />
+                              <video
+                                src={attachment.url}
+                                controls
+                                className="wa-attachment-image"
+                              />
                               <span className="wa-attachment-meta">
-                                <span className="wa-message-time">{messageTime}</span>
+                                <span className="wa-message-time">
+                                  {messageTime}
+                                </span>
                                 {isOutgoing ? (
                                   <span
                                     className={`wa-message-status ${
-                                      (message.metadata?.deliveryStatus as string | undefined) === 'read'
+                                      (message.metadata?.deliveryStatus as
+                                        | string
+                                        | undefined) === 'read'
                                         ? 'wa-message-status-read'
                                         : ''
                                     }`}
@@ -1335,10 +2150,14 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                         )}
                         renderFile={(attachment: Attachment) => (
                           <div className="wa-attachment-block">
-                            {!isOutgoing && messageIndex === 0 && !message.content.trim() ? (
+                            {!isOutgoing &&
+                            messageIndex === 0 &&
+                            !message.content.trim() ? (
                               <p
                                 className="wa-inline-author wa-inline-author-attachment"
-                                style={{ color: group.sender.color || '#128c7e' }}
+                                style={{
+                                  color: group.sender.color || '#128c7e',
+                                }}
                               >
                                 {displayName}
                               </p>
@@ -1348,16 +2167,24 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                               download={attachment.name}
                               className="wa-attachment-card wa-attachment-file"
                             >
-                              <span className="wa-attachment-file-name">{attachment.name}</span>
+                              <span className="wa-attachment-file-name">
+                                {attachment.name}
+                              </span>
                               <span className="wa-attachment-file-meta">
-                                {attachment.size ? `${(attachment.size / 1024).toFixed(1)} KB` : 'File'}
+                                {attachment.size
+                                  ? `${(attachment.size / 1024).toFixed(1)} KB`
+                                  : 'File'}
                               </span>
                               <span className="wa-attachment-meta">
-                                <span className="wa-message-time">{messageTime}</span>
+                                <span className="wa-message-time">
+                                  {messageTime}
+                                </span>
                                 {isOutgoing ? (
                                   <span
                                     className={`wa-message-status ${
-                                      (message.metadata?.deliveryStatus as string | undefined) === 'read'
+                                      (message.metadata?.deliveryStatus as
+                                        | string
+                                        | undefined) === 'read'
                                         ? 'wa-message-status-read'
                                         : ''
                                     }`}
@@ -1371,22 +2198,34 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                         )}
                         renderAudio={(attachment: Attachment) => (
                           <div className="wa-attachment-block">
-                            {!isOutgoing && messageIndex === 0 && !message.content.trim() ? (
+                            {!isOutgoing &&
+                            messageIndex === 0 &&
+                            !message.content.trim() ? (
                               <p
                                 className="wa-inline-author wa-inline-author-attachment"
-                                style={{ color: group.sender.color || '#128c7e' }}
+                                style={{
+                                  color: group.sender.color || '#128c7e',
+                                }}
                               >
                                 {displayName}
                               </p>
                             ) : null}
                             <div className="wa-attachment-card wa-attachment-file">
-                              <audio src={attachment.url} controls className="w-full" />
+                              <audio
+                                src={attachment.url}
+                                controls
+                                className="w-full"
+                              />
                               <span className="wa-attachment-meta">
-                                <span className="wa-message-time">{messageTime}</span>
+                                <span className="wa-message-time">
+                                  {messageTime}
+                                </span>
                                 {isOutgoing ? (
                                   <span
                                     className={`wa-message-status ${
-                                      (message.metadata?.deliveryStatus as string | undefined) === 'read'
+                                      (message.metadata?.deliveryStatus as
+                                        | string
+                                        | undefined) === 'read'
                                         ? 'wa-message-status-read'
                                         : ''
                                     }`}
@@ -1428,9 +2267,12 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
       });
 
     return (
-      <div className={`ds-message-group flex gap-3 px-4 py-0.5 transition-colors ${isOutgoing ? 'ds-message-group-outgoing' : 'ds-message-group-incoming'}`} key={index}>
+      <div
+        className={`ds-message-group flex gap-3 px-4 py-0.5 transition-colors ${isOutgoing ? 'ds-message-group-outgoing' : 'ds-message-group-incoming'}`}
+        key={index}
+      >
         {!isOutgoing ? (
-          <div className="flex-shrink-0 w-10 pt-0.5">
+          <div className="w-10 flex-shrink-0 pt-0.5">
             <SenderInfo
               user={group.sender}
               renderAvatar={(user) =>
@@ -1455,7 +2297,9 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
           </div>
         ) : null}
 
-        <div className={`flex-1 min-w-0 ${isOutgoing ? 'ds-message-group-body-outgoing' : ''}`}>
+        <div
+          className={`min-w-0 flex-1 ${isOutgoing ? 'ds-message-group-body-outgoing' : ''}`}
+        >
           <div
             className={`mb-0.5 flex items-baseline gap-2 ${isOutgoing ? 'ds-message-meta-row-outgoing' : ''}`}
             data-export-discord-meta-row="true"
@@ -1468,11 +2312,17 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
               {displayName}
             </span>
             {!isOutgoing && group.sender.role && (
-              <span className="rounded bg-[#5865f2] px-1 py-px text-[0.625rem] font-medium leading-tight text-white" data-export-discord-role="true">
+              <span
+                className="rounded bg-[#5865f2] px-1 py-px text-[0.625rem] leading-tight font-medium text-white"
+                data-export-discord-role="true"
+              >
                 {group.sender.role}
               </span>
             )}
-            <span className="ds-sender-timestamp" data-export-discord-timestamp="true">
+            <span
+              className="ds-sender-timestamp"
+              data-export-discord-timestamp="true"
+            >
               {timeStr}
             </span>
           </div>
@@ -1484,23 +2334,43 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
               className={isOutgoing ? 'ds-message-bubble-outgoing' : ''}
               isStacked={messageIndex > 0}
               isEditing={editingMessageId === message.id}
-              editingValue={editingMessageId === message.id ? editingValue : message.content}
+              editingValue={
+                editingMessageId === message.id ? editingValue : message.content
+              }
               editingTimestamp={
                 editingMessageId === message.id
                   ? editingTimestamp
                   : toDateTimeLocalValue(message.timestamp)
               }
-              editingAvatarUrl={editingMessageId === message.id ? editingAvatarUrl : message.avatarUrl}
-              editingAuthorName={editingMessageId === message.id ? editingAuthorName : message.authorName}
+              editingAvatarUrl={
+                editingMessageId === message.id
+                  ? editingAvatarUrl
+                  : message.avatarUrl
+              }
+              editingAuthorName={
+                editingMessageId === message.id
+                  ? editingAuthorName
+                  : message.authorName
+              }
               onEditingValueChange={setEditingValue}
               onEditingTimestampChange={setEditingTimestamp}
               onEditingAvatarChange={handleEditingAvatarChange}
               onEditingAvatarClear={handleEditingAvatarClear}
-              onEdit={message.isSystemMessage ? undefined : () => handleStartEdit(message)}
-              onDelete={message.isSystemMessage ? undefined : () => handleDeleteMessage(message.id)}
+              onEdit={
+                message.isSystemMessage
+                  ? undefined
+                  : () => handleStartEdit(message)
+              }
+              onDelete={
+                message.isSystemMessage
+                  ? undefined
+                  : () => handleDeleteMessage(message.id)
+              }
               onEditSave={handleSaveEdit}
               onEditCancel={handleCancelEdit}
-              renderAttachments={(attachments) => <AttachmentArea attachments={attachments} />}
+              renderAttachments={(attachments) => (
+                <AttachmentArea attachments={attachments} />
+              )}
             />
           ))}
         </div>
@@ -1508,14 +2378,16 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
     );
   };
 
-  const renderSystemMessage = (group: MessageGroup) => (
+  const renderSystemMessage = (group: MessageGroup) =>
     (() => {
       const label =
         activeSkin === 'whatsapp'
           ? formatWhatsAppDateLabel(group.messages[0].timestamp)
           : activeSkin === 'telegram'
             ? formatTelegramDateLabel(group.messages[0].timestamp)
-            : group.messages[0].content;
+            : activeSkin === 'custom'
+              ? ''
+              : group.messages[0].content;
 
       if (!label) {
         return null;
@@ -1534,399 +2406,332 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
           <span>{label}</span>
         </div>
       );
-    })()
-  );
+    })();
 
-  const channelIntro = activeSkin === 'discord' ? (
-    <div
-      className="ds-channel-intro mx-3 mt-4 rounded-[18px] border border-white/8 bg-black/10 p-4 backdrop-blur-[2px] sm:mx-4 sm:mt-5 sm:rounded-2xl sm:p-5"
-      data-export-discord-intro="true"
-    >
-      <div className="ds-channel-intro-layout flex items-start gap-3 sm:gap-4">
-        <div className="ds-channel-intro-avatar flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#232428] text-white sm:h-14 sm:w-14">
-          {resolvedChannel.icon ? (
-            <img
-              src={resolvedChannel.icon}
-              alt={resolvedChannel.name}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <Hash className="h-6 w-6 text-[#dbdee1]" />
-          )}
-        </div>
-        <div className="ds-channel-intro-copy min-w-0">
-          <p className="ds-channel-intro-kicker text-[11px] font-semibold uppercase tracking-[0.14em] text-[#949ba4] sm:text-xs sm:tracking-[0.16em]">
-            Channel Overview
-          </p>
-          <h2 className="ds-channel-intro-title mt-1 text-[1.28rem] font-extrabold leading-[1.08] text-white sm:text-[1.625rem] sm:leading-tight">
-            Welcome to #{channelSlug}
-          </h2>
-          <p className="ds-channel-intro-description mt-2 text-[0.93rem] leading-[1.7] text-[#c4c9ce] sm:max-w-2xl sm:text-sm sm:leading-6">
-            {resolvedChannel.description || 'Customize this space to match your Discord screenshot style.'}
-          </p>
-        </div>
-      </div>
-    </div>
-  ) : null;
-
-  return (
-    <div
-      className={`tool-root-chat-simulator skin-theme-${activeSkin} flex h-full min-h-[480px] flex-col md:min-h-[600px]`}
-    >
-      <div className="ds-control-toolbar mb-4 flex flex-wrap items-center gap-2" data-export-hide="true">
-        <div ref={platformMenuRef} className="ds-platform-menu relative">
-          <button
-            type="button"
-            onClick={() => setIsPlatformMenuOpen((current) => !current)}
-            aria-haspopup="listbox"
-            aria-expanded={isPlatformMenuOpen}
-            className="ds-platform-trigger ds-control-button inline-flex items-center justify-between gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-white transition"
-          >
-            <span className="truncate">{PLATFORM_LABELS[activeSkin] || activeSkin}</span>
-            <ChevronDown className={`ds-platform-trigger-icon h-4 w-4 transition ${isPlatformMenuOpen ? 'rotate-180' : ''}`} />
-          </button>
-
-          {isPlatformMenuOpen ? (
-            <div
-              className="ds-platform-menu-content absolute left-0 top-full z-50 mt-2 min-w-[148px] overflow-hidden rounded-xl border backdrop-blur-sm"
-              role="listbox"
-              aria-label="Choose platform"
-            >
-              {supportedSkins.map((skin) => {
-                const isActive = activeSkin === skin;
-
-                return (
-                  <button
-                    key={skin}
-                    type="button"
-                    role="option"
-                    aria-selected={isActive}
-                    onClick={() => handlePlatformChange(skin)}
-                    className={`ds-platform-menu-item ${isActive ? 'is-active' : ''}`}
-                  >
-                    <span>{PLATFORM_LABELS[skin] || skin}</span>
-                    {isActive ? <Check className="ds-platform-menu-check h-4 w-4" /> : null}
-                  </button>
-                );
-              })}
-            </div>
-          ) : null}
-        </div>
-
-        <button
-          type="button"
-          onClick={() => void handleTogglePlayback()}
-          disabled={isExportingImage}
-          className="ds-control-button inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isPlaying ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          {isPlaying ? 'Stop' : 'Play chat'}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => void handleExportImage()}
-          disabled={isExportingImage}
-          className="ds-control-button inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isExportingImage ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="h-4 w-4" />
-          )}
-          Export PNG
-        </button>
-
-        <button
-          type="button"
-          onClick={handleCreateNewChat}
-          disabled={isExportingImage}
-          className="ds-control-button inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Plus className="h-4 w-4" />
-          New chat
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setIsSettingsVisible((current) => !current)}
-          disabled={isExportingImage}
-          className="ds-control-button inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <SlidersHorizontal className="h-4 w-4" />
-          {isSettingsVisible ? 'Hide settings' : 'Show settings'}
-        </button>
-      </div>
-
+  const activeIdentityPanel = (
+    <div>
       <div
-        ref={captureRef}
-        className="discord-chat-container flex min-h-0 flex-1 flex-col overflow-hidden"
-        style={previewViewportStyle}
+        className="ds-identity-panel rounded-[28px] border border-white/10 p-3 shadow-none"
+        style={settingsSurfaceStyle}
       >
-        <div className="ds-tool-header gap-3" data-export-header="true">
-          <div className="flex min-w-0 items-center gap-3">
-            {isWhatsApp ? <span className="wa-header-back">‹</span> : null}
-            {headerAvatarUrl && !isTelegram ? (
-              <img
-                src={headerAvatarUrl}
-                alt={resolvedChannel.name}
-                className="h-8 w-8 rounded-full object-cover"
-              />
-            ) : isWhatsApp ? (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#dfe5e7] text-sm font-semibold text-[#111b21]">
-                {resolvedChannel.name.charAt(0).toUpperCase()}
-              </div>
-            ) : isTelegram && resolvedChannel.icon ? (
-              <img
-                src={resolvedChannel.icon}
-                alt={resolvedChannel.name}
-                className="h-10 w-10 rounded-full object-cover"
-              />
-            ) : null}
-            <div className={`min-w-0 ${isTelegram ? 'tg-header-copy' : ''}`} data-export-header-copy="true">
-              <span className={`block truncate ${isTelegram ? 'tg-header-title' : ''}`} data-export-header-title="true">
-                {activeSkin === 'discord' ? (
-                  <>
-                    <span className="ds-tool-header-hash mr-1 text-xl font-medium text-[#949ba4]">#</span>
-                    {channelSlug}
-                  </>
-                ) : (
-                  resolvedChannel.name
-                )}
-              </span>
-              <span className={`block truncate text-xs font-normal ${isTelegram ? 'tg-header-subtitle' : 'text-[#949ba4]'}`} data-export-header-subtitle="true">
-                {isWhatsApp
-                  ? resolvedChannel.description || 'tap here for contact info'
-                  : isTelegram
-                    ? resolvedChannel.description || `${participantCount} members`
-                  : resolvedChannel.description || 'Set a channel topic from the group settings panel.'}
-              </span>
+        <div className="mb-3 grid gap-3">
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+              {uiText.people}
+            </span>
+            <select
+              value={
+                isCustom && !selectedIdentity
+                  ? ''
+                  : (selectedIdentity?.id ?? CURRENT_SPEAKER_ID)
+              }
+              onChange={(event) => {
+                if (event.target.value === '__add_person__') {
+                  handleAddIdentity();
+                  return;
+                }
+
+                setSelectedIdentityId(event.target.value);
+              }}
+              className="ds-identity-input w-full rounded-2xl border border-white/10 bg-transparent px-3 py-2.5 text-sm text-[#f2f3f5] transition outline-none focus:border-[#5865f2]"
+              style={settingsInsetStyle}
+            >
+              {isCustom && !selectedIdentity ? (
+                <option value="" disabled>
+                  {uiText.selectPerson}
+                </option>
+              ) : null}
+              <option value="__add_person__">{uiText.addPerson}</option>
+              {identityOptions.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div
+          className="mb-3 rounded-[24px] border border-white/8 p-3"
+          style={settingsInsetStyle}
+        >
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => currentAvatarInputRef.current?.click()}
+              disabled={!selectedIdentity}
+              className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/12 bg-black/10 text-[#b5bac1] transition hover:border-[#5865f2] hover:text-white"
+              aria-label={uiText.uploadAvatar}
+            >
+              {selectedIdentity?.avatar ? (
+                <img
+                  src={selectedIdentity.avatar}
+                  alt={selectedIdentity.name || uiText.defaultSpeakerName}
+                  className="h-full w-full rounded-full object-cover"
+                />
+              ) : (
+                <UserRound className="h-5 w-5" />
+              )}
+            </button>
+            <div className="min-w-0">
+              <p className="text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                {uiText.activeIdentity}
+              </p>
+              <p className="mt-1 text-sm leading-6 text-[#dbdee1]">
+                {selectedIdentity
+                  ? uiText.activeIdentityHint
+                  : uiText.activeIdentityEmpty}
+              </p>
             </div>
           </div>
 
-          {isWhatsApp ? (
-            <div className="wa-header-actions">
-              <button type="button" className="wa-header-icon-button" aria-label="Start video call">
-                <Video className="wa-header-action-icon" />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <input
+              ref={currentAvatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleCurrentAvatarSelect}
+            />
+            <button
+              type="button"
+              onClick={() => currentAvatarInputRef.current?.click()}
+              disabled={!selectedIdentity}
+              className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-[#f2f3f5] transition hover:border-[#5865f2] hover:bg-white/5"
+            >
+              <ImagePlus className="h-4 w-4" />
+              {uiText.uploadAvatar}
+            </button>
+            {selectedIdentity?.avatar ? (
+              <button
+                type="button"
+                onClick={handleClearCurrentAvatar}
+                className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-[#d1d5db] transition hover:border-[#ef4444] hover:bg-[#ef4444]/10 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+                {uiText.removeAvatar}
               </button>
-              <button type="button" className="wa-header-icon-button" aria-label="Start phone call">
-                <Phone className="wa-header-action-icon" />
+            ) : null}
+            {!selectedIdentity && isCustom ? (
+              <button
+                type="button"
+                onClick={handleAddIdentity}
+                className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#5865f2]/60 bg-[#5865f2]/12 px-4 py-2 text-sm font-medium text-white transition hover:border-[#5865f2] hover:bg-[#5865f2]/22"
+              >
+                <Plus className="h-4 w-4" />
+                {uiText.addFirstPerson}
               </button>
-              <button type="button" className="wa-header-icon-button" aria-label="More options">
-                <MoreVertical className="wa-header-action-icon" />
-              </button>
-            </div>
-          ) : isTelegram ? (
-            <div className="tg-header-actions">
-              <button type="button" className="tg-header-icon-button" aria-label="Search">
-                <Search className="tg-header-action-icon" />
-              </button>
-              <button type="button" className="tg-header-icon-button" aria-label="View options">
-                <Columns2 className="tg-header-action-icon" />
-              </button>
-              <button type="button" className="tg-header-icon-button" aria-label="More options">
-                <MoreVertical className="tg-header-action-icon" />
-              </button>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </div>
 
-        <ChatContainer
-          messageGroups={displayedMessageGroups}
-          className="flex-1"
-          intro={channelIntro}
-          messageListClassName="pb-6"
-          messageListStyle={chatBackgroundStyle}
-          renderGroup={renderGroup}
-          renderSystemMessage={renderSystemMessage}
-          footer={
-            <div className="ds-chat-footer-inner">
-              <input
-                ref={attachmentInputRef}
-                type="file"
-                multiple
-                className="hidden"
-                onChange={handleAttachmentInputChange}
-              />
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={handleAttachmentInputChange}
-              />
-
-              {isTelegram ? (
-                <TelegramInputBar
-                  placeholder="Message"
-                  onSend={handleSend}
-                  disabled={isPlaying || isExportingImage}
-                  onAttachFile={() => attachmentInputRef.current?.click()}
-                />
-              ) : (
-                <InputBar
-                  placeholder={
-                    isWhatsApp
-                      ? 'Type a message'
-                      : `Message #${channelSlug}`
-                  }
-                  onSend={handleSend}
-                  disabled={isPlaying || isExportingImage}
-                  shellClassName={isWhatsApp ? 'wa-input-shell' : ''}
-                  renderPrefix={
-                    isWhatsApp
-                      ? () => (
-                          <div className="wa-input-prefix-set">
-                            <button type="button" className="wa-input-icon-button" aria-label="Emoji">
-                              <Smile className="h-5 w-5" />
-                            </button>
-                          </div>
-                        )
-                      : undefined
-                  }
-                  renderSuffix={
-                    isWhatsApp
-                      ? () => (
-                          <div className="wa-input-suffix-set">
-                            <button
-                              type="button"
-                              className="wa-input-icon-button"
-                              aria-label="Attach file"
-                              onClick={() => attachmentInputRef.current?.click()}
-                            >
-                              <Paperclip className="h-5 w-5" />
-                            </button>
-                            <button
-                              type="button"
-                              className="wa-input-icon-button"
-                              aria-label="Open camera"
-                              onClick={() => cameraInputRef.current?.click()}
-                            >
-                              <Camera className="h-5 w-5" />
-                            </button>
-                          </div>
-                        )
-                      : undefined
-                  }
-                  renderAfterInput={
-                    isWhatsApp
-                      ? () => (
-                          <button type="button" className="wa-mic-button" aria-label="Record voice message">
-                            <Mic className="h-5 w-5" />
-                          </button>
-                        )
-                      : undefined
-                  }
-                />
-              )}
-            </div>
-          }
-        />
-      </div>
-
-      {!isExportingImage && isSettingsVisible ? (
-        <div className="ds-settings-panel mt-4 grid gap-3 xl:grid-cols-3" data-export-hide="true">
-          <section className="ds-settings-card rounded-2xl border border-white/10 bg-[#232428] p-4 shadow-sm">
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#949ba4]">
-                  {settingsCopy.channelTitle}
-                </p>
-                <p className="mt-1 text-sm text-[#c4c9ce]">
-                  {settingsCopy.channelDescription}
-                </p>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#1e1f22] text-[#dbdee1]">
-                {resolvedChannel.icon ? (
-                  <img
-                    src={resolvedChannel.icon}
-                    alt={resolvedChannel.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <Hash className="h-5 w-5" />
-                )}
-              </div>
-            </div>
-
-            <div className="grid gap-3">
+        {selectedIdentity ? (
+          <>
+            <div className="grid gap-3 md:grid-cols-2">
               <label className="block">
-                <span className="mb-1 block text-xs font-medium uppercase tracking-[0.12em] text-[#949ba4]">
-                  {settingsCopy.channelNameLabel}
+                <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                  {uiText.speakerName}
                 </span>
                 <input
                   type="text"
-                  value={resolvedChannel.name}
-                  onChange={(event) => handleChannelFieldChange('name', event.target.value)}
-                  className="ds-identity-input w-full rounded-lg border border-white/10 bg-[#111214] px-3 py-2.5 text-sm text-[#f2f3f5] outline-none transition placeholder:text-[#8e9297] focus:border-[#5865f2] focus:bg-[#17181a]"
-                  placeholder="general"
+                  value={selectedIdentity.name}
+                  onChange={(event) =>
+                    handleIdentityNameChange(event.target.value)
+                  }
+                  placeholder={uiText.defaultSpeakerName}
+                  className="ds-identity-input h-[46px] w-full rounded-2xl border border-white/10 bg-transparent px-3 py-2 text-sm text-[#f2f3f5] transition outline-none placeholder:text-[#8e9297] focus:border-[#5865f2]"
+                  style={{
+                    ...settingsInsetStyle,
+                    color: '#f2f3f5',
+                    WebkitTextFillColor: '#f2f3f5',
+                  }}
                 />
               </label>
 
               <label className="block">
-                <span className="mb-1 block text-xs font-medium uppercase tracking-[0.12em] text-[#949ba4]">
-                  {settingsCopy.channelDescriptionLabel}
+                <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                  {uiText.speakerColor}
                 </span>
-                <textarea
-                  value={resolvedChannel.description || ''}
-                  onChange={(event) => handleChannelFieldChange('description', event.target.value)}
-                  rows={3}
-                  className="ds-identity-input w-full resize-none rounded-lg border border-white/10 bg-[#111214] px-3 py-2.5 text-sm text-[#f2f3f5] outline-none transition placeholder:text-[#8e9297] focus:border-[#5865f2] focus:bg-[#17181a]"
-                  placeholder={settingsCopy.channelDescriptionPlaceholder}
-                />
-              </label>
-
-              <div>
-                <span className="mb-1 block text-xs font-medium uppercase tracking-[0.12em] text-[#949ba4]">
-                  {settingsCopy.channelAvatarLabel}
-                </span>
-                <div className="flex flex-wrap items-center gap-2">
+                <div
+                  className="flex h-[46px] items-center gap-3 rounded-2xl border border-white/10 bg-transparent px-3 py-2"
+                  style={settingsInsetStyle}
+                >
                   <input
-                    ref={channelIconInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleChannelAvatarSelect}
+                    type="color"
+                    value={normalizeSpeakerColor(selectedIdentity.color)}
+                    onChange={(event) =>
+                      handleIdentityColorChange(event.target.value)
+                    }
+                    className="h-9 w-12 cursor-pointer rounded border-0 bg-transparent p-0"
                   />
-                  <button
-                    type="button"
-                    onClick={() => channelIconInputRef.current?.click()}
-                    className="inline-flex items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-sm font-medium text-[#dbdee1] transition hover:border-[#5865f2] hover:bg-white/5"
-                  >
-                    <ImagePlus className="h-4 w-4" />
-                    {settingsCopy.channelAvatarButton}
-                  </button>
+                  <span className="min-w-0 truncate font-mono text-sm text-[#f2f3f5]">
+                    {normalizeSpeakerColor(selectedIdentity.color)}
+                  </span>
+                  <span
+                    className="ml-auto h-4 w-4 shrink-0 rounded-full border border-white/15"
+                    style={{
+                      backgroundColor: normalizeSpeakerColor(
+                        selectedIdentity.color
+                      ),
+                    }}
+                  />
+                </div>
+              </label>
+            </div>
+
+            <label className="mt-3 block">
+              <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                {uiText.messageSide}
+              </span>
+              <select
+                value={selectedIdentity.defaultSide ?? DEFAULT_MESSAGE_SIDE}
+                onChange={(event) =>
+                  handleIdentitySideChange(event.target.value as MessageSide)
+                }
+                className="ds-identity-input w-full rounded-2xl border border-white/10 bg-transparent px-3 py-2.5 text-sm text-[#f2f3f5] transition outline-none focus:border-[#5865f2]"
+                style={settingsInsetStyle}
+              >
+                <option value="right">{uiText.rightSide}</option>
+                <option value="left">{uiText.leftSide}</option>
+              </select>
+            </label>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+
+  const settingsPanel =
+    !isExportingImage && isSettingsVisible ? (
+      <aside
+        className="ds-settings-sidebar w-full xl:max-w-[396px] xl:min-w-[352px]"
+        data-export-hide="true"
+      >
+        <div className="ds-settings-panel grid gap-3 xl:max-h-[820px] xl:content-start xl:overflow-y-auto xl:pr-1">
+          {!isCustom ? (
+            <section
+              className="ds-settings-card rounded-[28px] border border-white/10 p-4 shadow-none"
+              style={settingsSurfaceStyle}
+            >
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold tracking-[0.14em] text-[#949ba4] uppercase">
+                    {settingsCopy.channelTitle}
+                  </p>
+                  <p className="mt-1 text-sm text-[#c4c9ce]">
+                    {settingsCopy.channelDescription}
+                  </p>
+                </div>
+                <div
+                  className="flex aspect-square h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-transparent text-[#dbdee1]"
+                  style={settingsInsetStyle}
+                >
                   {resolvedChannel.icon ? (
-                    <button
-                      type="button"
-                      onClick={handleClearChannelAvatar}
-                      className="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-[#b5bac1] transition hover:bg-white/5 hover:text-white"
-                    >
-                      <X className="h-4 w-4" />
-                      Remove
-                    </button>
-                  ) : null}
+                    <img
+                      src={resolvedChannel.icon}
+                      alt={resolvedChannel.name}
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <Hash className="h-5 w-5" />
+                  )}
                 </div>
               </div>
-            </div>
-          </section>
 
-          <section className="ds-settings-card rounded-2xl border border-white/10 bg-[#232428] p-4 shadow-sm">
+              <div className="grid gap-3">
+                <label className="block">
+                  <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                    {settingsCopy.channelNameLabel}
+                  </span>
+                  <input
+                    type="text"
+                    value={resolvedChannel.name}
+                    onChange={(event) =>
+                      handleChannelFieldChange('name', event.target.value)
+                    }
+                    className="ds-identity-input w-full rounded-2xl border border-white/10 bg-transparent px-3 py-2.5 text-sm text-[#f2f3f5] transition outline-none placeholder:text-[#8e9297] focus:border-[#5865f2]"
+                    placeholder="general"
+                    style={settingsInsetStyle}
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                    {settingsCopy.channelDescriptionLabel}
+                  </span>
+                  <textarea
+                    value={resolvedChannel.description || ''}
+                    onChange={(event) =>
+                      handleChannelFieldChange(
+                        'description',
+                        event.target.value
+                      )
+                    }
+                    rows={3}
+                    className="ds-identity-input w-full resize-none rounded-2xl border border-white/10 bg-transparent px-3 py-2.5 text-sm text-[#f2f3f5] transition outline-none placeholder:text-[#8e9297] focus:border-[#5865f2]"
+                    placeholder={settingsCopy.channelDescriptionPlaceholder}
+                    style={settingsInsetStyle}
+                  />
+                </label>
+
+                <div>
+                  <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                    {settingsCopy.channelAvatarLabel}
+                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      ref={channelIconInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleChannelAvatarSelect}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => channelIconInputRef.current?.click()}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-[#dbdee1] transition hover:border-[#5865f2] hover:bg-white/5"
+                    >
+                      <ImagePlus className="h-4 w-4" />
+                      {settingsCopy.channelAvatarButton}
+                    </button>
+                    {resolvedChannel.icon ? (
+                      <button
+                        type="button"
+                        onClick={handleClearChannelAvatar}
+                        className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-[#b5bac1] transition hover:bg-white/5 hover:text-white"
+                      >
+                        <X className="h-4 w-4" />
+                        {uiText.remove}
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </section>
+          ) : null}
+
+          {activeIdentityPanel}
+
+          <section
+            className="ds-settings-card rounded-[28px] border border-white/10 p-4 shadow-none"
+            style={settingsSurfaceStyle}
+          >
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#949ba4]">
-                  Environment settings
+                <p className="text-xs font-semibold tracking-[0.14em] text-[#949ba4] uppercase">
+                  {uiText.environmentSettings}
                 </p>
                 <p className="mt-1 text-sm text-[#c4c9ce]">
                   {settingsCopy.environmentDescription}
                 </p>
               </div>
               <div
-                className="h-12 w-12 rounded-2xl border border-white/10"
+                className="aspect-square h-12 w-12 shrink-0 rounded-full border border-white/10"
                 style={{
                   backgroundColor,
-                  backgroundImage: backgroundImageUrl ? `url(${backgroundImageUrl})` : undefined,
+                  backgroundImage: backgroundImageUrl
+                    ? `url(${backgroundImageUrl})`
+                    : undefined,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}
@@ -1935,10 +2740,13 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
 
             <div className="grid gap-3">
               <label className="block">
-                <span className="mb-1 block text-xs font-medium uppercase tracking-[0.12em] text-[#949ba4]">
-                  Background color
+                <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                  {uiText.backgroundColor}
                 </span>
-                <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-[#111214] px-3 py-2.5">
+                <div
+                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-transparent px-3 py-2.5"
+                  style={settingsInsetStyle}
+                >
                   <input
                     type="color"
                     value={backgroundColor}
@@ -1950,17 +2758,19 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                   </span>
                   <button
                     type="button"
-                    onClick={() => setBackgroundColor(getPlatformBackgroundColor(activeSkin))}
-                    className="ml-auto text-xs font-medium text-[#949ba4] transition hover:text-white"
+                    onClick={() =>
+                      setBackgroundColor(getPlatformBackgroundColor(activeSkin))
+                    }
+                    className="ml-auto rounded-full px-2 py-1 text-xs font-medium text-[#949ba4] transition hover:bg-white/5 hover:text-white"
                   >
-                    Reset
+                    {uiText.reset}
                   </button>
                 </div>
               </label>
 
               <div>
-                <span className="mb-1 block text-xs font-medium uppercase tracking-[0.12em] text-[#949ba4]">
-                  Background image
+                <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                  {uiText.backgroundImage}
                 </span>
                 <div className="flex flex-wrap items-center gap-2">
                   <input
@@ -1973,31 +2783,31 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                   <button
                     type="button"
                     onClick={() => backgroundImageInputRef.current?.click()}
-                    className="inline-flex items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-sm font-medium text-[#dbdee1] transition hover:border-[#5865f2] hover:bg-white/5"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-[#dbdee1] transition hover:border-[#5865f2] hover:bg-white/5"
                   >
                     <ImagePlus className="h-4 w-4" />
-                    Upload background
+                    {uiText.uploadBackground}
                   </button>
                   {backgroundImageUrl ? (
                     <button
                       type="button"
                       onClick={handleClearBackgroundImage}
-                      className="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-[#b5bac1] transition hover:bg-white/5 hover:text-white"
+                      className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-[#b5bac1] transition hover:bg-white/5 hover:text-white"
                     >
                       <X className="h-4 w-4" />
-                      Remove
+                      {uiText.remove}
                     </button>
                   ) : null}
                 </div>
               </div>
 
-              <div className="rounded-xl border border-white/8 bg-black/10 p-3">
-                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#949ba4]">
+              <div className="rounded-[28px] border border-white/8 bg-transparent p-3">
+                <div className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-[0.12em] text-[#949ba4] uppercase">
                   <Palette className="h-3.5 w-3.5" />
-                  Live preview
+                  {uiText.livePreview}
                 </div>
                 <div
-                  className="h-24 rounded-lg border border-white/10"
+                  className="h-24 rounded-[22px] border border-white/10"
                   style={{
                     backgroundColor,
                     backgroundImage: backgroundImageUrl
@@ -2005,7 +2815,7 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
                         ? `linear-gradient(rgba(244, 240, 229, 0.58), rgba(244, 240, 229, 0.76)), url(${backgroundImageUrl})`
                         : isTelegram
                           ? `linear-gradient(rgba(212, 232, 191, 0.54), rgba(182, 214, 152, 0.7)), url(${backgroundImageUrl})`
-                        : `linear-gradient(rgba(17, 18, 20, 0.45), rgba(17, 18, 20, 0.65)), url(${backgroundImageUrl})`
+                          : `linear-gradient(rgba(17, 18, 20, 0.45), rgba(17, 18, 20, 0.65)), url(${backgroundImageUrl})`
                       : undefined,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
@@ -2014,183 +2824,566 @@ export default function ChatSimulator({ manifest, themeName }: ChatSimulatorProp
               </div>
             </div>
           </section>
+        </div>
+      </aside>
+    ) : null;
 
-          <section className="ds-settings-card rounded-2xl border border-white/10 bg-[#232428] p-4 shadow-sm">
-            <div className="mb-4 flex items-start justify-between gap-3">
+  const exportDialog = (
+    <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+      <DialogContent className="border-white/10 bg-[#202225] p-0 text-white sm:max-w-[520px]">
+        <DialogHeader className="border-b border-white/10 px-6 pt-6 pb-4">
+          <DialogTitle className="text-xl font-semibold text-white">
+            {uiText.exportChatImage}
+          </DialogTitle>
+          <DialogDescription className="text-sm text-[#9ca3af]">
+            {uiText.exportDialogDescription}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-4 px-6 py-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                {uiText.fileFormat}
+              </span>
+              <select
+                value={exportFileFormat}
+                onChange={(event) =>
+                  setExportFileFormat(event.target.value as ExportFileFormat)
+                }
+                className="ds-identity-input w-full rounded-lg border border-white/10 bg-transparent px-3 py-2.5 text-sm text-[#f2f3f5] transition outline-none focus:border-[#5865f2]"
+                style={settingsInsetStyle}
+              >
+                <option value="png">PNG</option>
+                <option value="jpg">JPG</option>
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                {uiText.exportMode}
+              </span>
+              <select
+                value={exportLayoutPreset}
+                onChange={(event) =>
+                  setExportLayoutPreset(
+                    event.target.value as ExportLayoutPreset
+                  )
+                }
+                className="ds-identity-input w-full rounded-lg border border-white/10 bg-transparent px-3 py-2.5 text-sm text-[#f2f3f5] transition outline-none focus:border-[#5865f2]"
+                style={settingsInsetStyle}
+              >
+                {exportLayoutOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-[#949ba4]">
+                {exportLayout.description}
+              </p>
+            </label>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                {uiText.exportRatio}
+              </span>
+              <select
+                value={exportAspectRatioPreset}
+                onChange={(event) =>
+                  setExportAspectRatioPreset(
+                    event.target.value as ExportAspectRatioPreset
+                  )
+                }
+                className="ds-identity-input w-full rounded-lg border border-white/10 bg-transparent px-3 py-2.5 text-sm text-[#f2f3f5] transition outline-none focus:border-[#5865f2]"
+                style={settingsInsetStyle}
+              >
+                {exportAspectRatioOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
+                {uiText.exportQuality}
+              </span>
+              <select
+                value={exportQualityPreset}
+                onChange={(event) =>
+                  setExportQualityPreset(
+                    event.target.value as ExportQualityPreset
+                  )
+                }
+                className="ds-identity-input w-full rounded-lg border border-white/10 bg-transparent px-3 py-2.5 text-sm text-[#f2f3f5] transition outline-none focus:border-[#5865f2]"
+                style={settingsInsetStyle}
+              >
+                {exportQualityOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div
+            className="rounded-[24px] border border-white/8 bg-transparent p-4"
+            style={settingsSurfaceStyle}
+          >
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#949ba4]">
-                  Export settings
+                <p className="text-xs font-semibold tracking-[0.12em] text-[#949ba4] uppercase">
+                  {uiText.exportSummary}
                 </p>
-                <p className="mt-1 text-sm text-[#c4c9ce]">
-                  {settingsCopy.exportDescription}
+                <p className="mt-1 text-sm text-[#dbdee1]">
+                  {exportQuality.description}
                 </p>
               </div>
-              <div className="rounded-xl border border-white/10 bg-[#111214] px-3 py-2 text-right">
-                <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[#949ba4]">
-                  Current
+              <div className="text-right text-xs text-[#949ba4]">
+                <p>{exportFileFormat.toUpperCase()}</p>
+                <p>{exportLayout.label}</p>
+                <p>
+                  {exportLayout.renderWidth
+                    ? `${exportLayout.renderWidth}px ${uiText.phoneViewport}`
+                    : uiText.currentWebViewport}
                 </p>
-                <p className="text-sm font-medium text-[#f2f3f5]">
-                  {
-                    EXPORT_ASPECT_RATIO_OPTIONS.find(
-                      (option) => option.value === exportAspectRatioPreset
-                    )?.label
-                  }
-                </p>
-                <p className="text-xs text-[#949ba4]">{exportQuality.label}</p>
               </div>
-            </div>
-
-            <div className="grid gap-3">
-              <label className="block">
-                <span className="mb-1 block text-xs font-medium uppercase tracking-[0.12em] text-[#949ba4]">
-                  Export ratio
-                </span>
-                <select
-                  value={exportAspectRatioPreset}
-                  onChange={(event) =>
-                    setExportAspectRatioPreset(event.target.value as ExportAspectRatioPreset)
-                  }
-                  className="ds-identity-input w-full rounded-lg border border-white/10 bg-[#111214] px-3 py-2.5 text-sm text-[#f2f3f5] outline-none transition focus:border-[#5865f2] focus:bg-[#17181a]"
-                >
-                  {EXPORT_ASPECT_RATIO_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="block">
-                <span className="mb-1 block text-xs font-medium uppercase tracking-[0.12em] text-[#949ba4]">
-                  Export quality
-                </span>
-                <select
-                  value={exportQualityPreset}
-                  onChange={(event) =>
-                    setExportQualityPreset(event.target.value as ExportQualityPreset)
-                  }
-                  className="ds-identity-input w-full rounded-lg border border-white/10 bg-[#111214] px-3 py-2.5 text-sm text-[#f2f3f5] outline-none transition focus:border-[#5865f2] focus:bg-[#17181a]"
-                >
-                  {EXPORT_QUALITY_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="rounded-xl border border-white/8 bg-black/10 p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#949ba4]">
-                      Quality note
-                    </p>
-                    <p className="mt-1 text-sm text-[#dbdee1]">
-                      {exportQuality.description}
-                    </p>
-                  </div>
-                  <div className="text-right text-xs text-[#949ba4]">
-                    <p>{exportQuality.pixelRatio}x render scale</p>
-                    <p>Higher quality means a larger PNG file</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <div className="xl:col-span-3">
-            <div className="ds-identity-panel rounded-xl border border-white/10 bg-[#232428] p-3 shadow-sm">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => currentAvatarInputRef.current?.click()}
-                    className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#1e1f22] text-[#b5bac1] transition hover:border-[#5865f2] hover:text-white"
-                    aria-label="Upload avatar"
-                  >
-                    {currentAvatarUrl ? (
-                      <img
-                        src={currentAvatarUrl}
-                        alt={currentSpeakerName || DEFAULT_SPEAKER_NAME}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <UserRound className="h-5 w-5" />
-                    )}
-                  </button>
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#949ba4]">
-                      Active identity
-                    </p>
-                    <p className="text-sm text-[#dbdee1]">
-                      Messages you send next will use this name and avatar.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={currentAvatarInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleCurrentAvatarSelect}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => currentAvatarInputRef.current?.click()}
-                    className="inline-flex items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-sm font-medium text-[#dbdee1] transition hover:border-[#5865f2] hover:bg-white/5"
-                  >
-                    <ImagePlus className="h-4 w-4" />
-                    Upload avatar
-                  </button>
-                  {currentAvatarUrl ? (
-                    <button
-                      type="button"
-                      onClick={handleClearCurrentAvatar}
-                      className="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-[#b5bac1] transition hover:bg-white/5 hover:text-white"
-                    >
-                      <X className="h-4 w-4" />
-                      Remove
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-
-              <label className="block">
-                <span className="mb-1 block text-xs font-medium uppercase tracking-[0.12em] text-[#949ba4]">
-                  Speaker name
-                </span>
-                <input
-                  type="text"
-                  value={currentSpeakerName}
-                  onChange={(event) => setCurrentSpeakerName(event.target.value)}
-                  placeholder={DEFAULT_SPEAKER_NAME}
-                  className="ds-identity-input w-full rounded-lg border border-white/10 bg-[#111214] px-3 py-2.5 text-sm text-[#f2f3f5] outline-none transition placeholder:text-[#8e9297] focus:border-[#5865f2] focus:bg-[#17181a]"
-                  style={{
-                    backgroundColor: '#111214',
-                    color: '#f2f3f5',
-                    WebkitTextFillColor: '#f2f3f5',
-                  }}
-                />
-              </label>
-
-              <label className="mt-3 block">
-                <span className="mb-1 block text-xs font-medium uppercase tracking-[0.12em] text-[#949ba4]">
-                  Message side
-                </span>
-                <select
-                  value={currentMessageSide}
-                  onChange={(event) => setCurrentMessageSide(event.target.value as MessageSide)}
-                  className="ds-identity-input w-full rounded-lg border border-white/10 bg-[#111214] px-3 py-2.5 text-sm text-[#f2f3f5] outline-none transition focus:border-[#5865f2] focus:bg-[#17181a]"
-                >
-                  <option value="right">Right side</option>
-                  <option value="left">Left side</option>
-                </select>
-              </label>
             </div>
           </div>
         </div>
-      ) : null}
+
+        <DialogFooter className="border-t border-white/10 px-6 py-4 sm:justify-between">
+          <button
+            type="button"
+            onClick={() => setIsExportDialogOpen(false)}
+            className="inline-flex items-center justify-center rounded-xl border border-white/10 px-4 py-2 text-sm font-medium text-[#d1d5db] transition hover:bg-white/5"
+          >
+            {uiText.cancel}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleStartExport()}
+            disabled={isExportingImage}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#5865f2] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#4752c4] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isExportingImage ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            {uiText.export} {exportFileFormat.toUpperCase()}
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
+  return (
+    <div
+      className={`tool-root-chat-simulator skin-theme-${activeSkin} flex w-full flex-col`}
+    >
+      {exportDialog}
+      <div
+        className="ds-control-toolbar mb-3 flex flex-wrap items-center gap-2"
+        data-export-hide="true"
+      >
+        <div ref={platformMenuRef} className="ds-platform-menu relative">
+          <button
+            type="button"
+            onClick={() => setIsPlatformMenuOpen((current) => !current)}
+            aria-haspopup="listbox"
+            aria-expanded={isPlatformMenuOpen}
+            className="ds-platform-trigger ds-control-button inline-flex items-center justify-between gap-2 rounded-xl px-3 py-1.5 text-sm font-medium text-white transition"
+          >
+            <span className="truncate">
+              {isCustom
+                ? uiText.platformButton
+                : PLATFORM_LABELS[activeSkin] || activeSkin}
+            </span>
+            <ChevronDown
+              className={`ds-platform-trigger-icon h-4 w-4 transition ${isPlatformMenuOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {isPlatformMenuOpen ? (
+            <div
+              className="ds-platform-menu-content absolute top-full left-0 z-50 mt-2 min-w-[148px] overflow-hidden rounded-xl border backdrop-blur-sm"
+              role="listbox"
+              aria-label={uiText.choosePlatform}
+            >
+              {platformMenuSkins.map((skin) => {
+                const isActive = activeSkin === skin;
+
+                return (
+                  <button
+                    key={skin}
+                    type="button"
+                    role="option"
+                    aria-selected={isActive}
+                    onClick={() => handlePlatformChange(skin)}
+                    className={`ds-platform-menu-item ${isActive ? 'is-active' : ''}`}
+                  >
+                    <span>{PLATFORM_LABELS[skin] || skin}</span>
+                    {isActive ? (
+                      <Check className="ds-platform-menu-check h-4 w-4" />
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+
+        {supportedSkins.includes('custom') ? (
+          <button
+            type="button"
+            onClick={() => handlePlatformChange('custom')}
+            aria-pressed={isCustom}
+            className={`ds-control-button inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-medium text-white transition ${isCustom ? 'ring-2 ring-white/35' : ''}`}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            {uiText.custom}
+          </button>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={() => void handleTogglePlayback()}
+          disabled={isExportingImage}
+          className="ds-control-button inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isPlaying ? (
+            <Square className="h-4 w-4" />
+          ) : (
+            <Play className="h-4 w-4" />
+          )}
+          {isPlaying ? uiText.stop : uiText.playChat}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setIsExportDialogOpen(true)}
+          disabled={isExportingImage}
+          className="ds-control-button inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isExportingImage ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4" />
+          )}
+          {uiText.export}
+        </button>
+
+        <button
+          type="button"
+          onClick={handleCreateNewChat}
+          disabled={isExportingImage}
+          className="ds-control-button inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <Plus className="h-4 w-4" />
+          {uiText.newChat}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setIsSettingsVisible((current) => !current)}
+          disabled={isExportingImage}
+          className="ds-control-button inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          {isSettingsVisible ? uiText.hideSettings : uiText.showSettings}
+        </button>
+      </div>
+
+      <div className="flex min-h-0 flex-col gap-3 xl:flex-row xl:items-start">
+        <div className="flex min-h-0 flex-1 xl:min-w-0">
+          <div
+            ref={captureRef}
+            className="discord-chat-container flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-[28px] xl:h-full xl:min-w-0"
+            style={previewViewportStyle}
+          >
+            {!isCustom ? (
+              <div className="ds-tool-header gap-3" data-export-header="true">
+                <div className="flex min-w-0 items-center gap-3">
+                  {isWhatsApp ? (
+                    <span className="wa-header-back">‹</span>
+                  ) : null}
+                  {headerAvatarUrl && !isTelegram ? (
+                    <img
+                      src={headerAvatarUrl}
+                      alt={resolvedChannel.name}
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : isWhatsApp ? (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#dfe5e7] text-sm font-semibold text-[#111b21]">
+                      {resolvedChannel.name.charAt(0).toUpperCase()}
+                    </div>
+                  ) : isTelegram && resolvedChannel.icon ? (
+                    <img
+                      src={resolvedChannel.icon}
+                      alt={resolvedChannel.name}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  ) : null}
+                  <div
+                    className={`min-w-0 ${isTelegram ? 'tg-header-copy' : ''}`}
+                    data-export-header-copy="true"
+                  >
+                    {activeSkin === 'discord' ? (
+                      <div className="flex min-w-0 items-center gap-3 text-sm">
+                        <span
+                          className="shrink-0 text-[1.05rem] font-bold text-[#f2f3f5]"
+                          data-export-header-title="true"
+                        >
+                          <span className="ds-tool-header-hash mr-1 text-xl font-medium text-[#949ba4]">
+                            #
+                          </span>
+                          {channelSlug}
+                        </span>
+                        <span className="shrink-0 text-[1.7rem] leading-none font-black text-[#7b7d86]">
+                          &middot;
+                        </span>
+                        <span
+                          className="min-w-0 flex-1 truncate pt-px text-xs font-normal text-[#949ba4]"
+                          data-export-header-subtitle="true"
+                        >
+                          {resolvedChannel.description ||
+                            uiText.discordHeaderFallback}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <span
+                          className={`block truncate ${isTelegram ? 'tg-header-title' : ''}`}
+                          data-export-header-title="true"
+                        >
+                          {resolvedChannel.name}
+                        </span>
+                        <span
+                          className={`block truncate text-xs font-normal ${isTelegram ? 'tg-header-subtitle' : 'text-[#949ba4]'}`}
+                          data-export-header-subtitle="true"
+                        >
+                          {isWhatsApp
+                            ? resolvedChannel.description ||
+                              uiText.whatsappHeaderFallback
+                            : resolvedChannel.description ||
+                              `${participantCount}${uiText.telegramMembersSuffix}`}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {isWhatsApp ? (
+                  <div className="wa-header-actions">
+                    <button
+                      type="button"
+                      className="wa-header-icon-button"
+                      aria-label="Start video call"
+                    >
+                      <Video className="wa-header-action-icon" />
+                    </button>
+                    <button
+                      type="button"
+                      className="wa-header-icon-button"
+                      aria-label="Start phone call"
+                    >
+                      <Phone className="wa-header-action-icon" />
+                    </button>
+                    <button
+                      type="button"
+                      className="wa-header-icon-button"
+                      aria-label="More options"
+                    >
+                      <MoreVertical className="wa-header-action-icon" />
+                    </button>
+                  </div>
+                ) : isTelegram ? (
+                  <div className="tg-header-actions">
+                    <button
+                      type="button"
+                      className="tg-header-icon-button"
+                      aria-label="Search"
+                    >
+                      <Search className="tg-header-action-icon" />
+                    </button>
+                    <button
+                      type="button"
+                      className="tg-header-icon-button"
+                      aria-label="View options"
+                    >
+                      <Columns2 className="tg-header-action-icon" />
+                    </button>
+                    <button
+                      type="button"
+                      className="tg-header-icon-button"
+                      aria-label="More options"
+                    >
+                      <MoreVertical className="tg-header-action-icon" />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            <ChatContainer
+              messageGroups={displayedMessageGroups}
+              className="flex-1"
+              messageListClassName={isCustom ? 'pb-4 pt-4' : 'pb-6'}
+              messageListStyle={chatBackgroundStyle}
+              renderGroup={renderGroup}
+              renderSystemMessage={renderSystemMessage}
+              footer={
+                <div className="ds-chat-footer-inner">
+                  <input
+                    ref={attachmentInputRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={handleAttachmentInputChange}
+                  />
+                  <input
+                    ref={imageAttachmentInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleAttachmentInputChange}
+                  />
+                  <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleAttachmentInputChange}
+                  />
+
+                  {isTelegram ? (
+                    <TelegramInputBar
+                      placeholder={uiText.telegramPlaceholder}
+                      onSend={handleSend}
+                      disabled={isPlaying || isExportingImage}
+                      onAttachFile={() => attachmentInputRef.current?.click()}
+                    />
+                  ) : activeSkin === 'discord' ? (
+                    <DiscordInputBar
+                      placeholder={`${uiText.discordPlaceholderPrefix}${channelSlug}${uiText.discordPlaceholderSuffix}`}
+                      onSend={handleSend}
+                      disabled={isPlaying || isExportingImage}
+                      onUploadImages={() =>
+                        imageAttachmentInputRef.current?.click()
+                      }
+                      onUploadFiles={() => attachmentInputRef.current?.click()}
+                    />
+                  ) : isCustom ? (
+                    <InputBar
+                      placeholder={uiText.messagePlaceholder}
+                      onSend={handleSend}
+                      disabled={isPlaying || isExportingImage}
+                      renderSuffix={() => (
+                        <div className="custom-input-actions">
+                          <button
+                            type="button"
+                            className="custom-input-icon-button"
+                            aria-label="Attach file"
+                            onClick={() => attachmentInputRef.current?.click()}
+                          >
+                            <Paperclip className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            className="custom-input-icon-button"
+                            aria-label="Upload image"
+                            onClick={() =>
+                              imageAttachmentInputRef.current?.click()
+                            }
+                          >
+                            <ImagePlus className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
+                    />
+                  ) : (
+                    <InputBar
+                      placeholder={
+                        isWhatsApp
+                          ? uiText.messagePlaceholder
+                          : `${uiText.discordPlaceholderPrefix}${channelSlug}${uiText.discordPlaceholderSuffix}`
+                      }
+                      onSend={handleSend}
+                      disabled={isPlaying || isExportingImage}
+                      shellClassName={isWhatsApp ? 'wa-input-shell' : ''}
+                      renderPrefix={
+                        isWhatsApp
+                          ? () => (
+                              <div className="wa-input-prefix-set">
+                                <button
+                                  type="button"
+                                  className="wa-input-icon-button"
+                                  aria-label="Emoji"
+                                >
+                                  <Smile className="h-5 w-5" />
+                                </button>
+                              </div>
+                            )
+                          : undefined
+                      }
+                      renderSuffix={
+                        isWhatsApp
+                          ? () => (
+                              <div className="wa-input-suffix-set">
+                                <button
+                                  type="button"
+                                  className="wa-input-icon-button"
+                                  aria-label="Attach file"
+                                  onClick={() =>
+                                    attachmentInputRef.current?.click()
+                                  }
+                                >
+                                  <Paperclip className="h-5 w-5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="wa-input-icon-button"
+                                  aria-label="Open camera"
+                                  onClick={() =>
+                                    cameraInputRef.current?.click()
+                                  }
+                                >
+                                  <Camera className="h-5 w-5" />
+                                </button>
+                              </div>
+                            )
+                          : undefined
+                      }
+                      renderAfterInput={
+                        isWhatsApp
+                          ? () => (
+                              <button
+                                type="button"
+                                className="wa-mic-button"
+                                aria-label="Record voice message"
+                              >
+                                <Mic className="h-5 w-5" />
+                              </button>
+                            )
+                          : undefined
+                      }
+                    />
+                  )}
+                </div>
+              }
+            />
+          </div>
+        </div>
+
+        {settingsPanel}
+      </div>
     </div>
   );
 }

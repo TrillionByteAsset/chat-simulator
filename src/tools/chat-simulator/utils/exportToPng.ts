@@ -146,10 +146,13 @@ export interface RenderElementToCanvasOptions {
   pixelRatio?: number;
   aspectRatio?: number | null;
   matteColor?: string;
+  renderWidth?: number | null;
+  renderHeight?: number | null;
 }
 
 const assetDataUrlCache = new Map<string, Promise<string | null>>();
-let html2canvasModulePromise: Promise<typeof import('html2canvas')> | null = null;
+let html2canvasModulePromise: Promise<typeof import('html2canvas')> | null =
+  null;
 let discordRoleBadgeMeasureContext: CanvasRenderingContext2D | null = null;
 
 function normalizeColorValue(value: string): string {
@@ -197,7 +200,10 @@ function createDiscordRoleBadgeSvgElement(label: string) {
   const badgeHeight = 16;
   const badgeRadius = 4;
   const horizontalPadding = 6;
-  const badgeWidth = Math.max(36, measureDiscordRoleBadgeWidth(label) + horizontalPadding * 2);
+  const badgeWidth = Math.max(
+    36,
+    measureDiscordRoleBadgeWidth(label) + horizontalPadding * 2
+  );
   const namespace = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(namespace, 'svg');
 
@@ -365,7 +371,10 @@ async function normalizeStylePropertyValue(property: string, value: string) {
   const probe = document.createElement('div');
   document.body.appendChild(probe);
   probe.style.setProperty(property, value);
-  const normalizedValue = window.getComputedStyle(probe).getPropertyValue(property).trim();
+  const normalizedValue = window
+    .getComputedStyle(probe)
+    .getPropertyValue(property)
+    .trim();
   probe.remove();
   return normalizedValue;
 }
@@ -375,13 +384,20 @@ async function copyComputedStyles(source: Element, clone: Element) {
   const cloneStyle = (clone as HTMLElement | SVGElement).style;
 
   for (const property of SAFE_STYLE_PROPERTIES) {
-    const sanitizedValue = await sanitizeStyleValue(property, computedStyle.getPropertyValue(property));
+    const sanitizedValue = await sanitizeStyleValue(
+      property,
+      computedStyle.getPropertyValue(property)
+    );
 
     if (!sanitizedValue) {
       continue;
     }
 
-    cloneStyle.setProperty(property, sanitizedValue, computedStyle.getPropertyPriority(property));
+    cloneStyle.setProperty(
+      property,
+      sanitizedValue,
+      computedStyle.getPropertyPriority(property)
+    );
   }
 
   cloneStyle.setProperty('box-sizing', computedStyle.boxSizing);
@@ -397,7 +413,10 @@ async function copyComputedStyles(source: Element, clone: Element) {
     clone.setAttribute('value', source.value);
   }
 
-  if (source instanceof HTMLTextAreaElement && clone instanceof HTMLTextAreaElement) {
+  if (
+    source instanceof HTMLTextAreaElement &&
+    clone instanceof HTMLTextAreaElement
+  ) {
     clone.value = source.value;
     clone.textContent = source.value;
   }
@@ -412,13 +431,19 @@ async function copyComputedStyles(source: Element, clone: Element) {
     } else {
       clone.src = TRANSPARENT_PIXEL_DATA_URL;
       clone.removeAttribute('srcset');
-      cloneStyle.setProperty('background-color', computedStyle.backgroundColor || '#2b2d31');
+      cloneStyle.setProperty(
+        'background-color',
+        computedStyle.backgroundColor || '#2b2d31'
+      );
     }
   }
 }
 
 async function sanitizeInlineStyles(root: HTMLElement) {
-  const elements = [root, ...Array.from(root.querySelectorAll<HTMLElement | SVGElement>('*'))];
+  const elements = [
+    root,
+    ...Array.from(root.querySelectorAll<HTMLElement | SVGElement>('*')),
+  ];
 
   for (const element of elements) {
     const style = (element as HTMLElement | SVGElement).style;
@@ -440,14 +465,24 @@ async function sanitizeInlineStyles(root: HTMLElement) {
         continue;
       }
 
-      const normalizedValue = await normalizeStylePropertyValue(property, currentValue);
+      const normalizedValue = await normalizeStylePropertyValue(
+        property,
+        currentValue
+      );
 
-      if (!normalizedValue || UNSUPPORTED_COLOR_FUNCTION_RE.test(normalizedValue)) {
+      if (
+        !normalizedValue ||
+        UNSUPPORTED_COLOR_FUNCTION_RE.test(normalizedValue)
+      ) {
         style.removeProperty(property);
         continue;
       }
 
-      style.setProperty(property, normalizedValue, style.getPropertyPriority(property));
+      style.setProperty(
+        property,
+        normalizedValue,
+        style.getPropertyPriority(property)
+      );
     }
 
     if (element instanceof HTMLElement) {
@@ -457,79 +492,106 @@ async function sanitizeInlineStyles(root: HTMLElement) {
 }
 
 function applyExportLayoutFixups(root: HTMLElement) {
-  root.querySelectorAll<HTMLElement>('[data-export-header="true"]').forEach((header) => {
-    header.style.setProperty('height', 'auto');
-    header.style.setProperty('min-height', 'unset');
-    header.style.setProperty('padding-top', '8px');
-    header.style.setProperty('padding-bottom', '8px');
-    header.style.setProperty('overflow', 'visible');
-  });
+  root
+    .querySelectorAll<HTMLElement>('[data-export-header="true"]')
+    .forEach((header) => {
+      header.style.setProperty('height', 'auto');
+      header.style.setProperty('min-height', 'unset');
+      header.style.setProperty('padding-top', '8px');
+      header.style.setProperty('padding-bottom', '8px');
+      header.style.setProperty('overflow', 'visible');
+    });
 
-  root.querySelectorAll<HTMLElement>('[data-export-header-copy="true"]').forEach((copy) => {
-    copy.style.setProperty('min-width', '0');
-    copy.style.setProperty('overflow', 'visible');
-  });
+  root
+    .querySelectorAll<HTMLElement>('[data-export-header-copy="true"]')
+    .forEach((copy) => {
+      copy.style.setProperty('min-width', '0');
+      copy.style.setProperty('overflow', 'visible');
+    });
 
-  root.querySelectorAll<HTMLElement>('[data-export-header-title="true"], [data-export-header-subtitle="true"]').forEach((textNode) => {
-    textNode.style.setProperty('white-space', 'normal');
-    textNode.style.setProperty('overflow', 'visible');
-    textNode.style.setProperty('text-overflow', 'clip');
-  });
+  root
+    .querySelectorAll<HTMLElement>(
+      '[data-export-header-title="true"], [data-export-header-subtitle="true"]'
+    )
+    .forEach((textNode) => {
+      textNode.style.setProperty('white-space', 'normal');
+      textNode.style.setProperty('overflow', 'visible');
+      textNode.style.setProperty('text-overflow', 'clip');
+    });
 
-  root.querySelectorAll<HTMLElement>('[data-export-header-subtitle="true"]').forEach((subtitle) => {
-    subtitle.style.setProperty('margin-top', '2px');
-    subtitle.style.setProperty('line-height', '1.3');
-  });
+  root
+    .querySelectorAll<HTMLElement>('[data-export-header-subtitle="true"]')
+    .forEach((subtitle) => {
+      subtitle.style.setProperty('margin-top', '2px');
+      subtitle.style.setProperty('line-height', '1.3');
+    });
 
-  root.querySelectorAll<HTMLElement>('[data-export-discord-intro="true"]').forEach((intro) => {
-    intro.style.setProperty('margin-top', '10px');
-  });
+  root
+    .querySelectorAll<HTMLElement>('[data-export-discord-intro="true"]')
+    .forEach((intro) => {
+      intro.style.setProperty('margin-top', '10px');
+    });
 
-  root.querySelectorAll<HTMLElement>('[data-export-discord-meta-row="true"]').forEach((row) => {
-    row.style.setProperty('display', 'flex');
-    row.style.setProperty('align-items', 'center');
-    row.style.setProperty('column-gap', '8px');
-    row.style.setProperty('row-gap', '0');
-    row.style.setProperty('flex-wrap', 'nowrap');
-    row.style.setProperty('min-height', '18px');
-  });
+  root
+    .querySelectorAll<HTMLElement>('[data-export-discord-meta-row="true"]')
+    .forEach((row) => {
+      row.style.setProperty('display', 'flex');
+      row.style.setProperty('align-items', 'center');
+      row.style.setProperty('column-gap', '8px');
+      row.style.setProperty('row-gap', '0');
+      row.style.setProperty('flex-wrap', 'nowrap');
+      row.style.setProperty('min-height', '18px');
+    });
 
-  root.querySelectorAll<HTMLElement>('[data-export-discord-name="true"]').forEach((name) => {
-    name.style.setProperty('display', 'inline-block');
-  });
+  root
+    .querySelectorAll<HTMLElement>('[data-export-discord-name="true"]')
+    .forEach((name) => {
+      name.style.setProperty('display', 'inline-block');
+    });
 
-  root.querySelectorAll<HTMLElement>('[data-export-discord-timestamp="true"]').forEach((timestamp) => {
-    timestamp.style.setProperty('display', 'inline-block');
-  });
+  root
+    .querySelectorAll<HTMLElement>('[data-export-discord-timestamp="true"]')
+    .forEach((timestamp) => {
+      timestamp.style.setProperty('display', 'inline-block');
+    });
 
-  root.querySelectorAll<HTMLElement>('[data-export-discord-role="true"]').forEach((role) => {
-    const label = role.textContent?.trim();
+  root
+    .querySelectorAll<HTMLElement>('[data-export-discord-role="true"]')
+    .forEach((role) => {
+      const label = role.textContent?.trim();
 
-    if (!label) {
-      return;
-    }
+      if (!label) {
+        return;
+      }
 
-    const { svg, badgeWidth, badgeHeight } = createDiscordRoleBadgeSvgElement(label);
-    const badgeWrapper = document.createElement('span');
-    badgeWrapper.style.setProperty('display', 'inline-block');
-    badgeWrapper.style.setProperty('width', `${badgeWidth}px`);
-    badgeWrapper.style.setProperty('height', `${badgeHeight}px`);
-    badgeWrapper.style.setProperty('min-width', `${badgeWidth}px`);
-    badgeWrapper.style.setProperty('min-height', `${badgeHeight}px`);
-    badgeWrapper.style.setProperty('align-self', 'center');
-    badgeWrapper.style.setProperty('flex', '0 0 auto');
-    badgeWrapper.style.setProperty('vertical-align', 'middle');
-    badgeWrapper.style.setProperty('transform', 'translateY(6px)');
-    badgeWrapper.appendChild(svg);
+      const { svg, badgeWidth, badgeHeight } =
+        createDiscordRoleBadgeSvgElement(label);
+      const badgeWrapper = document.createElement('span');
+      badgeWrapper.style.setProperty('display', 'inline-block');
+      badgeWrapper.style.setProperty('width', `${badgeWidth}px`);
+      badgeWrapper.style.setProperty('height', `${badgeHeight}px`);
+      badgeWrapper.style.setProperty('min-width', `${badgeWidth}px`);
+      badgeWrapper.style.setProperty('min-height', `${badgeHeight}px`);
+      badgeWrapper.style.setProperty('align-self', 'center');
+      badgeWrapper.style.setProperty('flex', '0 0 auto');
+      badgeWrapper.style.setProperty('vertical-align', 'middle');
+      badgeWrapper.style.setProperty('transform', 'translateY(6px)');
+      badgeWrapper.appendChild(svg);
 
-    role.replaceWith(badgeWrapper);
-  });
+      role.replaceWith(badgeWrapper);
+    });
 }
 
 async function buildStyledClone(sourceRoot: HTMLElement): Promise<HTMLElement> {
   const cloneRoot = sourceRoot.cloneNode(true) as HTMLElement;
-  const sourceElements = [sourceRoot, ...Array.from(sourceRoot.querySelectorAll('*'))];
-  const cloneElements = [cloneRoot, ...Array.from(cloneRoot.querySelectorAll('*'))];
+  const sourceElements = [
+    sourceRoot,
+    ...Array.from(sourceRoot.querySelectorAll('*')),
+  ];
+  const cloneElements = [
+    cloneRoot,
+    ...Array.from(cloneRoot.querySelectorAll('*')),
+  ];
 
   for (const [index, sourceElement] of sourceElements.entries()) {
     const cloneElement = cloneElements[index];
@@ -541,14 +603,67 @@ async function buildStyledClone(sourceRoot: HTMLElement): Promise<HTMLElement> {
     await copyComputedStyles(sourceElement, cloneElement);
   }
 
-  cloneRoot.querySelectorAll<HTMLElement>('[data-export-hide="true"]').forEach((element) => {
-    element.remove();
-  });
+  cloneRoot
+    .querySelectorAll<HTMLElement>('[data-export-hide="true"]')
+    .forEach((element) => {
+      element.remove();
+    });
 
   await sanitizeInlineStyles(cloneRoot);
   applyExportLayoutFixups(cloneRoot);
 
   return cloneRoot;
+}
+
+async function createLayoutSource(
+  sourceRoot: HTMLElement,
+  width: number,
+  height: number
+) {
+  const wrapper = document.createElement('div');
+  const themeRoot = sourceRoot.closest<HTMLElement>(
+    '.tool-root-chat-simulator'
+  );
+  const themeShell = document.createElement('div');
+  wrapper.style.setProperty('position', 'fixed');
+  wrapper.style.setProperty('left', '-100000px');
+  wrapper.style.setProperty('top', '0');
+  wrapper.style.setProperty('width', `${width}px`);
+  wrapper.style.setProperty('height', `${height}px`);
+  wrapper.style.setProperty('overflow', 'hidden');
+  wrapper.style.setProperty('opacity', '0');
+  wrapper.style.setProperty('pointer-events', 'none');
+  wrapper.style.setProperty('z-index', '-1');
+  wrapper.style.setProperty('contain', 'layout paint style');
+  themeShell.className = themeRoot?.className || '';
+  themeShell.style.setProperty('width', `${width}px`);
+  themeShell.style.setProperty('height', `${height}px`);
+  themeShell.style.setProperty('overflow', 'hidden');
+
+  const layoutSource = sourceRoot.cloneNode(true) as HTMLElement;
+  layoutSource.style.setProperty('width', `${width}px`);
+  layoutSource.style.setProperty('min-width', `${width}px`);
+  layoutSource.style.setProperty('max-width', `${width}px`);
+  layoutSource.style.setProperty('height', `${height}px`);
+  layoutSource.style.setProperty('min-height', `${height}px`);
+  layoutSource.style.setProperty('max-height', `${height}px`);
+  layoutSource.style.setProperty('flex', 'none');
+
+  themeShell.appendChild(layoutSource);
+  wrapper.appendChild(themeShell);
+  document.body.appendChild(wrapper);
+  await waitForImagesReady(layoutSource);
+  await new Promise((resolve) =>
+    window.requestAnimationFrame(() => resolve(null))
+  );
+  await new Promise((resolve) =>
+    window.requestAnimationFrame(() => resolve(null))
+  );
+
+  return {
+    layoutSource,
+    cleanup: () => wrapper.remove(),
+  };
 }
 
 async function getHtml2Canvas() {
@@ -628,7 +743,124 @@ function applyAspectRatioToCanvas(
 
   const offsetX = Math.round((targetWidth - sourceCanvas.width) / 2);
   const offsetY = Math.round((targetHeight - sourceCanvas.height) / 2);
-  context.drawImage(sourceCanvas, offsetX, offsetY, sourceCanvas.width, sourceCanvas.height);
+  context.drawImage(
+    sourceCanvas,
+    offsetX,
+    offsetY,
+    sourceCanvas.width,
+    sourceCanvas.height
+  );
+
+  return targetCanvas;
+}
+
+function isTransparentBackground(value: string) {
+  return (
+    !value ||
+    value === 'transparent' ||
+    value === 'rgba(0, 0, 0, 0)' ||
+    value === 'rgba(0,0,0,0)'
+  );
+}
+
+function getExportBackdropColor(node: HTMLElement) {
+  let current: HTMLElement | null = node.parentElement;
+
+  while (current) {
+    const backgroundColor = window.getComputedStyle(current).backgroundColor;
+
+    if (!isTransparentBackground(backgroundColor)) {
+      return backgroundColor;
+    }
+
+    current = current.parentElement;
+  }
+
+  return '#ffffff';
+}
+
+function getNodeCornerRadius(node: HTMLElement) {
+  const computed = window.getComputedStyle(node);
+  const radiusValues = [
+    computed.borderTopLeftRadius,
+    computed.borderTopRightRadius,
+    computed.borderBottomRightRadius,
+    computed.borderBottomLeftRadius,
+  ]
+    .map((value) => Number.parseFloat(value))
+    .filter((value) => Number.isFinite(value));
+
+  return radiusValues.length > 0 ? Math.max(...radiusValues) : 0;
+}
+
+function addRoundedRectPath(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  const clampedRadius = Math.max(0, Math.min(radius, width / 2, height / 2));
+
+  context.beginPath();
+  context.moveTo(x + clampedRadius, y);
+  context.lineTo(x + width - clampedRadius, y);
+  context.quadraticCurveTo(x + width, y, x + width, y + clampedRadius);
+  context.lineTo(x + width, y + height - clampedRadius);
+  context.quadraticCurveTo(
+    x + width,
+    y + height,
+    x + width - clampedRadius,
+    y + height
+  );
+  context.lineTo(x + clampedRadius, y + height);
+  context.quadraticCurveTo(x, y + height, x, y + height - clampedRadius);
+  context.lineTo(x, y + clampedRadius);
+  context.quadraticCurveTo(x, y, x + clampedRadius, y);
+  context.closePath();
+}
+
+function applyOpaqueExportSurface(
+  sourceCanvas: HTMLCanvasElement,
+  node: HTMLElement,
+  matteColor: string
+) {
+  const targetCanvas = document.createElement('canvas');
+  targetCanvas.width = sourceCanvas.width;
+  targetCanvas.height = sourceCanvas.height;
+  const context = targetCanvas.getContext('2d');
+
+  if (!context) {
+    throw new Error('Failed to initialize opaque export canvas.');
+  }
+
+  const backdropColor = getExportBackdropColor(node);
+  const cornerRadius = getNodeCornerRadius(node);
+
+  context.fillStyle = backdropColor;
+  context.fillRect(0, 0, targetCanvas.width, targetCanvas.height);
+
+  if (cornerRadius > 0) {
+    context.save();
+    addRoundedRectPath(
+      context,
+      0,
+      0,
+      targetCanvas.width,
+      targetCanvas.height,
+      cornerRadius
+    );
+    context.clip();
+  }
+
+  context.fillStyle = matteColor;
+  context.fillRect(0, 0, targetCanvas.width, targetCanvas.height);
+  context.drawImage(sourceCanvas, 0, 0);
+
+  if (cornerRadius > 0) {
+    context.restore();
+  }
 
   return targetCanvas;
 }
@@ -640,10 +872,23 @@ export async function renderElementToCanvas(
   await document.fonts.ready;
 
   const rect = node.getBoundingClientRect();
-  const width = Math.max(1, Math.round(rect.width));
-  const height = Math.max(1, Math.round(rect.height));
-  const pixelRatio = options.pixelRatio ?? Math.max(2, window.devicePixelRatio || 1);
-  const clone = await buildStyledClone(node);
+  const width = Math.max(1, Math.round(options.renderWidth ?? rect.width));
+  const height = Math.max(1, Math.round(options.renderHeight ?? rect.height));
+  const pixelRatio =
+    options.pixelRatio ?? Math.max(2, window.devicePixelRatio || 1);
+  const useAltLayout =
+    width !== Math.round(rect.width) || height !== Math.round(rect.height);
+  const { layoutSource, cleanup } = useAltLayout
+    ? await createLayoutSource(node, width, height)
+    : { layoutSource: node, cleanup: () => {} };
+  const clone = await buildStyledClone(layoutSource);
+  clone.style.setProperty('width', `${width}px`);
+  clone.style.setProperty('min-width', `${width}px`);
+  clone.style.setProperty('max-width', `${width}px`);
+  clone.style.setProperty('height', `${height}px`);
+  clone.style.setProperty('min-height', `${height}px`);
+  clone.style.setProperty('max-height', `${height}px`);
+  clone.style.setProperty('flex', 'none');
   const iframe = createSandboxIframe(width, height);
   const iframeDocument = iframe.contentDocument;
 
@@ -668,8 +913,13 @@ export async function renderElementToCanvas(
       windowHeight: height,
     });
 
-    return applyAspectRatioToCanvas(canvas, options.aspectRatio, options.matteColor || '#111214');
+    return applyAspectRatioToCanvas(
+      canvas,
+      options.aspectRatio,
+      options.matteColor || '#111214'
+    );
   } finally {
+    cleanup();
     iframe.remove();
   }
 }
@@ -678,16 +928,32 @@ export async function exportElementToPngBlob(
   node: HTMLElement,
   options: RenderElementToCanvasOptions = {}
 ) {
+  return exportElementToImageBlob(node, 'image/png', options);
+}
+
+export async function exportElementToImageBlob(
+  node: HTMLElement,
+  mimeType: 'image/png' | 'image/jpeg',
+  options: RenderElementToCanvasOptions = {}
+) {
   const canvas = await renderElementToCanvas(node, options);
+  const outputCanvas =
+    mimeType === 'image/jpeg'
+      ? applyOpaqueExportSurface(canvas, node, options.matteColor || '#111214')
+      : canvas;
 
   return await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        reject(new Error('Failed to create PNG blob.'));
-        return;
-      }
+    outputCanvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error('Failed to create exported image.'));
+          return;
+        }
 
-      resolve(blob);
-    }, 'image/png');
+        resolve(blob);
+      },
+      mimeType,
+      mimeType === 'image/jpeg' ? 0.92 : undefined
+    );
   });
 }

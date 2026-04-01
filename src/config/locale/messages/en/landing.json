@@ -2,12 +2,12 @@
   "header": {
     "id": "header",
     "brand": {
-        "title": "Chat Simulator",
-        "logo": {
-          "src": "/logo.png",
-          "alt": "Chat Simulator",
-          "width": 100,
-          "height": 100
+      "title": "Chat Simulator",
+      "logo": {
+        "src": "/logo.png",
+        "alt": "Chat Simulator",
+        "width": 100,
+        "height": 100
       },
       "url": "/"
     },
@@ -219,11 +219,11 @@
       "items": [
         {
           "title": "Privacy Policy",
-          "url": "/privacy-policy"
+          "url": "/privacy"
         },
         {
           "title": "Terms of Service",
-          "url": "/terms-of-service"
+          "url": "/terms"
         }
       ]
     },

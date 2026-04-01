@@ -9,7 +9,8 @@
   --ds-text-secondary: #949ba4;
   --ds-text-muted: #72767d;
   --ds-text-link: #00a8fc;
-  --ds-font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --ds-font-family:
+    'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --ds-font-size: 16px;
   --ds-line-height: 1.375rem;
   --ds-border-radius: 4px;
@@ -58,7 +59,7 @@
 }
 
 .tool-root-chat-simulator.skin-theme-discord .ds-platform-trigger {
-  min-width: 132px;
+  min-width: 0;
   justify-content: space-between;
   padding-right: 12px;
 }
@@ -161,18 +162,24 @@
   -webkit-text-fill-color: #f2f3f5 !important;
 }
 
-.tool-root-chat-simulator.skin-theme-discord .ds-message-editor .ds-editor-time-label {
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-message-editor
+  .ds-editor-time-label {
   color: #949ba4 !important;
 }
 
-.tool-root-chat-simulator.skin-theme-discord .ds-message-editor .ds-editor-time-input {
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-message-editor
+  .ds-editor-time-input {
   background-color: #1e1f22 !important;
   border-color: #3f4147 !important;
   color: #f2f3f5 !important;
   -webkit-text-fill-color: #f2f3f5 !important;
 }
 
-.tool-root-chat-simulator.skin-theme-discord .ds-message-editor textarea::placeholder {
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-message-editor
+  textarea::placeholder {
   color: #949ba4 !important;
   -webkit-text-fill-color: #949ba4;
 }
@@ -188,7 +195,9 @@
 }
 
 .tool-root-chat-simulator.skin-theme-discord .ds-channel-intro {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 12px 24px rgba(0, 0, 0, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 12px 24px rgba(0, 0, 0, 0.16);
 }
 
 .tool-root-chat-simulator.skin-theme-discord .ds-channel-intro-copy {
@@ -196,7 +205,9 @@
 }
 
 .tool-root-chat-simulator.skin-theme-discord .ds-settings-card {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 12px 24px rgba(0, 0, 0, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 12px 24px rgba(0, 0, 0, 0.16);
 }
 
 /* ============================================
@@ -228,7 +239,10 @@
   border-color: var(--ds-header-border);
   color: var(--ds-text-primary);
   height: 48px;
-  box-shadow: 0 1px 0 rgba(4, 4, 5, 0.2), 0 1.5px 0 rgba(6, 6, 7, 0.05), 0 2px 0 rgba(4, 4, 5, 0.05);
+  box-shadow:
+    0 1px 0 rgba(4, 4, 5, 0.2),
+    0 1.5px 0 rgba(6, 6, 7, 0.05),
+    0 2px 0 rgba(4, 4, 5, 0.05);
   font-weight: 600;
   font-size: 1rem;
   display: flex;
@@ -261,18 +275,23 @@
   background-position:
     calc(100% - 16px) calc(50% - 2px),
     calc(100% - 11px) calc(50% - 2px);
-  background-size: 5px 5px, 5px 5px;
+  background-size:
+    5px 5px,
+    5px 5px;
   background-repeat: no-repeat;
 }
 
-.tool-root-chat-simulator.skin-theme-discord .ds-control-button.ds-platform-select {
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-control-button.ds-platform-select {
   background-image:
     linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.92) 50%),
     linear-gradient(135deg, rgba(255, 255, 255, 0.92) 50%, transparent 50%);
   background-position:
     calc(100% - 16px) calc(50% - 2px),
     calc(100% - 11px) calc(50% - 2px);
-  background-size: 5px 5px, 5px 5px;
+  background-size:
+    5px 5px,
+    5px 5px;
   background-repeat: no-repeat;
 }
 
@@ -288,7 +307,8 @@
    Message Group (一组同用户连续消息)
    ============================================ */
 .skin-theme-discord .ds-message-group {
-  padding: var(--ds-message-padding-y) 48px var(--ds-message-padding-y) var(--ds-message-padding-left);
+  padding: var(--ds-message-padding-y) 48px var(--ds-message-padding-y)
+    var(--ds-message-padding-left);
   position: relative;
   margin-top: var(--ds-group-gap);
 }
@@ -308,7 +328,9 @@
   padding-right: 24px;
 }
 
-.tool-root-chat-simulator.skin-theme-discord .ds-message-group-outgoing > .flex-shrink-0 {
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-message-group-outgoing
+  > .flex-shrink-0 {
   display: none;
 }
 
@@ -322,7 +344,9 @@
   justify-content: flex-end;
 }
 
-.tool-root-chat-simulator.skin-theme-discord .ds-message-bubble-outgoing .ds-message-content {
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-message-bubble-outgoing
+  .ds-message-content {
   display: inline-block;
   max-width: min(72vw, 540px);
   border-radius: 12px;
@@ -358,7 +382,10 @@
   display: none;
 }
 
-.skin-theme-discord .ds-message-group > .flex-1 > .ds-message-bubble:first-child::before {
+.skin-theme-discord
+  .ds-message-group
+  > .flex-1
+  > .ds-message-bubble:first-child::before {
   display: inline;
 }
 
@@ -421,30 +448,206 @@
    ============================================ */
 .tool-root-chat-simulator.skin-theme-discord .ds-chat-footer {
   padding: 0 16px 24px;
-  background:
-    linear-gradient(180deg, rgba(49, 51, 56, 0) 0%, rgba(49, 51, 56, 0.82) 22%, rgba(49, 51, 56, 1) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(49, 51, 56, 0) 0%,
+    rgba(49, 51, 56, 0.82) 22%,
+    rgba(49, 51, 56, 1) 100%
+  );
 }
 
 .tool-root-chat-simulator.skin-theme-discord .ds-chat-footer-inner {
   background: transparent;
 }
 
-.skin-theme-discord .ds-input-bar {
-  background-color: var(--ds-input-bg);
-  border-radius: 8px;
-  padding: 0 16px;
-  min-height: 44px;
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose {
+  width: 100%;
 }
 
-.skin-theme-discord .ds-input-textarea {
-  color: var(--ds-text-primary);
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-shell {
+  display: flex;
+  min-height: 44px;
+  align-items: flex-end;
+  gap: 8px;
+  border-radius: 8px;
+  background: #383a40;
+  padding: 0 12px;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-trigger {
+  display: inline-flex;
+  height: 44px;
+  width: 24px;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  border: 0;
+  background: transparent;
+  color: #b5bac1;
+  transition: color 0.16s ease;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-trigger:hover,
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-discord-compose-trigger:focus-visible {
+  color: #dbdee1;
+  outline: none;
+}
+
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-discord-compose-trigger:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-trigger-icon {
+  height: 22px;
+  width: 22px;
+  stroke-width: 2.2;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-input {
+  min-height: 24px;
+  max-height: 144px;
+  flex: 1;
+  resize: none;
+  border: 0;
+  background: transparent;
+  padding: 11px 0 9px;
+  color: #dbdee1;
   font-family: var(--ds-font-family);
   font-size: 1rem;
-  padding: 11px 0;
+  line-height: 1.375rem;
+  outline: none;
 }
 
-.skin-theme-discord .ds-input-textarea::placeholder {
-  color: var(--ds-text-muted);
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-discord-compose-input::placeholder {
+  color: #949ba4;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-actions {
+  display: inline-flex;
+  height: 44px;
+  align-items: center;
+  gap: 1px;
+  margin-right: -2px;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-action-button {
+  display: inline-flex;
+  height: 30px;
+  width: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #b5bac1;
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-discord-compose-action-button-emphasized {
+  background: #383a40;
+}
+
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-discord-compose-action-button:hover,
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-discord-compose-action-button:focus-visible {
+  background: rgba(78, 80, 88, 0.48);
+  color: #dbdee1;
+  outline: none;
+}
+
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-discord-compose-action-button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-action-icon {
+  height: 18px;
+  width: 18px;
+  stroke-width: 1.9;
+}
+
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-discord-compose-action-button-line {
+  color: #bfc4cc;
+}
+
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-discord-compose-action-button-line:hover,
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-discord-compose-action-button-line:focus-visible {
+  color: #f2f3f5;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-glyph {
+  display: block;
+  height: 20px;
+  width: 20px;
+  flex: 0 0 20px;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-gif-icon {
+  height: 20px;
+  width: 20px;
+  stroke: none;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-gif-badge {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid currentColor;
+  border-radius: 4px;
+  padding: 0;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-sticker-icon {
+  height: 20px;
+  width: 20px;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-menu {
+  width: 220px;
+  border: 1px solid #1f2124;
+  background: #111214;
+  padding: 6px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.32);
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-menu-item {
+  min-height: 36px;
+  border-radius: 6px;
+  color: #f2f3f5;
+  font-weight: 500;
+}
+
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-discord-compose-menu-item[data-highlighted] {
+  background: #5865f2;
+  color: #ffffff;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-menu-label {
+  font-size: 0.875rem;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-menu-shortcut {
+  color: #b5bac1;
+  letter-spacing: 0.02em;
 }
 
 /* ============================================
@@ -471,7 +674,7 @@
 
 @media (max-width: 640px) {
   .tool-root-chat-simulator.skin-theme-discord .ds-platform-trigger {
-    min-width: 122px;
+    min-width: 0;
     min-height: 40px;
     font-size: 0.8125rem;
     padding-left: 12px;

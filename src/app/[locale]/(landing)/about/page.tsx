@@ -1,17 +1,16 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getDefaultToolManifest } from '@/tools/shared/default-tool-manifest';
 import { ToolSitePage } from '@/tools/shared/tool-site-page';
 import { getToolSitePageMetadata } from '@/tools/shared/tool-site-page-metadata';
-
-import { getToolManifest } from '@/core/tooling-engine/DynamicLoader';
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ locale: string; toolName: string }>;
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale, toolName } = await params;
-  const manifest = await getToolManifest(toolName);
+  const { locale } = await params;
+  const manifest = await getDefaultToolManifest();
 
   if (!manifest) {
     return { title: 'Page Not Found' };
@@ -21,17 +20,17 @@ export async function generateMetadata({
     kind: 'about',
     locale,
     manifest,
-    canonicalPath: `/tools/${toolName}/about`,
+    canonicalPath: '/about',
   });
 }
 
-export default async function ToolAboutPage({
+export default async function AboutPage({
   params,
 }: {
-  params: Promise<{ locale: string; toolName: string }>;
+  params: Promise<{ locale: string }>;
 }) {
-  const { locale, toolName } = await params;
-  const manifest = await getToolManifest(toolName);
+  const { locale } = await params;
+  const manifest = await getDefaultToolManifest();
 
   if (!manifest) {
     notFound();

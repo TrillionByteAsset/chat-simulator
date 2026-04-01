@@ -1,0 +1,235 @@
+/* src/tools/chat-simulator/skins/custom.css */
+/* Neutral custom chat canvas */
+
+.skin-theme-custom {
+  --custom-bg: #17181c;
+  --custom-panel: #20222a;
+  --custom-border: rgba(255, 255, 255, 0.08);
+  --custom-text: #f2f3f5;
+  --custom-muted: #9aa0aa;
+  --custom-bubble-incoming: #23262f;
+  --custom-bubble-outgoing: #5865f2;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .discord-chat-container {
+  background: linear-gradient(180deg, #16181d 0%, #1b1e25 100%);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 16px 36px rgba(10, 11, 15, 0.28);
+}
+
+.tool-root-chat-simulator.skin-theme-custom .ds-chat-container {
+  background: transparent;
+  color: var(--custom-text);
+}
+
+.tool-root-chat-simulator.skin-theme-custom .ds-chat-messages {
+  padding: 18px 16px 10px;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-message-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-message-group-outgoing {
+  justify-content: flex-end;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-group-avatar {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-group-stack {
+  display: flex;
+  max-width: min(82%, 680px);
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-group-stack-outgoing {
+  align-items: flex-end;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-bubble-shell {
+  display: flex;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-bubble-shell-outgoing {
+  justify-content: flex-end;
+}
+
+.tool-root-chat-simulator.skin-theme-custom
+  .custom-message-bubble
+  .ds-message-content,
+.tool-root-chat-simulator.skin-theme-custom .custom-attachment-card {
+  border-radius: 18px;
+  border: 1px solid var(--custom-border);
+  box-shadow: 0 10px 20px rgba(8, 9, 14, 0.16);
+}
+
+.tool-root-chat-simulator.skin-theme-custom
+  .custom-message-bubble-incoming
+  .ds-message-content,
+.tool-root-chat-simulator.skin-theme-custom
+  .custom-message-bubble-incoming
+  .custom-attachment-card {
+  background: var(--custom-bubble-incoming);
+}
+
+.tool-root-chat-simulator.skin-theme-custom
+  .custom-message-bubble-outgoing
+  .ds-message-content,
+.tool-root-chat-simulator.skin-theme-custom
+  .custom-message-bubble-outgoing
+  .custom-attachment-card {
+  background: linear-gradient(180deg, #6672f7 0%, #5865f2 100%);
+  border-color: rgba(121, 132, 255, 0.38);
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-message-content-wrap {
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-message-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-message-meta-attachment {
+  padding: 0 2px;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-message-author {
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-message-time {
+  font-size: 0.7rem;
+  color: rgba(242, 243, 245, 0.72);
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-message-text {
+  margin: 0;
+  color: #f8f9fb;
+  line-height: 1.5;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-attachment-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-attachment-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-attachment-card {
+  overflow: hidden;
+  color: #f8f9fb;
+  text-decoration: none;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-attachment-card-image {
+  max-width: min(360px, 72vw);
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-attachment-image {
+  display: block;
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-attachment-file {
+  min-width: 240px;
+  padding: 14px 16px;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-attachment-file-name {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-attachment-file-meta {
+  display: block;
+  margin-top: 4px;
+  color: rgba(242, 243, 245, 0.7);
+  font-size: 0.78rem;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .ds-chat-footer {
+  padding: 0 14px 14px;
+  background: transparent;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .ds-input-bar {
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .ds-input-shell {
+  min-height: 46px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  background: rgba(17, 19, 24, 0.96) !important;
+  box-shadow: none !important;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .ds-input-textarea {
+  color: #f2f3f5 !important;
+  -webkit-text-fill-color: #f2f3f5 !important;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .ds-input-textarea::placeholder {
+  color: #8f96a3 !important;
+  -webkit-text-fill-color: #8f96a3;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-input-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-input-icon-button {
+  display: inline-flex;
+  height: 28px;
+  width: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #aab0bb;
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-input-icon-button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .ds-identity-panel button:disabled,
+.tool-root-chat-simulator.skin-theme-custom .ds-identity-panel input:disabled,
+.tool-root-chat-simulator.skin-theme-custom .ds-identity-panel select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

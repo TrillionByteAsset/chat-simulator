@@ -1,6 +1,6 @@
 import type { ToolManifest } from '@/core/tooling-engine/types';
 
-export type ToolSitePageKind = 'privacy' | 'about';
+export type ToolSitePageKind = 'privacy' | 'about' | 'faq' | 'terms';
 
 interface ToolSitePageContentArgs {
   kind: ToolSitePageKind;
@@ -157,6 +157,228 @@ If you voluntarily email [${CONTACT_EMAIL}](mailto:${CONTACT_EMAIL}), we only us
 ### Updates
 
 If the website features, processing method, or contact details change, this page will be updated accordingly. By continuing to use the website, you acknowledge the current practices described here.`,
+    };
+  }
+
+  if (kind === 'faq') {
+    if (isZh) {
+      return {
+        eyebrow: '常见问题',
+        title: `${displayName} 常见问题`,
+        description: `${displayName} 的常见问题页面，集中说明这个工具站的使用方式、数据处理原则、广告说明和联系方式。`,
+        seoTitle: `${displayName} 常见问题`,
+        seoDescription: `${displayName} FAQ，介绍功能使用、是否本地处理、是否需要注册、广告与支持方式等常见问题。`,
+        content: `### 1. ${displayName} 是做什么的？
+
+**${displayName}** 是一个面向真实使用场景的在线工具站，核心目标是让用户打开页面后就能快速完成操作，而不是先经历复杂配置。
+
+### 2. 我在工具里输入的内容会被保存吗？
+
+正常使用工具时，页面内容默认优先在本地浏览器或本地设备中处理。站点不会以保存你的聊天内容、截图内容或创作素材为产品目标。
+
+### 3. 使用这个网站需要注册账号吗？
+
+当前公开工具页通常不以登录为前提。只要页面功能可直接访问，你就可以直接使用；若未来某些能力需要登录、同步或服务端处理，会在对应功能中单独说明。
+
+### 4. 导出的内容是在本地完成的吗？
+
+像预览、编辑、截图导出这类核心体验，当前设计目标是尽量在本地完成，减少不必要的上传和服务端依赖。
+
+### 5. 网站会不会展示广告？
+
+网站可能接入 **Google AdSense** 或其他合规广告服务，用来支持持续运营和基础成本。广告服务启用后，第三方可能会使用 Cookie 或类似技术来展示和衡量广告效果。
+
+### 6. 网站会不会使用 Cookie？
+
+会。站点可能使用 Cookie、本地存储或类似技术来维持必要功能、记录偏好、做基础分析，或支持广告展示。详细说明请查看隐私政策页面。
+
+### 7. 这个网站是公司团队在运营吗？
+
+不是。**${displayName}** 当前由个人开发者独立设计、维护和迭代，因此页面会尽量保持轻量、直接和清晰。
+
+### 8. 我可以把生成的内容用于商业用途吗？
+
+你需要自行确认使用场景是否合法、合规，并确保你上传或生成的素材不侵犯他人权利。网站本身只提供工具能力，不对用户的具体使用行为承担额外保证责任。
+
+### 9. 如果页面功能调整了怎么办？
+
+如果未来接入新的第三方服务、广告组件、统计能力或服务端功能，相关页面说明会同步更新，包括隐私政策、服务条款或 FAQ。
+
+### 10. 如何联系站点维护者？
+
+可以直接发送邮件到 [${CONTACT_EMAIL}](mailto:${CONTACT_EMAIL})。如果是功能反馈、商务合作或合规问题，也建议通过邮箱联系。`,
+      };
+    }
+
+    return {
+      eyebrow: 'FAQ',
+      title: `${displayName} FAQ`,
+      description: `Frequently asked questions about ${displayName}, including how the tool works, how content is handled, whether ads may be shown, and how to get in touch.`,
+      seoTitle: `${displayName} FAQ`,
+      seoDescription: `${displayName} FAQ covering local-first handling, account requirements, exports, advertising, cookies, and support contact.`,
+      content: `### 1. What is ${displayName} for?
+
+**${displayName}** is a practical web tool built for real usage scenarios. The goal is to make the tool immediately usable without forcing users through a heavy setup flow first.
+
+### 2. Is the content I enter stored by the website?
+
+Under normal use, content entered into the tool is intended to be handled locally in your browser or on your device whenever possible. The product is not designed around building archives of your working content.
+
+### 3. Do I need an account to use it?
+
+Public tool pages are generally intended to be usable without requiring sign-in first. If a future feature depends on account access, synchronization, or server-side processing, that will be disclosed within that feature flow.
+
+### 4. Are exports handled locally?
+
+Core interactions such as previewing, editing, and exporting are designed to stay as local as possible in order to reduce unnecessary uploads and server dependence.
+
+### 5. Will the website show ads?
+
+The site may use **Google AdSense** or other compliant advertising services to support ongoing operation and infrastructure costs. When advertising is enabled, third parties may use cookies or similar technologies to serve and measure ads.
+
+### 6. Does the site use cookies?
+
+Yes. The site may use cookies, local storage, or similar technologies for essential functionality, preference handling, basic analytics, and advertising support. See the privacy policy for details.
+
+### 7. Is this operated by a company?
+
+No. **${displayName}** is currently designed, maintained, and iterated by an independent developer, which is why the site is intentionally kept lightweight and direct.
+
+### 8. Can I use generated results commercially?
+
+You are responsible for making sure your use case is lawful and that any uploaded or generated material does not infringe the rights of others. The website provides tooling, but does not guarantee a specific legal outcome for user content.
+
+### 9. What happens if features change later?
+
+If the website later introduces new third-party services, analytics, advertising components, or server-side features, the related policy pages and FAQ content will be updated accordingly.
+
+### 10. How can I contact the site owner?
+
+You can email [${CONTACT_EMAIL}](mailto:${CONTACT_EMAIL}) for support, feedback, business inquiries, or compliance-related questions.`,
+    };
+  }
+
+  if (kind === 'terms') {
+    if (isZh) {
+      return {
+        eyebrow: '服务条款',
+        title: `${displayName} 服务条款`,
+        description: `${displayName} 的服务条款页面，说明网站的使用规则、责任边界、知识产权、广告说明与联系方式。`,
+        seoTitle: `${displayName} 服务条款`,
+        seoDescription: `${displayName} 的服务条款，涵盖允许使用、禁止行为、用户责任、免责声明和联系方式。`,
+        content: `### 1. 接受条款
+
+访问或使用 **${displayName}**，即表示你同意按照本页面所列规则使用本网站。如果你不同意这些条款，请停止继续访问或使用相关服务。
+
+### 2. 网站性质
+
+**${displayName}** 是一个由个人开发者独立维护的工具网站，提供在线页面工具、功能说明以及与此相关的公开内容。网站可能根据产品迭代随时调整页面结构、功能形式或服务方式。
+
+### 3. 允许的使用方式
+
+- 你可以在合法、合规的前提下使用网站公开提供的工具功能
+- 你可以将网站用于个人项目、内容创作、演示或其他正常场景
+- 你应确保自己上传、输入、编辑或导出的内容不侵犯任何第三方权利
+
+### 4. 禁止行为
+
+- 利用网站从事违法、侵权、骚扰、欺诈、恶意传播或其他不当行为
+- 尝试攻击、绕过、破坏、滥用网站服务、接口、风控或资源限制
+- 上传或传播包含恶意代码、病毒、自动化滥用脚本或其他破坏性内容
+- 冒充本网站、开发者或与网站存在不存在的合作、认证或官方关系
+
+### 5. 用户内容与责任
+
+- 你对自己输入、上传、生成、导出或传播的内容承担责任
+- 网站不对你使用工具后形成的具体结果、用途、合法性或商业适用性作额外保证
+- 如果你使用网站生成的内容对外发布、商业使用或用于第三方平台，你应自行判断风险并承担后果
+
+### 6. 知识产权
+
+- 网站本身的页面结构、界面设计、文案组织和服务实现，除另有说明外，归网站维护者或相关权利人所有
+- 你仍保留你自己提交内容在法律上应归属于你的权利
+- 你不得复制、转售、镜像、反向利用网站核心内容或服务作为未经授权的竞争性产品
+
+### 7. 广告与第三方服务
+
+- 网站可能接入 Google AdSense、统计、托管、客户服务或其他第三方服务
+- 这些服务可能根据其自身规则处理必要的技术信息、Cookie 或访问数据
+- 相关隐私说明请同时查看隐私政策页面
+
+### 8. 免责声明
+
+- 网站按“现状”提供，不承诺绝对无中断、无错误或永久可用
+- 对于因网络、第三方平台、浏览器兼容性、政策变化、不可抗力或用户自身操作造成的问题，网站不承担超出法律要求之外的责任
+- 站点维护者有权在必要时修改、限制、暂停或终止部分功能
+
+### 9. 条款更新
+
+本页面内容可能根据产品迭代、合规要求或业务变化而更新。更新后的条款会在网站上直接发布，继续使用网站即视为你接受更新后的条款。
+
+### 10. 联系方式
+
+如果你对本条款有疑问，可以通过 [${CONTACT_EMAIL}](mailto:${CONTACT_EMAIL}) 联系网站维护者。`,
+      };
+    }
+
+    return {
+      eyebrow: 'Terms',
+      title: `${displayName} Terms of Service`,
+      description: `${displayName} terms of service covering acceptable use, user responsibility, intellectual property, third-party services, disclaimers, and contact details.`,
+      seoTitle: `${displayName} Terms of Service`,
+      seoDescription: `${displayName} terms of service, including permitted use, prohibited behavior, user responsibility, disclaimers, and contact information.`,
+      content: `### 1. Acceptance of terms
+
+By accessing or using **${displayName}**, you agree to use the website in accordance with the terms described on this page. If you do not agree, you should stop using the website.
+
+### 2. Nature of the website
+
+**${displayName}** is an independently maintained website that provides online tools, public product information, and related supporting content. The structure, feature set, and service model of the site may change over time as the product evolves.
+
+### 3. Permitted use
+
+- You may use the publicly available features of the website for lawful purposes
+- You may use the site for personal projects, creative work, demonstrations, and other ordinary use cases
+- You must ensure that any content you upload, enter, edit, export, or distribute does not infringe the rights of others
+
+### 4. Prohibited behavior
+
+- Using the site for unlawful, infringing, harassing, fraudulent, abusive, or harmful activity
+- Attempting to attack, bypass, overload, scrape abusively, disrupt, or misuse the website, its services, or technical protections
+- Uploading or distributing malicious code, automated abuse scripts, or destructive content
+- Misrepresenting the website, its operator, or any relationship of endorsement, partnership, or official status that does not exist
+
+### 5. User content and responsibility
+
+- You remain responsible for the content you enter, upload, generate, export, or distribute using the tool
+- The website does not guarantee the legality, suitability, or business fitness of how you use generated results
+- If you publish or commercialize output created with the tool, you are responsible for assessing the risks and compliance implications yourself
+
+### 6. Intellectual property
+
+- Unless otherwise stated, the website's interface, content structure, implementation, and branded presentation belong to the site operator or the relevant rights holders
+- You retain whatever rights legally belong to you in the content you provide
+- You may not copy, resell, mirror, or repurpose the website as an unauthorized competing service
+
+### 7. Advertising and third-party services
+
+- The website may use Google AdSense, analytics providers, hosting services, customer support tools, or other third-party services
+- Those services may process technical information, cookies, and usage data according to their own operating rules
+- Please also review the privacy policy for related disclosures
+
+### 8. Disclaimer
+
+- The website is provided on an "as is" basis without a promise of uninterrupted availability or error-free operation
+- The site operator is not responsible beyond what applicable law requires for issues caused by networks, browsers, third-party platforms, policy changes, force majeure, or user actions
+- Features may be modified, limited, suspended, or discontinued when necessary
+
+### 9. Updates to these terms
+
+These terms may be updated as the product, compliance requirements, or service model changes. Continued use of the website after updates are published means you accept the revised terms.
+
+### 10. Contact
+
+If you have questions about these terms, please email [${CONTACT_EMAIL}](mailto:${CONTACT_EMAIL}).`,
     };
   }
 
