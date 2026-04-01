@@ -80,6 +80,78 @@ src/
 4. 替换 `public/logo.png` 和 `public/favicon.ico`
 5. 运行 `pnpm dev`
 
+如果你当前是“不接数据库的工具站版本”，建议直接使用环境变量，不依赖后台配置中心：
+
+- 不配置 `DATABASE_URL`
+- 不通过 `/admin/settings/*` 保存配置
+- 把站点、广告和主题配置全部写进 `.env.local`
+
+一个适合无数据库部署的最小 `.env.local` 可以是：
+
+```env
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+NEXT_PUBLIC_APP_NAME=Chat Simulator
+NEXT_PUBLIC_APP_DESCRIPTION=Create realistic chat screenshots in your browser.
+NEXT_PUBLIC_APP_LOGO=/logo.png
+NEXT_PUBLIC_APP_FAVICON=/favicon.ico
+NEXT_PUBLIC_APP_PREVIEW_IMAGE=/preview.png
+
+NEXT_PUBLIC_THEME=tools
+NEXT_PUBLIC_DEFAULT_TOOL=chat-simulator
+NEXT_PUBLIC_DEFAULT_LOCALE=zh
+NEXT_PUBLIC_LOCALE_DETECT_ENABLED=false
+
+AUTH_URL=https://your-domain.com
+AUTH_SECRET=replace-with-a-long-random-string
+
+ADSENSE_CODE=ca-pub-1234567890123456
+```
+
+说明：
+
+- `ADSENSE_CODE`
+  填完整的 Google AdSense 发布商 ID，例如 `ca-pub-1234567890123456`
+- `DATABASE_URL`
+  无数据库部署时保持不填
+- `AUTH_SECRET`
+  即使你暂时不用后台，建议也配置一个随机字符串，避免后续 auth 路由行为不稳定
+
+## ads.txt 是怎么配置的
+
+当前项目已经内置了动态 `ads.txt` 路由，不需要你手动创建根目录 `ads.txt` 文件。
+
+- 路由文件：`src/app/ads.txt/route.ts`
+- 配置来源：`ADSENSE_CODE`
+
+你只需要在环境变量里设置：
+
+```env
+ADSENSE_CODE=ca-pub-1234567890123456
+```
+
+部署后访问：
+
+```text
+https://your-domain.com/ads.txt
+```
+
+会自动输出：
+
+```text
+google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0
+```
+
+如果 `ADSENSE_CODE` 没有设置，`/ads.txt` 会返回空内容。
+
+## 无数据库模式的限制
+
+如果你不接数据库，这个项目更适合当“纯工具站”来运行。需要注意：
+
+- 可以正常访问公开页面、工具页、隐私页、关于我们页和 `ads.txt`
+- 不建议使用 `/admin` 后台配置页
+- 不建议依赖登录、权限、用户、订单、积分、支付这类数据库能力
+- 配置修改应通过环境变量和重新部署完成
+
 默认本地开发命令：
 
 ```bash

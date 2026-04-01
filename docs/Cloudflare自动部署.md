@@ -106,6 +106,53 @@ AUTH_SECRET="replace-me"
 
 如果你不会访问登录、用户、订单、支付、配置中心这类依赖数据库的功能，就不需要先补数据库环境变量。
 
+如果你准备接入 Google AdSense，并且当前仍然是不接数据库的部署方式，建议再补这些变量：
+
+```env
+NEXT_PUBLIC_APP_DESCRIPTION="Create realistic chat screenshots in your browser."
+NEXT_PUBLIC_APP_LOGO="/logo.png"
+NEXT_PUBLIC_APP_FAVICON="/favicon.ico"
+NEXT_PUBLIC_APP_PREVIEW_IMAGE="/preview.png"
+NEXT_PUBLIC_DEFAULT_LOCALE="zh"
+NEXT_PUBLIC_LOCALE_DETECT_ENABLED="false"
+ADSENSE_CODE="ca-pub-1234567890123456"
+```
+
+其中：
+
+- `ADSENSE_CODE`
+  用于动态生成 `/ads.txt`
+- 其余 `NEXT_PUBLIC_*`
+  用于构建阶段的品牌、SEO 和工具站展示
+
+### 4. `ads.txt` 验证
+
+这个项目已经内置了 `ads.txt` 路由，不需要手动往 `public/` 里再放一个文件。
+
+只要 Cloudflare 运行时环境里有：
+
+```env
+ADSENSE_CODE="ca-pub-1234567890123456"
+```
+
+部署后访问：
+
+```text
+https://your-domain.com/ads.txt
+```
+
+应该返回：
+
+```text
+google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0
+```
+
+如果这里是空白，优先检查：
+
+- `ADSENSE_CODE` 是否已在 Cloudflare 的变量里配置
+- 值是否是完整的 `ca-pub-...` 格式
+- 最新部署是否已经成功
+
 ## 本地验证顺序
 
 在接入 Cloudflare 自动部署前，建议本地至少跑通这三个命令：
