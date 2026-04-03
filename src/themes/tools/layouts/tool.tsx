@@ -2,13 +2,14 @@ import { ReactNode } from 'react';
 import { getLocalizedToolManifest } from '@/tools/shared/localized-tool-manifest';
 import { getLocale } from 'next-intl/server';
 
-import { getThemeBlock } from '@/core/theme';
 import { getToolManifest } from '@/core/tooling-engine/DynamicLoader';
 import { envConfigs } from '@/config';
 import {
   Footer as FooterType,
   Header as HeaderType,
 } from '@/shared/types/blocks/landing';
+import { ToolFooter } from '@/themes/tools/blocks/tool-footer';
+import { ToolHeader } from '@/themes/tools/blocks/tool-header';
 
 /**
  * Tools Theme - Tool Layout
@@ -29,9 +30,6 @@ export default async function ToolLayout({
     await getToolManifest(defaultTool),
     locale
   );
-
-  const ToolHeader = await getThemeBlock('tool-header');
-  const ToolFooter = await getThemeBlock('tool-footer');
 
   return (
     <div className="flex min-h-screen w-screen flex-col">

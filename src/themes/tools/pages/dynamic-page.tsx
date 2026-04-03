@@ -1,11 +1,15 @@
 import { getLocalizedToolManifest } from '@/tools/shared/localized-tool-manifest';
 
-import { getThemeBlock } from '@/core/theme';
 import DynamicLoader, {
   getToolManifest,
 } from '@/core/tooling-engine/DynamicLoader';
 import { envConfigs } from '@/config';
 import type { DynamicPage as DynamicPageType } from '@/shared/types/blocks/landing';
+import ChatSimulatorTool from '@/tools/chat-simulator/index';
+import { OtherTools } from '@/themes/tools/blocks/other-tools';
+import { ToolCaseShowcase } from '@/themes/tools/blocks/tool-case-showcase';
+import { ToolIntro } from '@/themes/tools/blocks/tool-intro';
+import { ToolStage } from '@/themes/tools/blocks/tool-stage';
 
 /**
  * Tools Theme Dynamic Page
@@ -27,18 +31,29 @@ export default async function DynamicPage({
     await getToolManifest(defaultTool),
     locale
   );
+  const activeSkin = manifest?.config?.skin_preset || 'default';
+  const toolScopeClassName = `tool-root-${defaultTool} ds-tool-wrapper`;
+  const toolSkinClassName = `skin-theme-${activeSkin}`;
 
-  const ToolStage = await getThemeBlock('tool-stage');
-  const ToolCaseShowcase = await getThemeBlock('tool-case-showcase');
-  const ToolIntro = await getThemeBlock('tool-intro');
-  const OtherTools = await getThemeBlock('other-tools');
   const pageHeading = manifest?.seo?.h1 || manifest?.name || page.title || '';
   const pageDescription = manifest?.seo?.description || page.description || '';
 
   return (
     <>
       <ToolStage heading={pageHeading} description={pageDescription}>
-        <DynamicLoader toolName={defaultTool} themeName="tools" />
+        {defaultTool === 'chat-simulator' && manifest ? (
+          <div
+            className={`${toolScopeClassName} ${toolSkinClassName} flex h-full w-full flex-col`}
+          >
+            <ChatSimulatorTool
+              manifest={manifest}
+              structuredDataPath="/"
+              themeName="tools"
+            />
+          </div>
+        ) : (
+          <DynamicLoader toolName={defaultTool} themeName="tools" />
+        )}
       </ToolStage>
 
       <ToolCaseShowcase toolName={defaultTool} />

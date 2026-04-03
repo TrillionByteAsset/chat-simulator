@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getChatSimulatorFaqStructuredData } from '@/tools/chat-simulator/faq-structured-data';
 import { ToolSitePage } from '@/tools/shared/tool-site-page';
 import { getToolSitePageMetadata } from '@/tools/shared/tool-site-page-metadata';
 
@@ -37,5 +38,26 @@ export default async function ToolFaqPage({
     notFound();
   }
 
-  return <ToolSitePage kind="faq" locale={locale} manifest={manifest} />;
+  const faqStructuredData =
+    toolName === 'chat-simulator'
+      ? getChatSimulatorFaqStructuredData({
+          canonicalPath: `/tools/${toolName}/faq`,
+          locale,
+          manifest,
+        })
+      : null;
+
+  return (
+    <>
+      {faqStructuredData ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(faqStructuredData),
+          }}
+        />
+      ) : null}
+      <ToolSitePage kind="faq" locale={locale} manifest={manifest} />
+    </>
+  );
 }

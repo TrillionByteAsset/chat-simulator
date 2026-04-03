@@ -2,13 +2,14 @@ import { ReactNode } from 'react';
 import { getLocalizedToolManifest } from '@/tools/shared/localized-tool-manifest';
 import { getLocale } from 'next-intl/server';
 
-import { getThemeBlock } from '@/core/theme';
 import { getToolManifest } from '@/core/tooling-engine/DynamicLoader';
 import { envConfigs } from '@/config';
 import {
   Footer as FooterType,
   Header as HeaderType,
 } from '@/shared/types/blocks/landing';
+import { ToolFooter } from '@/themes/tools/blocks/tool-footer';
+import { ToolHeader } from '@/themes/tools/blocks/tool-header';
 
 /**
  * Tools Theme Landing Layout
@@ -31,10 +32,6 @@ export default async function LandingLayout({
     await getToolManifest(defaultTool),
     locale
   );
-
-  // 加载工具主题自己的 header/footer 块
-  const ToolHeader = await getThemeBlock('tool-header');
-  const ToolFooter = await getThemeBlock('tool-footer');
 
   return (
     <div className="flex min-h-screen w-screen flex-col">

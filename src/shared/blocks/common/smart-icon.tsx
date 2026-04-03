@@ -1,6 +1,66 @@
 import { ComponentType, lazy, Suspense } from 'react';
+import {
+  RiAddLine,
+  RiBarChart2Line,
+  RiChat2Line,
+  RiClapperboardAiLine,
+  RiCloudy2Fill,
+  RiCloudyFill,
+  RiCodeFill,
+  RiDatabase2Line,
+  RiDeleteBinLine,
+  RiDiscordFill,
+  RiEditLine,
+  RiEyeLine,
+  RiFlashlightFill,
+  RiGithubFill,
+  RiGoogleFill,
+  RiImage2Line,
+  RiKey2Fill,
+  RiKeyLine,
+  RiLockPasswordLine,
+  RiMessage2Line,
+  RiMusic2Line,
+  RiNextjsFill,
+  RiQuestionLine,
+  RiRefreshLine,
+  RiRobot2Line,
+  RiTaskLine,
+  RiTwitterXFill,
+  RiVideoLine,
+} from 'react-icons/ri';
 
 const iconCache: { [key: string]: ComponentType<any> } = {};
+const remixIconMap: Record<string, ComponentType<any>> = {
+  RiAddLine,
+  RiBarChart2Line,
+  RiChat2Line,
+  RiClapperboardAiLine,
+  RiCloudy2Fill,
+  RiCloudyFill,
+  RiCodeFill,
+  RiDatabase2Line,
+  RiDeleteBinLine,
+  RiDiscordFill,
+  RiEditLine,
+  RiEyeLine,
+  RiFlashlightFill,
+  RiGithubFill,
+  RiGoogleFill,
+  RiImage2Line,
+  RiKey2Fill,
+  RiKeyLine,
+  RiLockPasswordLine,
+  RiMessage2Line,
+  RiMusic2Line,
+  RiNextjsFill,
+  RiQuestionLine,
+  RiRefreshLine,
+  RiRobot2Line,
+  RiTaskLine,
+  RiTwitterXFill,
+  RiVideoLine,
+};
 
 // Function to automatically detect icon library
 function detectIconLibrary(name: string): 'ri' | 'lucide' {
@@ -25,30 +85,14 @@ export function SmartIcon({
   const library = detectIconLibrary(name);
   const cacheKey = `${library}-${name}`;
 
+  if (library === 'ri') {
+    const IconComponent = remixIconMap[name] || RiQuestionLine;
+
+    return <IconComponent size={size} className={className} {...props} />;
+  }
+
   if (!iconCache[cacheKey]) {
-    if (library === 'ri') {
-      // React Icons (Remix Icons)
-      iconCache[cacheKey] = lazy(async () => {
-        try {
-          const module = await import('react-icons/ri');
-          const IconComponent = module[name as keyof typeof module];
-          if (IconComponent) {
-            return { default: IconComponent as ComponentType<any> };
-          } else {
-            console.warn(
-              `Icon "${name}" not found in react-icons/ri, using fallback`
-            );
-            return { default: module.RiQuestionLine as ComponentType<any> };
-          }
-        } catch (error) {
-          console.error(`Failed to load react-icons/ri:`, error);
-          const fallbackModule = await import('react-icons/ri');
-          return {
-            default: fallbackModule.RiQuestionLine as ComponentType<any>,
-          };
-        }
-      });
-    } else {
+    if (library === 'lucide') {
       // Lucide React (default)
       iconCache[cacheKey] = lazy(async () => {
         try {

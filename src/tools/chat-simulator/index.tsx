@@ -54,6 +54,7 @@ import {
   isChineseLocale,
 } from './localization';
 import { useChatSimulatorStore } from './store';
+import { getChatSimulatorStructuredData } from './structured-data';
 import {
   Attachment,
   ChatChannel,
@@ -89,6 +90,7 @@ const LazyExportDialog = dynamic(
 
 interface ChatSimulatorProps {
   manifest: ToolManifest;
+  structuredDataPath?: string;
   themeName?: string;
 }
 
@@ -574,6 +576,7 @@ function groupMessagesForDisplay(messages: ChatMessage[]): MessageGroup[] {
 
 export default function ChatSimulator({
   manifest,
+  structuredDataPath,
   themeName,
 }: ChatSimulatorProps) {
   const locale = useLocale();
@@ -647,6 +650,13 @@ export default function ChatSimulator({
   const supportedSkins = (localizedManifest.config.supported_skins || [
     'discord',
   ]) as PlatformType[];
+  const structuredData = structuredDataPath
+    ? getChatSimulatorStructuredData({
+        canonicalPath: structuredDataPath,
+        locale,
+        manifest: localizedManifest,
+      })
+    : null;
 
   const resolvedChannel =
     channel ??
@@ -2912,6 +2922,14 @@ export default function ChatSimulator({
     <div
       className={`tool-root-chat-simulator skin-theme-${activeSkin} flex w-full flex-col`}
     >
+      {structuredData ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
+        />
+      ) : null}
       {isExportDialogOpen ? (
         <LazyExportDialog
           open={isExportDialogOpen}

@@ -1,8 +1,8 @@
 import { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
 
-import { getThemeLayout } from '@/core/theme';
-import { LocaleDetector } from '@/shared/blocks/common';
+import { envConfigs } from '@/config';
+import { LocaleDetector } from '@/shared/blocks/common/locale-detector';
 import {
   Footer as FooterType,
   Header as HeaderType,
@@ -18,12 +18,12 @@ export default async function ToolsLayout({
   children: ReactNode;
 }) {
   const t = await getTranslations('landing');
-
-  // Load the tool-specific layout from the theme
-  const Layout = await getThemeLayout('tool');
-
   const header: HeaderType = t.raw('header');
   const footer: FooterType = t.raw('footer');
+  const Layout =
+    envConfigs.theme === 'tools'
+      ? (await import('@/themes/tools/layouts/tool')).default
+      : (await import('@/themes/default/layouts/tool')).default;
 
   return (
     <Layout header={header} footer={footer}>

@@ -2,7 +2,6 @@ import { Metadata } from 'next';
 import { getLocalizedToolManifest } from '@/tools/shared/localized-tool-manifest';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { getThemePage } from '@/core/theme';
 import { getToolManifest } from '@/core/tooling-engine/DynamicLoader';
 import { generateToolMetadata } from '@/core/tooling-engine/metadata';
 import { envConfigs } from '@/config';
@@ -48,8 +47,10 @@ export default async function LandingPage({
   // get page data
   const page: DynamicPage = t.raw('page');
 
-  // load page component
-  const Page = await getThemePage('dynamic-page');
+  const Page =
+    envConfigs.theme === 'tools'
+      ? (await import('@/themes/tools/pages/dynamic-page')).default
+      : (await import('@/themes/default/pages/dynamic-page')).default;
 
   return <Page locale={locale} page={page} />;
 }
