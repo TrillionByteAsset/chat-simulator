@@ -27,6 +27,15 @@ function buildCanonicalUrl(path?: string, locale?: string) {
   return `${envConfigs.app_url}${localizedPath}`;
 }
 
+function buildAbsoluteAssetUrl(path: string) {
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${envConfigs.app_url}${normalizedPath}`;
+}
+
 /**
  * MetadataRouter: 动态读取工具配置并注入 Next.js Metadata
  * 供 app/[...slug]/page.tsx 的 generateMetadata 调用
@@ -47,6 +56,9 @@ export function generateToolMetadata(
   const title = options.overrideTitle || seo.title;
   const description = options.overrideDescription || seo.description;
   const canonical = buildCanonicalUrl(options.canonicalPath, options.locale);
+  const openGraphImages = (
+    seo.openGraph?.images?.length ? seo.openGraph.images : [envConfigs.app_logo]
+  ).map(buildAbsoluteAssetUrl);
 
   const metadata: Metadata = {
     title,
@@ -60,10 +72,11 @@ export function generateToolMetadata(
         }
       : {}),
     openGraph: {
+      type: 'website',
       title,
       description,
       ...(canonical ? { url: canonical } : {}),
-      ...(seo.openGraph?.images ? { images: seo.openGraph.images } : {}),
+      images: openGraphImages,
     },
   };
 

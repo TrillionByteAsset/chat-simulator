@@ -8,6 +8,7 @@ export { default as SenderInfo } from './SenderInfo';
 export { default as InputBar } from './InputBar';
 export { default as AttachmentArea } from './AttachmentArea';
 export { default as TelegramInputBar } from './TelegramInputBar';
+export { ExportDialog } from './ExportDialog';
 
 // Re-export prop types
 export type { ChatContainerProps } from './ChatContainer';

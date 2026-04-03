@@ -3,7 +3,7 @@
     "brand": {
       "title": "Chat Simulator",
       "logo": {
-        "src": "/logo.png",
+        "src": "/logo.webp",
         "alt": "Chat Simulator"
       },
       "url": "/admin"

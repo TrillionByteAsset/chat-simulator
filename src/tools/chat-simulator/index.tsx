@@ -3,6 +3,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Camera,
   Check,
@@ -32,14 +33,6 @@ import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
 
 import type { ToolManifest } from '@/core/tooling-engine/types';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/components/ui/dialog';
 
 import {
   AttachmentArea,
@@ -70,14 +63,29 @@ import {
   MessageSide,
   PlatformType,
 } from './types/chat';
-import { deliverExportedFile } from './utils/exportDelivery';
-import { exportElementToImageBlob } from './utils/exportToPng';
+import {
+  deliverExportedFile,
+  deliverExportedFiles,
+} from './utils/exportDelivery';
+import {
+  canvasToImageBlob,
+  exportElementToImageBlob,
+  renderElementToCanvas,
+  splitCanvasIntoPages,
+} from './utils/exportToPng';
 import { parseScript } from './utils/scriptParser';
 // 动态加载对应的皮肤样式
-import './skins/discord.css';
-import './skins/custom.css';
-import './skins/telegram.css';
-import './skins/whatsapp.css';
+import './skins/index.css';
+
+const LazyExportDialog = dynamic(
+  () =>
+    import('./components/ExportDialog').then((module) => ({
+      default: module.ExportDialog,
+    })),
+  {
+    ssr: false,
+  }
+);
 
 interface ChatSimulatorProps {
   manifest: ToolManifest;
@@ -88,6 +96,8 @@ type ExportAspectRatioPreset = 'auto' | '9:16' | '4:5' | '1:1' | '16:9';
 type ExportQualityPreset = 'standard' | 'high' | 'ultra';
 type ExportLayoutPreset = 'web' | 'mobile';
 type ExportFileFormat = 'png' | 'jpg';
+type ExportContentPreset = 'viewport' | 'full';
+type ExportOverflowMode = 'single' | 'multiple';
 
 const CURRENT_SPEAKER_ID = 'current-speaker';
 const DEFAULT_SPEAKER_NAME = 'You';
@@ -528,6 +538,10 @@ function getMessageSide(message: ChatMessage): MessageSide {
       : 'left';
 }
 
+function shouldUseWideMessageLayout(message: ChatMessage) {
+  return message.content.trim().length >= 80;
+}
+
 function groupMessagesForDisplay(messages: ChatMessage[]): MessageGroup[] {
   const groups: MessageGroup[] = [];
 
@@ -612,6 +626,10 @@ export default function ChatSimulator({
     useState<ExportAspectRatioPreset>('auto');
   const [exportQualityPreset, setExportQualityPreset] =
     useState<ExportQualityPreset>('high');
+  const [exportContentPreset, setExportContentPreset] =
+    useState<ExportContentPreset>('full');
+  const [exportOverflowMode, setExportOverflowMode] =
+    useState<ExportOverflowMode>('single');
   const currentAvatarInputRef = useRef<HTMLInputElement>(null);
   const channelIconInputRef = useRef<HTMLInputElement>(null);
   const backgroundImageInputRef = useRef<HTMLInputElement>(null);
@@ -651,6 +669,8 @@ export default function ChatSimulator({
   const exportAspectRatioOptions = uiText.exportAspectRatioOptions;
   const exportQualityOptions = uiText.exportQualityOptions;
   const exportLayoutOptions = uiText.exportLayoutOptions;
+  const exportContentOptions = uiText.exportContentOptions;
+  const exportOverflowOptions = uiText.exportOverflowOptions;
   const exportLayout =
     exportLayoutOptions.find((option) => option.value === exportLayoutPreset) ??
     exportLayoutOptions[0];
@@ -1288,18 +1308,74 @@ export default function ChatSimulator({
     try {
       await sleep(80);
       await waitForNextPaint();
-      const blob = await exportElementToImageBlob(exportNode, exportMimeType, {
-        pixelRatio: exportQuality.pixelRatio,
-        aspectRatio: exportAspectRatio,
-        matteColor: backgroundColor,
-        renderWidth: exportLayout.renderWidth,
-        renderHeight: exportLayout.renderHeight,
-      });
+      const exportViewportWidth =
+        exportLayout.renderWidth ?? Math.round(exportNode.getBoundingClientRect().width);
+      const exportViewportHeight =
+        exportLayout.renderHeight ??
+        Math.round(exportNode.getBoundingClientRect().height);
 
-      const file = new File([blob], `${channelSlug}-chat.${exportFileFormat}`, {
-        type: exportMimeType,
-      });
-      await deliverExportedFile(file);
+      if (exportContentPreset === 'viewport') {
+        const blob = await exportElementToImageBlob(exportNode, exportMimeType, {
+          pixelRatio: exportQuality.pixelRatio,
+          aspectRatio: exportAspectRatio,
+          matteColor: backgroundColor,
+          renderWidth: exportLayout.renderWidth,
+          renderHeight: exportLayout.renderHeight,
+        });
+
+        const file = new File([blob], `${channelSlug}-chat.${exportFileFormat}`, {
+          type: exportMimeType,
+        });
+        await deliverExportedFile(file);
+      } else {
+        const canvas = await renderElementToCanvas(exportNode, {
+          pixelRatio: exportQuality.pixelRatio,
+          aspectRatio: null,
+          matteColor: backgroundColor,
+          renderWidth: exportViewportWidth,
+          renderHeight: exportViewportHeight,
+          captureFullContent: true,
+        });
+
+        if (exportOverflowMode === 'multiple') {
+          const pageHeight = Math.max(
+            1,
+            Math.round(exportViewportHeight * exportQuality.pixelRatio)
+          );
+          const pageCanvases = splitCanvasIntoPages(canvas, pageHeight);
+          const files = await Promise.all(
+            pageCanvases.map(async (pageCanvas, index) => {
+              const blob = await canvasToImageBlob(
+                pageCanvas,
+                exportNode,
+                exportMimeType,
+                { matteColor: backgroundColor }
+              );
+
+              return new File(
+                [blob],
+                `${channelSlug}-chat-${index + 1}.${exportFileFormat}`,
+                { type: exportMimeType }
+              );
+            })
+          );
+
+          await deliverExportedFiles(files);
+        } else {
+          const blob = await canvasToImageBlob(
+            canvas,
+            exportNode,
+            exportMimeType,
+            { matteColor: backgroundColor }
+          );
+          const file = new File(
+            [blob],
+            `${channelSlug}-chat.${exportFileFormat}`,
+            { type: exportMimeType }
+          );
+          await deliverExportedFile(file);
+        }
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : uiText.exportFailed;
@@ -1360,15 +1436,16 @@ export default function ChatSimulator({
                 messageIndex,
                 'tg-bubble-position'
               );
+              const useWideLayout = shouldUseWideMessageLayout(message);
 
               return (
                 <div
                   key={message.id}
-                  className={`tg-bubble-shell ${isOutgoing ? 'tg-bubble-shell-outgoing' : 'tg-bubble-shell-incoming'} ${bubblePositionClass}`}
+                  className={`tg-bubble-shell ${isOutgoing ? 'tg-bubble-shell-outgoing' : 'tg-bubble-shell-incoming'} ${bubblePositionClass} ${useWideLayout ? 'tg-bubble-shell-wide' : ''}`}
                 >
                   <MessageBubble
                     message={message}
-                    className={`tg-message-bubble ${isOutgoing ? 'tg-message-bubble-outgoing' : 'tg-message-bubble-incoming'}`}
+                    className={`tg-message-bubble ${isOutgoing ? 'tg-message-bubble-outgoing' : 'tg-message-bubble-incoming'} ${useWideLayout ? 'tg-message-bubble-wide' : ''}`}
                     isEditing={editingMessageId === message.id}
                     editingValue={
                       editingMessageId === message.id
@@ -1734,15 +1811,16 @@ export default function ChatSimulator({
                 message.timestamp
               );
               const shouldShowMeta = messageIndex === 0 || isOutgoing;
+              const useWideLayout = shouldUseWideMessageLayout(message);
 
               return (
                 <div
                   key={message.id}
-                  className={`custom-bubble-shell ${isOutgoing ? 'custom-bubble-shell-outgoing' : 'custom-bubble-shell-incoming'}`}
+                  className={`custom-bubble-shell ${isOutgoing ? 'custom-bubble-shell-outgoing' : 'custom-bubble-shell-incoming'} ${useWideLayout ? 'custom-bubble-shell-wide' : ''}`}
                 >
                   <MessageBubble
                     message={message}
-                    className={`custom-message-bubble ${isOutgoing ? 'custom-message-bubble-outgoing' : 'custom-message-bubble-incoming'}`}
+                    className={`custom-message-bubble ${isOutgoing ? 'custom-message-bubble-outgoing' : 'custom-message-bubble-incoming'} ${useWideLayout ? 'custom-message-bubble-wide' : ''}`}
                     isEditing={editingMessageId === message.id}
                     editingValue={
                       editingMessageId === message.id
@@ -1976,15 +2054,16 @@ export default function ChatSimulator({
                 minute: '2-digit',
                 hour12: false,
               });
+              const useWideLayout = shouldUseWideMessageLayout(message);
 
               return (
                 <div
                   key={message.id}
-                  className={`wa-bubble-shell ${isOutgoing ? 'wa-bubble-shell-outgoing' : 'wa-bubble-shell-incoming'}`}
+                  className={`wa-bubble-shell ${isOutgoing ? 'wa-bubble-shell-outgoing' : 'wa-bubble-shell-incoming'} ${useWideLayout ? 'wa-bubble-shell-wide' : ''}`}
                 >
                   <MessageBubble
                     message={message}
-                    className={`wa-message-bubble ${isOutgoing ? 'wa-message-bubble-outgoing' : 'wa-message-bubble-incoming'}`}
+                    className={`wa-message-bubble ${isOutgoing ? 'wa-message-bubble-outgoing' : 'wa-message-bubble-incoming'} ${useWideLayout ? 'wa-message-bubble-wide' : ''}`}
                     isEditing={editingMessageId === message.id}
                     editingValue={
                       editingMessageId === message.id
@@ -2252,6 +2331,7 @@ export default function ChatSimulator({
     const displayName = firstMessage.authorName || group.sender.name;
     const avatarUrl = firstMessage.avatarUrl || group.sender.avatar;
     const isOutgoing = getMessageSide(firstMessage) === 'right';
+    const groupUsesWideLayout = group.messages.some(shouldUseWideMessageLayout);
     const time = new Date(group.timestamp);
     const timeStr =
       time.toLocaleDateString('en-US', {
@@ -2331,7 +2411,7 @@ export default function ChatSimulator({
             <MessageBubble
               key={message.id}
               message={message}
-              className={isOutgoing ? 'ds-message-bubble-outgoing' : ''}
+              className={`${isOutgoing ? 'ds-message-bubble-outgoing' : ''} ${groupUsesWideLayout ? 'ds-message-bubble-wide' : ''}`.trim()}
               isStacked={messageIndex > 0}
               isEditing={editingMessageId === message.id}
               editingValue={
@@ -2828,166 +2908,53 @@ export default function ChatSimulator({
       </aside>
     ) : null;
 
-  const exportDialog = (
-    <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
-      <DialogContent className="border-white/10 bg-[#202225] p-0 text-white sm:max-w-[520px]">
-        <DialogHeader className="border-b border-white/10 px-6 pt-6 pb-4">
-          <DialogTitle className="text-xl font-semibold text-white">
-            {uiText.exportChatImage}
-          </DialogTitle>
-          <DialogDescription className="text-sm text-[#9ca3af]">
-            {uiText.exportDialogDescription}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid gap-4 px-6 py-5">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
-                {uiText.fileFormat}
-              </span>
-              <select
-                value={exportFileFormat}
-                onChange={(event) =>
-                  setExportFileFormat(event.target.value as ExportFileFormat)
-                }
-                className="ds-identity-input w-full rounded-lg border border-white/10 bg-transparent px-3 py-2.5 text-sm text-[#f2f3f5] transition outline-none focus:border-[#5865f2]"
-                style={settingsInsetStyle}
-              >
-                <option value="png">PNG</option>
-                <option value="jpg">JPG</option>
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
-                {uiText.exportMode}
-              </span>
-              <select
-                value={exportLayoutPreset}
-                onChange={(event) =>
-                  setExportLayoutPreset(
-                    event.target.value as ExportLayoutPreset
-                  )
-                }
-                className="ds-identity-input w-full rounded-lg border border-white/10 bg-transparent px-3 py-2.5 text-sm text-[#f2f3f5] transition outline-none focus:border-[#5865f2]"
-                style={settingsInsetStyle}
-              >
-                {exportLayoutOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1 text-xs text-[#949ba4]">
-                {exportLayout.description}
-              </p>
-            </label>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
-                {uiText.exportRatio}
-              </span>
-              <select
-                value={exportAspectRatioPreset}
-                onChange={(event) =>
-                  setExportAspectRatioPreset(
-                    event.target.value as ExportAspectRatioPreset
-                  )
-                }
-                className="ds-identity-input w-full rounded-lg border border-white/10 bg-transparent px-3 py-2.5 text-sm text-[#f2f3f5] transition outline-none focus:border-[#5865f2]"
-                style={settingsInsetStyle}
-              >
-                {exportAspectRatioOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
-                {uiText.exportQuality}
-              </span>
-              <select
-                value={exportQualityPreset}
-                onChange={(event) =>
-                  setExportQualityPreset(
-                    event.target.value as ExportQualityPreset
-                  )
-                }
-                className="ds-identity-input w-full rounded-lg border border-white/10 bg-transparent px-3 py-2.5 text-sm text-[#f2f3f5] transition outline-none focus:border-[#5865f2]"
-                style={settingsInsetStyle}
-              >
-                {exportQualityOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <div
-            className="rounded-[24px] border border-white/8 bg-transparent p-4"
-            style={settingsSurfaceStyle}
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold tracking-[0.12em] text-[#949ba4] uppercase">
-                  {uiText.exportSummary}
-                </p>
-                <p className="mt-1 text-sm text-[#dbdee1]">
-                  {exportQuality.description}
-                </p>
-              </div>
-              <div className="text-right text-xs text-[#949ba4]">
-                <p>{exportFileFormat.toUpperCase()}</p>
-                <p>{exportLayout.label}</p>
-                <p>
-                  {exportLayout.renderWidth
-                    ? `${exportLayout.renderWidth}px ${uiText.phoneViewport}`
-                    : uiText.currentWebViewport}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <DialogFooter className="border-t border-white/10 px-6 py-4 sm:justify-between">
-          <button
-            type="button"
-            onClick={() => setIsExportDialogOpen(false)}
-            className="inline-flex items-center justify-center rounded-xl border border-white/10 px-4 py-2 text-sm font-medium text-[#d1d5db] transition hover:bg-white/5"
-          >
-            {uiText.cancel}
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleStartExport()}
-            disabled={isExportingImage}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#5865f2] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#4752c4] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isExportingImage ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4" />
-            )}
-            {uiText.export} {exportFileFormat.toUpperCase()}
-          </button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-
   return (
     <div
       className={`tool-root-chat-simulator skin-theme-${activeSkin} flex w-full flex-col`}
     >
-      {exportDialog}
+      {isExportDialogOpen ? (
+        <LazyExportDialog
+          open={isExportDialogOpen}
+          onOpenChange={setIsExportDialogOpen}
+          uiText={{
+            exportChatImage: uiText.exportChatImage,
+            exportDialogDescription: uiText.exportDialogDescription,
+            fileFormat: uiText.fileFormat,
+          exportMode: uiText.exportMode,
+          exportRatio: uiText.exportRatio,
+          exportQuality: uiText.exportQuality,
+          exportContent: uiText.exportContent,
+          exportOverflow: uiText.exportOverflow,
+          exportSummary: uiText.exportSummary,
+          cancel: uiText.cancel,
+          export: uiText.export,
+            phoneViewport: uiText.phoneViewport,
+            currentWebViewport: uiText.currentWebViewport,
+          }}
+          settingsInsetStyle={settingsInsetStyle}
+          exportFileFormat={exportFileFormat}
+          setExportFileFormat={setExportFileFormat}
+          exportLayoutPreset={exportLayoutPreset}
+          setExportLayoutPreset={setExportLayoutPreset}
+          exportAspectRatioPreset={exportAspectRatioPreset}
+          setExportAspectRatioPreset={setExportAspectRatioPreset}
+          exportQualityPreset={exportQualityPreset}
+          setExportQualityPreset={setExportQualityPreset}
+          exportContentPreset={exportContentPreset}
+          setExportContentPreset={setExportContentPreset}
+          exportOverflowMode={exportOverflowMode}
+          setExportOverflowMode={setExportOverflowMode}
+          exportLayoutOptions={exportLayoutOptions}
+          exportAspectRatioOptions={exportAspectRatioOptions}
+          exportQualityOptions={exportQualityOptions}
+          exportContentOptions={exportContentOptions}
+          exportOverflowOptions={exportOverflowOptions}
+          exportLayout={exportLayout}
+          exportQuality={exportQuality}
+          isExportingImage={isExportingImage}
+          onStartExport={handleStartExport}
+        />
+      ) : null}
       <div
         className="ds-control-toolbar mb-3 flex flex-wrap items-center gap-2"
         data-export-hide="true"
@@ -3106,9 +3073,14 @@ export default function ChatSimulator({
             ref={captureRef}
             className="discord-chat-container flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-[28px] xl:h-full xl:min-w-0"
             style={previewViewportStyle}
+            data-export-capture-root="true"
           >
             {!isCustom ? (
-              <div className="ds-tool-header gap-3" data-export-header="true">
+              <div
+                className="ds-tool-header gap-3"
+                data-export-header="true"
+                data-export-platform={activeSkin}
+              >
                 <div className="flex min-w-0 items-center gap-3">
                   {isWhatsApp ? (
                     <span className="wa-header-back">‹</span>
@@ -3135,7 +3107,10 @@ export default function ChatSimulator({
                     data-export-header-copy="true"
                   >
                     {activeSkin === 'discord' ? (
-                      <div className="flex min-w-0 items-center gap-3 text-sm">
+                      <div
+                        className="flex min-w-0 items-center gap-3 text-sm"
+                        data-export-discord-header-row="true"
+                      >
                         <span
                           className="shrink-0 text-[1.05rem] font-bold text-[#f2f3f5]"
                           data-export-header-title="true"

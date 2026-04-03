@@ -4,7 +4,7 @@
       "brand": {
         "title": "Chat Simulator Chat",
         "logo": {
-          "src": "/logo.png",
+          "src": "/logo.webp",
           "alt": "Chat Simulator Chat"
         },
         "url": "/chat"

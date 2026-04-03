@@ -42,6 +42,7 @@ export function Footer({ footer }: { footer: FooterType }) {
                     <Link
                       key={iidx}
                       href={subItem.url || ''}
+                      title={subItem.title || ''}
                       target={subItem.target || ''}
                       className="text-muted-foreground hover:text-primary block break-words duration-150"
                     >
@@ -85,6 +86,7 @@ export function Footer({ footer }: { footer: FooterType }) {
                 <Link
                   key={index}
                   href={item.url || ''}
+                  title={item.title || ''}
                   target={item.target || ''}
                   className="text-muted-foreground hover:text-primary block text-xs break-words underline duration-150"
                 >
@@ -100,6 +102,7 @@ export function Footer({ footer }: { footer: FooterType }) {
                 <Link
                   key={index}
                   href={item.url || ''}
+                  title={item.title || 'Social media link'}
                   target={item.target || ''}
                   className="text-muted-foreground hover:text-primary bg-background block cursor-pointer rounded-full p-2 duration-150"
                   aria-label={item.title || 'Social media link'}

@@ -9,17 +9,17 @@ import { Link } from '@/core/i18n/navigation';
  * - manifest.header.nav 不存在时 → 只显示 LOGO
  * - 存在时 → 左侧 LOGO + 右侧导航链接
  * 
- * LOGO 优先级：manifest.header.logo > 默认 /logo.png
+ * LOGO 优先级：manifest.header.logo > 默认 /logo.webp
  */
 export function ToolHeader({ manifest }: { manifest: ToolManifest }) {
   const hasNav = manifest.header?.nav && manifest.header.nav.length > 0;
-  const logoSrc = manifest.header?.logo || '/logo.png';
+  const logoSrc = manifest.header?.logo || '/logo.webp';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-foreground/5 bg-background/75 backdrop-blur">
       <div className="container flex h-14 items-center justify-between">
         {/* 左侧：LOGO 图片 + 工具名称 */}
-        <Link href="/" className="flex items-center space-x-2.5">
+        <Link href="/" title={manifest.name} className="flex items-center space-x-2.5">
           <img
             src={logoSrc}
             alt={manifest.name}
@@ -35,6 +35,7 @@ export function ToolHeader({ manifest }: { manifest: ToolManifest }) {
               <Link
                 key={idx}
                 href={item.url || ''}
+                title={item.title}
                 target={item.target || '_self'}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150"
               >

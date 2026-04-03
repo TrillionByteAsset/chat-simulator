@@ -4,7 +4,7 @@
     "brand": {
       "title": "Chat Simulator",
       "logo": {
-        "src": "/logo.png",
+        "src": "/logo.webp",
         "alt": "Chat Simulator",
         "width": 100,
         "height": 100
@@ -116,7 +116,7 @@
       "title": "Chat Simulator",
       "description": "用于创建多平台聊天截图与对话演示的工具站点。",
       "logo": {
-        "src": "/logo.png",
+        "src": "/logo.webp",
         "alt": "Chat Simulator",
         "width": 100,
         "height": 100

@@ -109,13 +109,20 @@ export async function ToolFooter({ manifest }: { manifest: ToolManifest }) {
               <div className="mt-4 flex flex-col gap-3.5">
                 {column.items.map((item, itemIdx) => {
                   const isMailto = item.url.startsWith('mailto:');
+                  const isExternal =
+                    item.url.startsWith('http://') ||
+                    item.url.startsWith('https://');
+                  const target =
+                    item.target || (isExternal || isMailto ? '_blank' : '_self');
+                  const rel = target === '_blank' ? 'noreferrer' : undefined;
 
                   return isMailto ? (
                     <a
                       key={`${item.title}-${itemIdx}`}
                       href={item.url}
-                      target="_blank"
-                      rel="noreferrer"
+                      title={item.title}
+                      target={target}
+                      rel={rel}
                       className="text-muted-foreground hover:text-foreground text-[15px] leading-6 transition-colors duration-150"
                     >
                       {item.title}
@@ -124,8 +131,9 @@ export async function ToolFooter({ manifest }: { manifest: ToolManifest }) {
                     <Link
                       key={`${item.title}-${itemIdx}`}
                       href={item.url || ''}
-                      target="_blank"
-                      rel="noreferrer"
+                      title={item.title}
+                      target={target}
+                      rel={rel}
                       className="text-muted-foreground hover:text-foreground text-[15px] leading-6 transition-colors duration-150"
                     >
                       {item.title}
@@ -156,6 +164,7 @@ export async function ToolFooter({ manifest }: { manifest: ToolManifest }) {
               href={`mailto:${CONTACT_EMAIL}`}
               target="_blank"
               rel="noreferrer"
+              title={isZh ? '联系邮箱' : 'Contact'}
               className="hover:text-foreground transition-colors duration-150"
             >
               {CONTACT_EMAIL}
@@ -167,8 +176,8 @@ export async function ToolFooter({ manifest }: { manifest: ToolManifest }) {
               <Link
                 key={item.url}
                 href={item.url}
-                target="_blank"
-                rel="noreferrer"
+                title={item.title}
+                target="_self"
                 className="text-muted-foreground hover:text-foreground text-sm transition-colors duration-150"
               >
                 {item.title}

@@ -9,10 +9,10 @@ export const envConfigs: ConfigMap = {
   app_url: process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
   app_name: process.env.NEXT_PUBLIC_APP_NAME ?? 'Chat Simulator',
   app_description: process.env.NEXT_PUBLIC_APP_DESCRIPTION ?? '',
-  app_logo: process.env.NEXT_PUBLIC_APP_LOGO ?? '/logo.png',
+  app_logo: process.env.NEXT_PUBLIC_APP_LOGO ?? '/logo.webp',
   app_favicon: process.env.NEXT_PUBLIC_APP_FAVICON ?? '/favicon.ico',
   app_preview_image:
-    process.env.NEXT_PUBLIC_APP_PREVIEW_IMAGE ?? '/preview.png',
+    process.env.NEXT_PUBLIC_APP_PREVIEW_IMAGE ?? '/logo.webp',
   theme: process.env.NEXT_PUBLIC_THEME ?? 'tools',
   default_tool: process.env.NEXT_PUBLIC_DEFAULT_TOOL ?? 'chat-simulator',
   appearance: process.env.NEXT_PUBLIC_APPEARANCE ?? 'system',

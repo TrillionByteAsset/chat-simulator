@@ -93,6 +93,7 @@ export function Header({ header }: { header: HeaderType }) {
                 <NavigationMenuLink key={idx} asChild>
                   <Link
                     href={item.url || ''}
+                    title={item.title || ''}
                     target={item.target || '_self'}
                     className={`flex flex-row items-center gap-2 px-4 py-1.5 text-sm ${
                       item.is_active || pathname.endsWith(item.url as string)
@@ -172,6 +173,7 @@ export function Header({ header }: { header: HeaderType }) {
                           <li key={iidx}>
                             <Link
                               href={subItem.url || ''}
+                              title={subItem.title || ''}
                               onClick={closeMenu}
                               className="grid grid-cols-[auto_1fr] items-center gap-2.5 px-4 py-2"
                             >
@@ -193,6 +195,7 @@ export function Header({ header }: { header: HeaderType }) {
                 ) : (
                   <Link
                     href={item.url || ''}
+                    title={item.title || ''}
                     onClick={closeMenu}
                     className="data-[state=open]:bg-muted flex items-center justify-between px-4 py-3 text-lg **:!font-normal"
                   >
@@ -226,6 +229,7 @@ export function Header({ header }: { header: HeaderType }) {
         <NavigationMenuLink asChild>
           <Link
             href={href}
+            title={title}
             target={target || '_self'}
             className="grid grid-cols-[auto_1fr] gap-3.5"
           >
@@ -293,6 +297,7 @@ export function Header({ header }: { header: HeaderType }) {
                       <Link
                         key={idx}
                         href={button.url || ''}
+                        title={button.title || ''}
                         target={button.target || '_self'}
                         className={cn(
                           'focus-visible:ring-ring inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',

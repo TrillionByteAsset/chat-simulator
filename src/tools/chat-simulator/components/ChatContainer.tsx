@@ -77,6 +77,7 @@ export default function ChatContainer({
   return (
     <div
       className={`ds-chat-container flex h-full min-h-0 flex-col ${className}`}
+      data-export-chat-container="true"
     >
       {header && <div className="ds-chat-header flex-shrink-0">{header}</div>}
 
@@ -85,6 +86,7 @@ export default function ChatContainer({
         className={`ds-chat-messages min-h-0 flex-1 overflow-y-auto ${messageListClassName}`}
         style={messageListStyle}
         data-system-message-count={systemMessageCount}
+        data-export-message-list="true"
       >
         {intro && <div className="ds-chat-intro">{intro}</div>}
         {messageGroups.map((group, index) => {

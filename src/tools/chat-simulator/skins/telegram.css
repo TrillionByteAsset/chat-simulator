@@ -203,7 +203,7 @@
 }
 
 .tool-root-chat-simulator.skin-theme-telegram .ds-chat-messages {
-  padding: 14px 18px 18px;
+  padding: 10px 16px 10px;
   scrollbar-width: thin;
   scrollbar-color: rgba(57, 83, 94, 0.28) transparent;
 }
@@ -237,7 +237,7 @@
   display: flex;
   align-items: flex-end;
   gap: 10px;
-  margin: 10px 0;
+  margin: 8px 0;
 }
 
 .tool-root-chat-simulator.skin-theme-telegram .tg-message-group-outgoing {
@@ -258,20 +258,27 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 3px;
-  max-width: min(76%, 520px);
+  min-width: 0;
+  gap: 2px;
+  width: min(100%, calc(100% - 64px));
+  max-width: none;
 }
 
 .tool-root-chat-simulator.skin-theme-telegram
   .tg-message-group-outgoing
   .tg-group-stack {
   align-items: flex-end;
+  width: min(100%, calc(100% - 8px));
 }
 
 .tool-root-chat-simulator.skin-theme-telegram .tg-bubble-shell {
   position: relative;
   width: fit-content;
   max-width: 100%;
+}
+
+.tool-root-chat-simulator.skin-theme-telegram .tg-bubble-shell-wide {
+  width: 100%;
 }
 
 .tool-root-chat-simulator.skin-theme-telegram .tg-message-bubble {
@@ -281,17 +288,29 @@
   overflow: visible;
 }
 
+.tool-root-chat-simulator.skin-theme-telegram .tg-message-bubble-wide {
+  width: min(100%, calc(100% - 8px));
+  max-width: min(100%, calc(100% - 8px));
+}
+
 .tool-root-chat-simulator.skin-theme-telegram
   .tg-message-bubble
   .ds-message-content {
   position: relative;
   display: block;
   width: fit-content;
-  max-width: min(76vw, 520px);
+  max-width: min(100%, 1040px);
   border-radius: 18px;
-  padding: 9px 13px 8px;
+  padding: 8px 12px 7px;
   box-shadow: 0 1px 1px rgba(16, 31, 40, 0.12);
   overflow: visible;
+}
+
+.tool-root-chat-simulator.skin-theme-telegram
+  .tg-message-bubble-wide
+  .ds-message-content {
+  width: 100%;
+  max-width: none;
 }
 
 .tool-root-chat-simulator.skin-theme-telegram
@@ -389,7 +408,7 @@
   margin: 0;
   color: var(--tg-text);
   font-size: 0.98rem;
-  line-height: 1.45;
+  line-height: 1.375;
 }
 
 .tool-root-chat-simulator.skin-theme-telegram .tg-message-meta,

@@ -24,14 +24,14 @@
 }
 
 .tool-root-chat-simulator.skin-theme-custom .ds-chat-messages {
-  padding: 18px 16px 10px;
+  padding: 12px 16px 8px;
 }
 
 .tool-root-chat-simulator.skin-theme-custom .custom-message-group {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin: 0 0 12px;
+  margin: 0 0 10px;
 }
 
 .tool-root-chat-simulator.skin-theme-custom .custom-message-group-outgoing {
@@ -45,30 +45,51 @@
 
 .tool-root-chat-simulator.skin-theme-custom .custom-group-stack {
   display: flex;
-  max-width: min(82%, 680px);
+  min-width: 0;
+  width: min(100%, calc(100% - 64px));
+  max-width: none;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .tool-root-chat-simulator.skin-theme-custom .custom-group-stack-outgoing {
   align-items: flex-end;
+  width: min(100%, calc(100% - 8px));
 }
 
 .tool-root-chat-simulator.skin-theme-custom .custom-bubble-shell {
   display: flex;
+  width: 100%;
+}
+
+.tool-root-chat-simulator.skin-theme-custom .custom-bubble-shell-wide {
+  width: 100%;
 }
 
 .tool-root-chat-simulator.skin-theme-custom .custom-bubble-shell-outgoing {
   justify-content: flex-end;
 }
 
+.tool-root-chat-simulator.skin-theme-custom .custom-message-bubble-wide {
+  width: min(100%, calc(100% - 8px));
+}
+
 .tool-root-chat-simulator.skin-theme-custom
   .custom-message-bubble
   .ds-message-content,
 .tool-root-chat-simulator.skin-theme-custom .custom-attachment-card {
+  width: fit-content;
+  max-width: min(100%, 1040px);
   border-radius: 18px;
   border: 1px solid var(--custom-border);
   box-shadow: 0 10px 20px rgba(8, 9, 14, 0.16);
+}
+
+.tool-root-chat-simulator.skin-theme-custom
+  .custom-message-bubble-wide
+  .ds-message-content {
+  width: 100%;
+  max-width: none;
 }
 
 .tool-root-chat-simulator.skin-theme-custom
@@ -92,7 +113,7 @@
 
 .tool-root-chat-simulator.skin-theme-custom .custom-message-content-wrap {
   min-width: 0;
-  padding: 10px 12px;
+  padding: 8px 10px;
 }
 
 .tool-root-chat-simulator.skin-theme-custom .custom-message-meta {
@@ -120,7 +141,7 @@
 .tool-root-chat-simulator.skin-theme-custom .custom-message-text {
   margin: 0;
   color: #f8f9fb;
-  line-height: 1.5;
+  line-height: 1.375;
 }
 
 .tool-root-chat-simulator.skin-theme-custom .custom-attachment-area {

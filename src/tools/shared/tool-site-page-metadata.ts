@@ -23,6 +23,15 @@ export function buildLocalizedUrl(path: string, locale?: string) {
   return `${envConfigs.app_url}${buildLocalizedPath(path, locale)}`;
 }
 
+function buildAbsoluteAssetUrl(path: string) {
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${envConfigs.app_url}${normalizedPath}`;
+}
+
 export function getToolSitePageMetadata({
   kind,
   locale,
@@ -36,6 +45,11 @@ export function getToolSitePageMetadata({
 }): Metadata {
   const page = getToolSitePageContent({ kind, locale, manifest });
   const canonical = buildLocalizedUrl(canonicalPath, locale);
+  const openGraphImages = (
+    manifest.seo?.openGraph?.images?.length
+      ? manifest.seo.openGraph.images
+      : [envConfigs.app_logo]
+  ).map(buildAbsoluteAssetUrl);
 
   return {
     title: page.seoTitle,
@@ -44,12 +58,11 @@ export function getToolSitePageMetadata({
       canonical,
     },
     openGraph: {
+      type: 'website',
       title: page.seoTitle,
       description: page.seoDescription,
       url: canonical,
-      ...(manifest.seo?.openGraph?.images
-        ? { images: manifest.seo.openGraph.images }
-        : {}),
+      images: openGraphImages,
     },
   };
 }

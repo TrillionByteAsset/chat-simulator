@@ -148,6 +148,7 @@ export interface RenderElementToCanvasOptions {
   matteColor?: string;
   renderWidth?: number | null;
   renderHeight?: number | null;
+  captureFullContent?: boolean;
 }
 
 const assetDataUrlCache = new Map<string, Promise<string | null>>();
@@ -495,11 +496,26 @@ function applyExportLayoutFixups(root: HTMLElement) {
   root
     .querySelectorAll<HTMLElement>('[data-export-header="true"]')
     .forEach((header) => {
-      header.style.setProperty('height', 'auto');
-      header.style.setProperty('min-height', 'unset');
-      header.style.setProperty('padding-top', '8px');
-      header.style.setProperty('padding-bottom', '8px');
+      const platform = header.dataset.exportPlatform;
+
       header.style.setProperty('overflow', 'visible');
+
+      if (platform === 'discord') {
+        header.style.setProperty('height', '48px');
+        header.style.setProperty('min-height', '48px');
+        header.style.setProperty('max-height', '48px');
+        header.style.setProperty('display', 'flex');
+        header.style.setProperty('justify-content', 'space-between');
+        header.style.setProperty('align-items', 'center');
+        return;
+      }
+
+      header.style.setProperty('height', 'auto');
+      header.style.setProperty('min-height', '60px');
+      header.style.setProperty('max-height', 'none');
+      header.style.setProperty('align-items', 'center');
+      header.style.setProperty('padding-top', '10px');
+      header.style.setProperty('padding-bottom', '10px');
     });
 
   root
@@ -507,23 +523,59 @@ function applyExportLayoutFixups(root: HTMLElement) {
     .forEach((copy) => {
       copy.style.setProperty('min-width', '0');
       copy.style.setProperty('overflow', 'visible');
+      copy.style.setProperty('flex', '1 1 auto');
     });
 
   root
-    .querySelectorAll<HTMLElement>(
-      '[data-export-header-title="true"], [data-export-header-subtitle="true"]'
-    )
-    .forEach((textNode) => {
-      textNode.style.setProperty('white-space', 'normal');
-      textNode.style.setProperty('overflow', 'visible');
-      textNode.style.setProperty('text-overflow', 'clip');
+    .querySelectorAll<HTMLElement>('[data-export-discord-header-row="true"]')
+    .forEach((row) => {
+      row.style.setProperty('display', 'flex');
+      row.style.setProperty('align-items', 'center');
+      row.style.setProperty('flex-wrap', 'nowrap');
+      row.style.setProperty('min-width', '0');
+      row.style.setProperty('width', '100%');
+    });
+
+  root
+    .querySelectorAll<HTMLElement>('[data-export-header-title="true"]')
+    .forEach((title) => {
+      const isDiscordHeader = getExportHeaderPlatform(title) === 'discord';
+      title.style.setProperty('display', 'block');
+      title.style.setProperty('min-width', '0');
+      title.style.setProperty('overflow', 'visible');
+      title.style.setProperty('white-space', 'nowrap');
+      title.style.setProperty('text-overflow', 'clip');
+      title.style.setProperty('line-height', isDiscordHeader ? '1' : '1.35');
+      if (isDiscordHeader) {
+        title.style.setProperty('display', 'inline-flex');
+        title.style.setProperty('align-items', 'center');
+        title.style.setProperty('flex', '0 0 auto');
+
+        const hash = title.querySelector<HTMLElement>('span');
+
+        if (hash) {
+          hash.style.setProperty('display', 'inline-flex');
+          hash.style.setProperty('align-items', 'center');
+          hash.style.setProperty('line-height', '1');
+        }
+      }
     });
 
   root
     .querySelectorAll<HTMLElement>('[data-export-header-subtitle="true"]')
     .forEach((subtitle) => {
-      subtitle.style.setProperty('margin-top', '2px');
-      subtitle.style.setProperty('line-height', '1.3');
+      const isDiscordHeader = getExportHeaderPlatform(subtitle) === 'discord';
+      subtitle.style.setProperty('display', 'block');
+      subtitle.style.setProperty('min-width', '0');
+      subtitle.style.setProperty('overflow', 'visible');
+      subtitle.style.setProperty('white-space', 'nowrap');
+      subtitle.style.setProperty('text-overflow', 'clip');
+      subtitle.style.setProperty('line-height', isDiscordHeader ? '1' : '1.35');
+      subtitle.style.setProperty('margin-top', isDiscordHeader ? '0' : '2px');
+      if (isDiscordHeader) {
+        subtitle.style.setProperty('flex', '1 1 auto');
+        subtitle.style.setProperty('align-self', 'center');
+      }
     });
 
   root
@@ -579,6 +631,319 @@ function applyExportLayoutFixups(root: HTMLElement) {
       badgeWrapper.appendChild(svg);
 
       role.replaceWith(badgeWrapper);
+    });
+}
+
+function expandCloneForFullContent(root: HTMLElement) {
+  root
+    .querySelectorAll<HTMLElement>('[data-export-capture-root="true"]')
+    .forEach((element) => {
+      element.style.setProperty('height', 'auto');
+      element.style.setProperty('min-height', '0');
+      element.style.setProperty('max-height', 'none');
+      element.style.setProperty('overflow', 'visible');
+      element.scrollTop = 0;
+    });
+
+  root
+    .querySelectorAll<HTMLElement>('[data-export-chat-container="true"]')
+    .forEach((element) => {
+      element.style.setProperty('height', 'auto');
+      element.style.setProperty('min-height', '0');
+      element.style.setProperty('max-height', 'none');
+      element.style.setProperty('overflow', 'visible');
+      element.style.setProperty('flex', 'none');
+      element.scrollTop = 0;
+    });
+
+  root
+    .querySelectorAll<HTMLElement>('[data-export-message-list="true"]')
+    .forEach((element) => {
+      element.style.setProperty('height', 'auto');
+      element.style.setProperty('min-height', '0');
+      element.style.setProperty('max-height', 'none');
+      element.style.setProperty('overflow', 'visible');
+      element.style.setProperty('overflow-y', 'visible');
+      element.style.setProperty('flex', 'none');
+      element.scrollTop = 0;
+    });
+}
+
+function getExpandedCloneHeight(root: HTMLElement, fallbackHeight: number) {
+  const candidates = [
+    fallbackHeight,
+    root.scrollHeight,
+    root.offsetHeight,
+    Math.ceil(root.getBoundingClientRect().height),
+  ].filter((value) => Number.isFinite(value) && value > 0);
+
+  root
+    .querySelectorAll<HTMLElement>('[data-export-message-list="true"]')
+    .forEach((element) => {
+      candidates.push(
+        element.scrollHeight,
+        element.offsetHeight,
+        Math.ceil(element.getBoundingClientRect().height)
+      );
+    });
+
+  return Math.max(...candidates);
+}
+
+function truncateTextToFitSingleLine(element: HTMLElement) {
+  const originalText = element.textContent?.trim();
+
+  if (!originalText) {
+    return;
+  }
+
+  element.textContent = originalText;
+
+  const availableWidth = Math.floor(
+    element.clientWidth ||
+      element.getBoundingClientRect().width ||
+      element.parentElement?.clientWidth ||
+      0
+  );
+
+  if (availableWidth <= 0 || element.scrollWidth <= availableWidth + 1) {
+    return;
+  }
+
+  let low = 0;
+  let high = originalText.length;
+  let best = '...';
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const candidate =
+      mid <= 0 ? '...' : `${originalText.slice(0, mid).trimEnd()}...`;
+
+    element.textContent = candidate;
+
+    if (element.scrollWidth <= availableWidth + 1) {
+      best = candidate;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+
+  element.textContent = best;
+}
+
+function getExportHeaderPlatform(node: HTMLElement) {
+  return (
+    node.closest<HTMLElement>('[data-export-header="true"]')?.dataset
+      .exportPlatform ?? ''
+  );
+}
+
+function rebuildDiscordExportHeader(header: HTMLElement) {
+  if (header.dataset.exportHeaderRebuilt === 'true') {
+    return;
+  }
+
+  const copy = header.querySelector<HTMLElement>('[data-export-header-copy="true"]');
+  const titleSource = header.querySelector<HTMLElement>(
+    '[data-export-header-title="true"]'
+  );
+  const subtitleSource = header.querySelector<HTMLElement>(
+    '[data-export-header-subtitle="true"]'
+  );
+
+  if (!copy || !titleSource) {
+    return;
+  }
+
+  const titleText = titleSource.textContent?.trim() ?? '';
+  const subtitleText = subtitleSource?.textContent?.trim() ?? '';
+  const documentRef = header.ownerDocument;
+  const row = documentRef.createElement('div');
+  const title = documentRef.createElement('span');
+  const hash = documentRef.createElement('span');
+  const dot = documentRef.createElement('span');
+  const subtitle = documentRef.createElement('span');
+
+  row.setAttribute('data-export-discord-header-row', 'true');
+  row.style.setProperty('display', 'flex');
+  row.style.setProperty('align-items', 'center');
+  row.style.setProperty('column-gap', '12px');
+  row.style.setProperty('width', '100%');
+  row.style.setProperty('min-width', '0');
+  row.style.setProperty('height', '48px');
+
+  title.setAttribute('data-export-header-title', 'true');
+  title.style.setProperty('display', 'inline-flex');
+  title.style.setProperty('align-items', 'center');
+  title.style.setProperty('min-width', '0');
+  title.style.setProperty('flex', '0 1 auto');
+  title.style.setProperty('font-size', '1.05rem');
+  title.style.setProperty('font-weight', '700');
+  title.style.setProperty('line-height', '1');
+  title.style.setProperty('color', '#f2f3f5');
+  title.style.setProperty('white-space', 'nowrap');
+
+  hash.style.setProperty('display', 'inline-flex');
+  hash.style.setProperty('align-items', 'center');
+  hash.style.setProperty('margin-right', '4px');
+  hash.style.setProperty('font-size', '1.25rem');
+  hash.style.setProperty('font-weight', '500');
+  hash.style.setProperty('line-height', '1');
+  hash.style.setProperty('color', '#949ba4');
+  hash.textContent = '#';
+
+  dot.style.setProperty('display', 'inline-flex');
+  dot.style.setProperty('align-items', 'center');
+  dot.style.setProperty('flex', '0 0 auto');
+  dot.style.setProperty('font-size', '1.15rem');
+  dot.style.setProperty('font-weight', '900');
+  dot.style.setProperty('line-height', '1');
+  dot.style.setProperty('color', '#7b7d86');
+  dot.textContent = '·';
+
+  subtitle.setAttribute('data-export-header-subtitle', 'true');
+  subtitle.style.setProperty('display', 'block');
+  subtitle.style.setProperty('min-width', '0');
+  subtitle.style.setProperty('flex', '1 1 auto');
+  subtitle.style.setProperty('font-size', '0.75rem');
+  subtitle.style.setProperty('font-weight', '400');
+  subtitle.style.setProperty('line-height', '1');
+  subtitle.style.setProperty('color', '#949ba4');
+  subtitle.style.setProperty('white-space', 'nowrap');
+  subtitle.textContent = subtitleText;
+
+  title.appendChild(hash);
+  title.appendChild(documentRef.createTextNode(titleText));
+  row.appendChild(title);
+  row.appendChild(dot);
+  row.appendChild(subtitle);
+
+  copy.style.setProperty('display', 'flex');
+  copy.style.setProperty('align-items', 'center');
+  copy.style.setProperty('min-width', '0');
+  copy.style.setProperty('flex', '1 1 auto');
+  copy.replaceChildren(row);
+  header.dataset.exportHeaderRebuilt = 'true';
+}
+
+function rebuildStackedExportHeader(
+  header: HTMLElement,
+  options: {
+    titleColor: string;
+    subtitleColor: string;
+    titleFontSize: string;
+    subtitleFontSize: string;
+    minHeight: string;
+  }
+) {
+  if (header.dataset.exportHeaderRebuilt === 'true') {
+    return;
+  }
+
+  const copy = header.querySelector<HTMLElement>('[data-export-header-copy="true"]');
+  const titleSource = header.querySelector<HTMLElement>(
+    '[data-export-header-title="true"]'
+  );
+  const subtitleSource = header.querySelector<HTMLElement>(
+    '[data-export-header-subtitle="true"]'
+  );
+
+  if (!copy || !titleSource) {
+    return;
+  }
+
+  const titleText = titleSource.textContent?.trim() ?? '';
+  const subtitleText = subtitleSource?.textContent?.trim() ?? '';
+  const documentRef = header.ownerDocument;
+  const stack = documentRef.createElement('div');
+  const title = documentRef.createElement('span');
+  const subtitle = documentRef.createElement('span');
+
+  stack.style.setProperty('display', 'flex');
+  stack.style.setProperty('flex-direction', 'column');
+  stack.style.setProperty('justify-content', 'center');
+  stack.style.setProperty('row-gap', '2px');
+  stack.style.setProperty('min-width', '0');
+  stack.style.setProperty('width', '100%');
+  stack.style.setProperty('min-height', options.minHeight);
+
+  title.setAttribute('data-export-header-title', 'true');
+  title.style.setProperty('display', 'block');
+  title.style.setProperty('min-width', '0');
+  title.style.setProperty('font-size', options.titleFontSize);
+  title.style.setProperty('font-weight', '700');
+  title.style.setProperty('line-height', '1.2');
+  title.style.setProperty('color', options.titleColor);
+  title.style.setProperty('white-space', 'nowrap');
+  title.textContent = titleText;
+
+  subtitle.setAttribute('data-export-header-subtitle', 'true');
+  subtitle.style.setProperty('display', 'block');
+  subtitle.style.setProperty('min-width', '0');
+  subtitle.style.setProperty('font-size', options.subtitleFontSize);
+  subtitle.style.setProperty('font-weight', '400');
+  subtitle.style.setProperty('line-height', '1.2');
+  subtitle.style.setProperty('color', options.subtitleColor);
+  subtitle.style.setProperty('white-space', 'nowrap');
+  subtitle.textContent = subtitleText;
+
+  stack.appendChild(title);
+  stack.appendChild(subtitle);
+
+  copy.style.setProperty('display', 'flex');
+  copy.style.setProperty('align-items', 'center');
+  copy.style.setProperty('min-width', '0');
+  copy.style.setProperty('flex', '1 1 auto');
+  copy.replaceChildren(stack);
+  header.dataset.exportHeaderRebuilt = 'true';
+}
+
+function finalizeExportHeaderText(root: HTMLElement) {
+  root
+    .querySelectorAll<HTMLElement>('[data-export-header="true"]')
+    .forEach((header) => {
+      const platform = header.dataset.exportPlatform;
+
+      if (platform === 'discord') {
+        rebuildDiscordExportHeader(header);
+        return;
+      }
+
+      if (platform === 'whatsapp') {
+        rebuildStackedExportHeader(header, {
+          titleColor: '#111b21',
+          subtitleColor: '#667781',
+          titleFontSize: '1rem',
+          subtitleFontSize: '0.75rem',
+          minHeight: '40px',
+        });
+        return;
+      }
+
+      if (platform === 'telegram') {
+        rebuildStackedExportHeader(header, {
+          titleColor: '#0f1721',
+          subtitleColor: '#97a3ae',
+          titleFontSize: '1.05rem',
+          subtitleFontSize: '0.9rem',
+          minHeight: '48px',
+        });
+      }
+    });
+
+  root
+    .querySelectorAll<HTMLElement>('[data-export-header-subtitle="true"]')
+    .forEach((subtitle) => {
+      truncateTextToFitSingleLine(subtitle);
+    });
+
+  root
+    .querySelectorAll<HTMLElement>('[data-export-header-title="true"]')
+    .forEach((title) => {
+      if (getExportHeaderPlatform(title) !== 'discord') {
+        truncateTextToFitSingleLine(title);
+      }
     });
 }
 
@@ -873,23 +1238,28 @@ export async function renderElementToCanvas(
 
   const rect = node.getBoundingClientRect();
   const width = Math.max(1, Math.round(options.renderWidth ?? rect.width));
-  const height = Math.max(1, Math.round(options.renderHeight ?? rect.height));
+  const requestedHeight = Math.max(
+    1,
+    Math.round(options.renderHeight ?? rect.height)
+  );
   const pixelRatio =
     options.pixelRatio ?? Math.max(2, window.devicePixelRatio || 1);
   const useAltLayout =
-    width !== Math.round(rect.width) || height !== Math.round(rect.height);
+    width !== Math.round(rect.width) ||
+    requestedHeight !== Math.round(rect.height) ||
+    options.captureFullContent === true;
   const { layoutSource, cleanup } = useAltLayout
-    ? await createLayoutSource(node, width, height)
+    ? await createLayoutSource(node, width, requestedHeight)
     : { layoutSource: node, cleanup: () => {} };
   const clone = await buildStyledClone(layoutSource);
   clone.style.setProperty('width', `${width}px`);
   clone.style.setProperty('min-width', `${width}px`);
   clone.style.setProperty('max-width', `${width}px`);
-  clone.style.setProperty('height', `${height}px`);
-  clone.style.setProperty('min-height', `${height}px`);
-  clone.style.setProperty('max-height', `${height}px`);
+  clone.style.setProperty('height', `${requestedHeight}px`);
+  clone.style.setProperty('min-height', `${requestedHeight}px`);
+  clone.style.setProperty('max-height', `${requestedHeight}px`);
   clone.style.setProperty('flex', 'none');
-  const iframe = createSandboxIframe(width, height);
+  const iframe = createSandboxIframe(width, requestedHeight);
   const iframeDocument = iframe.contentDocument;
 
   if (!iframeDocument) {
@@ -900,6 +1270,33 @@ export async function renderElementToCanvas(
   try {
     iframeDocument.body.appendChild(clone);
     await waitForImagesReady(clone);
+    await new Promise((resolve) =>
+      window.requestAnimationFrame(() => resolve(null))
+    );
+    let renderHeight = requestedHeight;
+
+    if (options.captureFullContent) {
+      expandCloneForFullContent(clone);
+      await new Promise((resolve) =>
+        window.requestAnimationFrame(() => resolve(null))
+      );
+      await new Promise((resolve) =>
+        window.requestAnimationFrame(() => resolve(null))
+      );
+      renderHeight = Math.max(
+        requestedHeight,
+        getExpandedCloneHeight(clone, requestedHeight)
+      );
+      clone.style.setProperty('height', `${renderHeight}px`);
+      clone.style.setProperty('min-height', `${renderHeight}px`);
+      clone.style.setProperty('max-height', `${renderHeight}px`);
+      iframe.style.height = `${renderHeight}px`;
+    }
+
+    finalizeExportHeaderText(clone);
+    await new Promise((resolve) =>
+      window.requestAnimationFrame(() => resolve(null))
+    );
     const html2canvas = await getHtml2Canvas();
     const canvas = await html2canvas(clone, {
       backgroundColor: null,
@@ -908,9 +1305,9 @@ export async function renderElementToCanvas(
       allowTaint: false,
       logging: false,
       width,
-      height,
+      height: renderHeight,
       windowWidth: width,
-      windowHeight: height,
+      windowHeight: renderHeight,
     });
 
     return applyAspectRatioToCanvas(
@@ -937,6 +1334,15 @@ export async function exportElementToImageBlob(
   options: RenderElementToCanvasOptions = {}
 ) {
   const canvas = await renderElementToCanvas(node, options);
+  return canvasToImageBlob(canvas, node, mimeType, options);
+}
+
+export async function canvasToImageBlob(
+  canvas: HTMLCanvasElement,
+  node: HTMLElement,
+  mimeType: 'image/png' | 'image/jpeg',
+  options: Pick<RenderElementToCanvasOptions, 'matteColor'> = {}
+) {
   const outputCanvas =
     mimeType === 'image/jpeg'
       ? applyOpaqueExportSurface(canvas, node, options.matteColor || '#111214')
@@ -956,4 +1362,47 @@ export async function exportElementToImageBlob(
       mimeType === 'image/jpeg' ? 0.92 : undefined
     );
   });
+}
+
+export function splitCanvasIntoPages(
+  canvas: HTMLCanvasElement,
+  pageHeight: number
+) {
+  const safePageHeight = Math.max(1, Math.floor(pageHeight));
+
+  if (canvas.height <= safePageHeight) {
+    return [canvas];
+  }
+
+  const pages: HTMLCanvasElement[] = [];
+  let offsetY = 0;
+
+  while (offsetY < canvas.height) {
+    const sliceHeight = Math.min(safePageHeight, canvas.height - offsetY);
+    const pageCanvas = document.createElement('canvas');
+    pageCanvas.width = canvas.width;
+    pageCanvas.height = sliceHeight;
+    const context = pageCanvas.getContext('2d');
+
+    if (!context) {
+      break;
+    }
+
+    context.drawImage(
+      canvas,
+      0,
+      offsetY,
+      canvas.width,
+      sliceHeight,
+      0,
+      0,
+      canvas.width,
+      sliceHeight
+    );
+
+    pages.push(pageCanvas);
+    offsetY += sliceHeight;
+  }
+
+  return pages;
 }

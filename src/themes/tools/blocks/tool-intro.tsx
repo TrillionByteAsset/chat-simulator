@@ -1,7 +1,5 @@
 import MarkdownIt from 'markdown-it';
 
-import 'github-markdown-css/github-markdown.css';
-
 import { getLocalizedToolManifest } from '@/tools/shared/localized-tool-manifest';
 import { getLocale } from 'next-intl/server';
 

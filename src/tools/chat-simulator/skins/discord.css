@@ -338,6 +338,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  width: 100%;
 }
 
 .tool-root-chat-simulator.skin-theme-discord .ds-message-meta-row-outgoing {
@@ -352,6 +353,20 @@
   border-radius: 12px;
   background: rgba(88, 101, 242, 0.18);
   padding: 8px 12px;
+}
+
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-message-bubble-outgoing.ds-message-bubble-wide {
+  display: block;
+  width: min(100%, calc(100% - 12px));
+}
+
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-message-bubble-outgoing.ds-message-bubble-wide
+  .ds-message-content {
+  display: block;
+  width: 100%;
+  max-width: none;
 }
 
 /* 头像 — 绝对定位到左侧 */
@@ -403,6 +418,12 @@
 /* Stacked 消息（同组后续）：无额外间距 */
 .skin-theme-discord .ds-message-stacked {
   margin-top: 0;
+}
+
+.tool-root-chat-simulator.skin-theme-discord
+  .ds-message-group-outgoing
+  .ds-message-stacked {
+  margin-top: 6px;
 }
 
 /* ============================================

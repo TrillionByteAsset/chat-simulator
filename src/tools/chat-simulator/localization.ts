@@ -130,6 +130,8 @@ export function getChatSimulatorUiText(locale?: string) {
       exportMode: '导出模式',
       exportRatio: '导出比例',
       exportQuality: '导出清晰度',
+      exportContent: '导出范围',
+      exportOverflow: '超长内容',
       exportSummary: '导出摘要',
       cancel: '取消',
       choosePlatform: '选择平台',
@@ -238,6 +240,30 @@ export function getChatSimulatorUiText(locale?: string) {
         { value: '1:1', label: '1:1 方图', aspectRatio: 1 },
         { value: '16:9', label: '16:9 横图', aspectRatio: 16 / 9 },
       ],
+      exportContentOptions: [
+        {
+          value: 'viewport',
+          label: '当前一屏',
+          description: '只导出当前可视区域。',
+        },
+        {
+          value: 'full',
+          label: '完整聊天',
+          description: '展开全部消息，导出完整聊天内容。',
+        },
+      ],
+      exportOverflowOptions: [
+        {
+          value: 'single',
+          label: '合成长图',
+          description: '超过一屏时继续导出为一张长图。',
+        },
+        {
+          value: 'multiple',
+          label: '拆成多张',
+          description: '超过一屏时按当前视口高度自动拆分多张图片。',
+        },
+      ],
       discordHeaderFallback: '在群组设置中设置频道主题。',
       whatsappHeaderFallback: '点此查看联系人信息',
       telegramMembersSuffix: ' 位成员',
@@ -292,6 +318,8 @@ export function getChatSimulatorUiText(locale?: string) {
     exportMode: 'Export mode',
     exportRatio: 'Export ratio',
     exportQuality: 'Export quality',
+    exportContent: 'Export content',
+    exportOverflow: 'Long content',
     exportSummary: 'Export summary',
     cancel: 'Cancel',
     choosePlatform: 'Choose platform',
@@ -402,6 +430,30 @@ export function getChatSimulatorUiText(locale?: string) {
       { value: '4:5', label: '4:5 Post', aspectRatio: 4 / 5 },
       { value: '1:1', label: '1:1 Square', aspectRatio: 1 },
       { value: '16:9', label: '16:9 Wide', aspectRatio: 16 / 9 },
+    ],
+    exportContentOptions: [
+      {
+        value: 'viewport',
+        label: 'Current viewport',
+        description: 'Export only the currently visible screen.',
+      },
+      {
+        value: 'full',
+        label: 'Full chat',
+        description: 'Expand and export the entire conversation.',
+      },
+    ],
+    exportOverflowOptions: [
+      {
+        value: 'single',
+        label: 'Single long image',
+        description: 'Merge overflow into one long image.',
+      },
+      {
+        value: 'multiple',
+        label: 'Split into pages',
+        description: 'Split overflow into multiple screenshots by viewport height.',
+      },
     ],
     discordHeaderFallback: 'Set a channel topic from the group settings panel.',
     whatsappHeaderFallback: 'tap here for contact info',

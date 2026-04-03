@@ -26,10 +26,18 @@ function triggerDownload(file: File) {
 }
 
 export async function deliverExportedFile(file: File) {
+  return deliverExportedFiles([file]);
+}
+
+export async function deliverExportedFiles(files: File[]) {
+  if (files.length === 0) {
+    return 'skipped';
+  }
+
   if (isHandheldDevice() && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
     const sharePayload = {
-      files: [file],
-      title: file.name,
+      files,
+      title: files.length === 1 ? files[0]?.name : `${files.length} chat exports`,
     };
 
     if (typeof navigator.canShare !== 'function' || navigator.canShare(sharePayload)) {
@@ -46,6 +54,10 @@ export async function deliverExportedFile(file: File) {
     }
   }
 
-  triggerDownload(file);
+  for (const file of files) {
+    triggerDownload(file);
+    await new Promise((resolve) => window.setTimeout(resolve, 150));
+  }
+
   return 'downloaded';
 }

@@ -5,6 +5,7 @@ export function BrandLogo({ brand }: { brand: BrandType }) {
   return (
     <Link
       href={brand.url || ''}
+      title={brand.title || brand.logo?.alt || ''}
       target={brand.target || '_self'}
       className={`flex items-center space-x-3 ${brand.className}`}
     >
