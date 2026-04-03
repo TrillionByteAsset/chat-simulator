@@ -165,11 +165,17 @@ export default function DiscordInputBar({
           value={value}
           onChange={handleInput}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder}
+          placeholder=""
           disabled={disabled}
           rows={1}
           className="ds-discord-compose-input"
         />
+
+        {!value ? (
+          <span className="ds-discord-compose-placeholder" aria-hidden="true">
+            {placeholder}
+          </span>
+        ) : null}
 
         <div className="ds-discord-compose-actions" aria-hidden="true">
           <button

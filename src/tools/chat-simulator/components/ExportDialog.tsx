@@ -42,6 +42,7 @@ export function ExportDialog({
   exportLayout,
   exportQuality,
   isExportingImage,
+  primaryActionLabel,
   onStartExport,
 }: {
   open: boolean;
@@ -57,7 +58,10 @@ export function ExportDialog({
     exportOverflow: string;
     exportSummary: string;
     cancel: string;
+    openImage: string;
     export: string;
+    prepareExport: string;
+    saveToPhone: string;
     phoneViewport: string;
     currentWebViewport: string;
   };
@@ -108,12 +112,37 @@ export function ExportDialog({
     description: string;
   };
   isExportingImage: boolean;
+  primaryActionLabel: string;
   onStartExport: () => Promise<void>;
 }) {
+  const mobileDialogStyle = {
+    width: 'min(520px, calc(100vw - 1rem))',
+    height:
+      'min(42rem, calc(100dvh - 1rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)))',
+    maxHeight:
+      'calc(100dvh - 1rem - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+    touchAction: 'pan-y',
+  } as const;
+
+  const mobileScrollAreaStyle = {
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
+    overscrollBehaviorY: 'contain',
+    touchAction: 'pan-y',
+  } as const;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-white/10 bg-[#202225] p-0 text-white sm:max-w-[520px]">
-        <DialogHeader className="border-b border-white/10 px-6 pt-6 pb-4">
+      <DialogContent
+        className="top-2 !flex translate-x-[-50%] translate-y-0 flex-col overflow-hidden border-white/10 bg-[#202225] p-0 text-white sm:top-[50%] sm:max-w-[520px] sm:translate-y-[-50%]"
+        style={mobileDialogStyle}
+        onOpenAutoFocus={(event) => {
+          // Prevent Radix from auto-focusing the first select on mobile,
+          // which triggers the native PNG/JPG picker immediately on iOS.
+          event.preventDefault();
+        }}
+      >
+        <DialogHeader className="shrink-0 border-b border-white/10 px-6 pt-6 pb-4">
           <DialogTitle className="text-xl font-semibold text-white">
             {uiText.exportChatImage}
           </DialogTitle>
@@ -122,7 +151,10 @@ export function ExportDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 px-6 py-5">
+        <div
+          className="grid min-h-0 flex-1 gap-4 px-6 py-5"
+          style={mobileScrollAreaStyle}
+        >
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1 block text-xs font-medium tracking-[0.12em] text-[#949ba4] uppercase">
@@ -300,7 +332,7 @@ export function ExportDialog({
           </div>
         </div>
 
-        <DialogFooter className="border-t border-white/10 px-6 py-4 sm:justify-between">
+        <DialogFooter className="sticky bottom-0 z-10 shrink-0 border-t border-white/10 bg-[#202225] px-6 py-4 sm:justify-between">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
@@ -319,7 +351,7 @@ export function ExportDialog({
             ) : (
               <Download className="h-4 w-4" />
             )}
-            {uiText.export} {exportFileFormat.toUpperCase()}
+            {primaryActionLabel}
           </button>
         </DialogFooter>
       </DialogContent>

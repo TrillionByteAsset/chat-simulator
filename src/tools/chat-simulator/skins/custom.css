@@ -63,7 +63,8 @@
 }
 
 .tool-root-chat-simulator.skin-theme-custom .custom-bubble-shell-wide {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
 }
 
 .tool-root-chat-simulator.skin-theme-custom .custom-bubble-shell-outgoing {
@@ -71,7 +72,8 @@
 }
 
 .tool-root-chat-simulator.skin-theme-custom .custom-message-bubble-wide {
-  width: min(100%, calc(100% - 8px));
+  width: auto;
+  max-width: 100%;
 }
 
 .tool-root-chat-simulator.skin-theme-custom
@@ -88,8 +90,8 @@
 .tool-root-chat-simulator.skin-theme-custom
   .custom-message-bubble-wide
   .ds-message-content {
-  width: 100%;
-  max-width: none;
+  width: auto;
+  max-width: min(100%, calc(100% - 8px));
 }
 
 .tool-root-chat-simulator.skin-theme-custom

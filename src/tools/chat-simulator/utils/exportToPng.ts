@@ -501,12 +501,14 @@ function applyExportLayoutFixups(root: HTMLElement) {
       header.style.setProperty('overflow', 'visible');
 
       if (platform === 'discord') {
-        header.style.setProperty('height', '48px');
-        header.style.setProperty('min-height', '48px');
-        header.style.setProperty('max-height', '48px');
+        header.style.setProperty('height', 'auto');
+        header.style.setProperty('min-height', '60px');
+        header.style.setProperty('max-height', 'none');
         header.style.setProperty('display', 'flex');
         header.style.setProperty('justify-content', 'space-between');
         header.style.setProperty('align-items', 'center');
+        header.style.setProperty('padding-top', '6px');
+        header.style.setProperty('padding-bottom', '6px');
         return;
       }
 
@@ -522,18 +524,28 @@ function applyExportLayoutFixups(root: HTMLElement) {
     .querySelectorAll<HTMLElement>('[data-export-header-copy="true"]')
     .forEach((copy) => {
       copy.style.setProperty('min-width', '0');
-      copy.style.setProperty('overflow', 'visible');
+      copy.style.setProperty('height', 'auto');
+      copy.style.setProperty('min-height', '0');
+      copy.style.setProperty('max-height', 'none');
+      copy.style.setProperty('overflow-x', 'hidden');
+      copy.style.setProperty('overflow-y', 'visible');
       copy.style.setProperty('flex', '1 1 auto');
     });
 
   root
     .querySelectorAll<HTMLElement>('[data-export-discord-header-row="true"]')
     .forEach((row) => {
-      row.style.setProperty('display', 'flex');
+      row.style.setProperty('display', 'grid');
+      row.style.setProperty('grid-template-columns', 'auto auto minmax(0, 1fr)');
       row.style.setProperty('align-items', 'center');
       row.style.setProperty('flex-wrap', 'nowrap');
       row.style.setProperty('min-width', '0');
       row.style.setProperty('width', '100%');
+      row.style.setProperty('height', 'auto');
+      row.style.setProperty('min-height', '0');
+      row.style.setProperty('max-height', 'none');
+      row.style.setProperty('column-gap', '8px');
+      row.style.setProperty('overflow', 'visible');
     });
 
   root
@@ -542,21 +554,27 @@ function applyExportLayoutFixups(root: HTMLElement) {
       const isDiscordHeader = getExportHeaderPlatform(title) === 'discord';
       title.style.setProperty('display', 'block');
       title.style.setProperty('min-width', '0');
-      title.style.setProperty('overflow', 'visible');
+      title.style.setProperty('height', 'auto');
+      title.style.setProperty('min-height', '0');
+      title.style.setProperty('max-height', 'none');
+      title.style.setProperty('overflow', 'hidden');
       title.style.setProperty('white-space', 'nowrap');
-      title.style.setProperty('text-overflow', 'clip');
-      title.style.setProperty('line-height', isDiscordHeader ? '1' : '1.35');
+      title.style.setProperty('text-overflow', 'ellipsis');
+      title.style.setProperty('line-height', isDiscordHeader ? '1.2' : '1.35');
       if (isDiscordHeader) {
         title.style.setProperty('display', 'inline-flex');
         title.style.setProperty('align-items', 'center');
-        title.style.setProperty('flex', '0 0 auto');
+        title.style.setProperty('flex', '0 1 auto');
+        title.style.setProperty('max-width', 'min(48%, 320px)');
+        title.style.setProperty('padding-top', '2px');
+        title.style.setProperty('padding-bottom', '2px');
 
         const hash = title.querySelector<HTMLElement>('span');
 
         if (hash) {
           hash.style.setProperty('display', 'inline-flex');
           hash.style.setProperty('align-items', 'center');
-          hash.style.setProperty('line-height', '1');
+          hash.style.setProperty('line-height', '1.2');
         }
       }
     });
@@ -567,14 +585,20 @@ function applyExportLayoutFixups(root: HTMLElement) {
       const isDiscordHeader = getExportHeaderPlatform(subtitle) === 'discord';
       subtitle.style.setProperty('display', 'block');
       subtitle.style.setProperty('min-width', '0');
-      subtitle.style.setProperty('overflow', 'visible');
+      subtitle.style.setProperty('height', 'auto');
+      subtitle.style.setProperty('min-height', '0');
+      subtitle.style.setProperty('max-height', 'none');
+      subtitle.style.setProperty('overflow', 'hidden');
       subtitle.style.setProperty('white-space', 'nowrap');
-      subtitle.style.setProperty('text-overflow', 'clip');
-      subtitle.style.setProperty('line-height', isDiscordHeader ? '1' : '1.35');
+      subtitle.style.setProperty('text-overflow', 'ellipsis');
+      subtitle.style.setProperty('line-height', isDiscordHeader ? '1.2' : '1.35');
       subtitle.style.setProperty('margin-top', isDiscordHeader ? '0' : '2px');
       if (isDiscordHeader) {
         subtitle.style.setProperty('flex', '1 1 auto');
         subtitle.style.setProperty('align-self', 'center');
+        subtitle.style.setProperty('max-width', '100%');
+        subtitle.style.setProperty('padding-top', '2px');
+        subtitle.style.setProperty('padding-bottom', '2px');
       }
     });
 
@@ -739,6 +763,25 @@ function getExportHeaderPlatform(node: HTMLElement) {
   );
 }
 
+function getDiscordHeaderTitleText(titleSource: HTMLElement) {
+  const explicitLabel = titleSource.querySelector<HTMLElement>(
+    '[data-export-discord-header-label="true"]'
+  );
+
+  if (explicitLabel) {
+    return explicitLabel.textContent?.trim().replace(/^#+\s*/, '') ?? '';
+  }
+
+  const clone = titleSource.cloneNode(true) as HTMLElement;
+  const firstChild = clone.firstElementChild;
+
+  if (firstChild) {
+    firstChild.remove();
+  }
+
+  return clone.textContent?.trim().replace(/^#+\s*/, '') ?? '';
+}
+
 function rebuildDiscordExportHeader(header: HTMLElement) {
   if (header.dataset.exportHeaderRebuilt === 'true') {
     return;
@@ -756,65 +799,90 @@ function rebuildDiscordExportHeader(header: HTMLElement) {
     return;
   }
 
-  const titleText = titleSource.textContent?.trim() ?? '';
+  const titleText = getDiscordHeaderTitleText(titleSource);
   const subtitleText = subtitleSource?.textContent?.trim() ?? '';
   const documentRef = header.ownerDocument;
   const row = documentRef.createElement('div');
   const title = documentRef.createElement('span');
   const hash = documentRef.createElement('span');
   const dot = documentRef.createElement('span');
+  const titleTextNode = documentRef.createElement('span');
   const subtitle = documentRef.createElement('span');
 
   row.setAttribute('data-export-discord-header-row', 'true');
   row.style.setProperty('display', 'flex');
   row.style.setProperty('align-items', 'center');
-  row.style.setProperty('column-gap', '12px');
+  row.style.setProperty('column-gap', '8px');
   row.style.setProperty('width', '100%');
   row.style.setProperty('min-width', '0');
-  row.style.setProperty('height', '48px');
+  row.style.setProperty('min-height', '52px');
+  row.style.setProperty('height', 'auto');
 
   title.setAttribute('data-export-header-title', 'true');
   title.style.setProperty('display', 'inline-flex');
   title.style.setProperty('align-items', 'center');
   title.style.setProperty('min-width', '0');
   title.style.setProperty('flex', '0 1 auto');
-  title.style.setProperty('font-size', '1.05rem');
+  title.style.setProperty('max-width', 'min(48%, 320px)');
+  title.style.setProperty('font-size', '1rem');
   title.style.setProperty('font-weight', '700');
-  title.style.setProperty('line-height', '1');
+  title.style.setProperty('line-height', '1.2');
   title.style.setProperty('color', '#f2f3f5');
   title.style.setProperty('white-space', 'nowrap');
+  title.style.setProperty('overflow-x', 'hidden');
+  title.style.setProperty('overflow-y', 'visible');
+  title.style.setProperty('text-overflow', 'ellipsis');
+  title.style.setProperty('padding-top', '2px');
+  title.style.setProperty('padding-bottom', '2px');
 
   hash.style.setProperty('display', 'inline-flex');
   hash.style.setProperty('align-items', 'center');
-  hash.style.setProperty('margin-right', '4px');
-  hash.style.setProperty('font-size', '1.25rem');
+  hash.style.setProperty('margin-right', '6px');
+  hash.style.setProperty('font-size', '1rem');
   hash.style.setProperty('font-weight', '500');
-  hash.style.setProperty('line-height', '1');
+  hash.style.setProperty('line-height', '1.2');
   hash.style.setProperty('color', '#949ba4');
   hash.textContent = '#';
 
   dot.style.setProperty('display', 'inline-flex');
   dot.style.setProperty('align-items', 'center');
   dot.style.setProperty('flex', '0 0 auto');
-  dot.style.setProperty('font-size', '1.15rem');
+  dot.style.setProperty('font-size', '1.1rem');
   dot.style.setProperty('font-weight', '900');
   dot.style.setProperty('line-height', '1');
   dot.style.setProperty('color', '#7b7d86');
   dot.textContent = '·';
 
+  titleTextNode.className = 'ds-discord-header-title-text';
+  titleTextNode.style.setProperty('display', 'block');
+  titleTextNode.style.setProperty('min-width', '0');
+  titleTextNode.style.setProperty('max-width', '100%');
+  titleTextNode.style.setProperty('overflow-x', 'hidden');
+  titleTextNode.style.setProperty('overflow-y', 'visible');
+  titleTextNode.style.setProperty('text-overflow', 'ellipsis');
+  titleTextNode.style.setProperty('white-space', 'nowrap');
+  titleTextNode.style.setProperty('line-height', '1.2');
+  titleTextNode.textContent = titleText;
+
   subtitle.setAttribute('data-export-header-subtitle', 'true');
   subtitle.style.setProperty('display', 'block');
   subtitle.style.setProperty('min-width', '0');
   subtitle.style.setProperty('flex', '1 1 auto');
+  subtitle.style.setProperty('max-width', '100%');
   subtitle.style.setProperty('font-size', '0.75rem');
   subtitle.style.setProperty('font-weight', '400');
-  subtitle.style.setProperty('line-height', '1');
+  subtitle.style.setProperty('line-height', '1.2');
   subtitle.style.setProperty('color', '#949ba4');
   subtitle.style.setProperty('white-space', 'nowrap');
+  subtitle.style.setProperty('overflow-x', 'hidden');
+  subtitle.style.setProperty('overflow-y', 'visible');
+  subtitle.style.setProperty('text-overflow', 'ellipsis');
+  subtitle.style.setProperty('padding-top', '2px');
+  subtitle.style.setProperty('padding-bottom', '2px');
   subtitle.textContent = subtitleText;
 
   title.appendChild(hash);
-  title.appendChild(documentRef.createTextNode(titleText));
+  title.appendChild(titleTextNode);
   row.appendChild(title);
   row.appendChild(dot);
   row.appendChild(subtitle);
@@ -823,6 +891,9 @@ function rebuildDiscordExportHeader(header: HTMLElement) {
   copy.style.setProperty('align-items', 'center');
   copy.style.setProperty('min-width', '0');
   copy.style.setProperty('flex', '1 1 auto');
+  copy.style.setProperty('width', '100%');
+  copy.style.setProperty('overflow-x', 'hidden');
+  copy.style.setProperty('overflow-y', 'visible');
   copy.replaceChildren(row);
   header.dataset.exportHeaderRebuilt = 'true';
 }
@@ -906,7 +977,6 @@ function finalizeExportHeaderText(root: HTMLElement) {
       const platform = header.dataset.exportPlatform;
 
       if (platform === 'discord') {
-        rebuildDiscordExportHeader(header);
         return;
       }
 

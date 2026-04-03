@@ -268,7 +268,7 @@
   .tg-message-group-outgoing
   .tg-group-stack {
   align-items: flex-end;
-  width: min(100%, calc(100% - 8px));
+  width: min(100%, calc(100% - 56px));
 }
 
 .tool-root-chat-simulator.skin-theme-telegram .tg-bubble-shell {
@@ -278,7 +278,8 @@
 }
 
 .tool-root-chat-simulator.skin-theme-telegram .tg-bubble-shell-wide {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
 }
 
 .tool-root-chat-simulator.skin-theme-telegram .tg-message-bubble {
@@ -288,18 +289,24 @@
   overflow: visible;
 }
 
+.tool-root-chat-simulator.skin-theme-telegram .tg-message-bubble-outgoing {
+  display: block;
+  max-width: min(100%, calc(100% - 56px));
+}
+
 .tool-root-chat-simulator.skin-theme-telegram .tg-message-bubble-wide {
-  width: min(100%, calc(100% - 8px));
-  max-width: min(100%, calc(100% - 8px));
+  width: auto;
+  max-width: 100%;
 }
 
 .tool-root-chat-simulator.skin-theme-telegram
   .tg-message-bubble
   .ds-message-content {
   position: relative;
-  display: block;
-  width: fit-content;
-  max-width: min(100%, 1040px);
+  display: inline-block;
+  width: auto;
+  min-width: 0;
+  max-width: min(100%, 540px);
   border-radius: 18px;
   padding: 8px 12px 7px;
   box-shadow: 0 1px 1px rgba(16, 31, 40, 0.12);
@@ -309,8 +316,8 @@
 .tool-root-chat-simulator.skin-theme-telegram
   .tg-message-bubble-wide
   .ds-message-content {
-  width: 100%;
-  max-width: none;
+  width: auto;
+  max-width: min(100%, calc(100% - 12px));
 }
 
 .tool-root-chat-simulator.skin-theme-telegram
@@ -322,6 +329,10 @@
 .tool-root-chat-simulator.skin-theme-telegram
   .tg-message-bubble-outgoing
   .ds-message-content {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
   background: var(--tg-outgoing);
   box-shadow: 0 1px 1px rgba(88, 119, 66, 0.16);
 }
@@ -379,10 +390,14 @@
 }
 
 .tool-root-chat-simulator.skin-theme-telegram .tg-message-content-wrap {
-  position: relative;
   display: block;
   min-width: 0;
-  padding-right: 62px;
+}
+
+.tool-root-chat-simulator.skin-theme-telegram .tg-message-content-wrap::after {
+  content: '';
+  display: block;
+  clear: both;
 }
 
 .tool-root-chat-simulator.skin-theme-telegram .tg-author-row {
@@ -406,12 +421,29 @@
 
 .tool-root-chat-simulator.skin-theme-telegram .tg-message-text {
   margin: 0;
+  display: inline;
   color: var(--tg-text);
   font-size: 0.98rem;
   line-height: 1.375;
+  overflow-wrap: anywhere;
 }
 
-.tool-root-chat-simulator.skin-theme-telegram .tg-message-meta,
+.tool-root-chat-simulator.skin-theme-telegram .tg-message-meta {
+  float: right;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 5px 0 0 12px;
+  white-space: nowrap;
+}
+
+.tool-root-chat-simulator.skin-theme-telegram .tg-message-meta-outgoing {
+  float: none;
+  display: flex;
+  justify-content: flex-end;
+  margin: 6px 0 0;
+}
+
 .tool-root-chat-simulator.skin-theme-telegram .tg-attachment-meta {
   position: absolute;
   right: 0;

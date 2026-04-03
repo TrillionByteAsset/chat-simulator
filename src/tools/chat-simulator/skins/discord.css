@@ -210,6 +210,17 @@
     0 12px 24px rgba(0, 0, 0, 0.16);
 }
 
+.tool-root-chat-simulator.skin-theme-discord .ds-settings-panel {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-settings-panel::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 /* ============================================
    滚动条 (Discord 的细窄滚动条)
    ============================================ */
@@ -281,6 +292,68 @@
   background-repeat: no-repeat;
 }
 
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-header-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-header-title {
+  display: inline-flex;
+  min-width: 0;
+  flex: 0 0 auto;
+  max-width: min(72%, 560px);
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  color: #f2f3f5;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-tool-header-hash {
+  flex: 0 0 auto;
+  color: #949ba4;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-header-title-text {
+  display: block;
+  min-width: 0;
+  flex: 0 0 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-header-separator {
+  flex: 0 0 auto;
+  color: #7b7d86;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-header-subtitle {
+  display: block;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  color: #949ba4;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .tool-root-chat-simulator.skin-theme-discord
   .ds-control-button.ds-platform-select {
   background-image:
@@ -346,27 +419,31 @@
 }
 
 .tool-root-chat-simulator.skin-theme-discord
+  .ds-message-bubble-outgoing {
+  display: block;
+  max-width: min(100%, calc(100% - 12px));
+}
+
+.tool-root-chat-simulator.skin-theme-discord
   .ds-message-bubble-outgoing
   .ds-message-content {
-  display: inline-block;
-  max-width: min(72vw, 540px);
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
   border-radius: 12px;
   background: rgba(88, 101, 242, 0.18);
   padding: 8px 12px;
 }
 
 .tool-root-chat-simulator.skin-theme-discord
-  .ds-message-bubble-outgoing.ds-message-bubble-wide {
+  .ds-message-bubble-outgoing
+  .ds-message-content
+  > p {
   display: block;
-  width: min(100%, calc(100% - 12px));
-}
-
-.tool-root-chat-simulator.skin-theme-discord
-  .ds-message-bubble-outgoing.ds-message-bubble-wide
-  .ds-message-content {
-  display: block;
-  width: 100%;
-  max-width: none;
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 /* 头像 — 绝对定位到左侧 */
@@ -486,6 +563,7 @@
 }
 
 .tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-shell {
+  position: relative;
   display: flex;
   min-height: 44px;
   align-items: flex-end;
@@ -531,6 +609,7 @@
   min-height: 24px;
   max-height: 144px;
   flex: 1;
+  min-width: 0;
   resize: none;
   border: 0;
   background: transparent;
@@ -540,6 +619,21 @@
   font-size: 1rem;
   line-height: 1.375rem;
   outline: none;
+}
+
+.tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-placeholder {
+  pointer-events: none;
+  position: absolute;
+  top: 11px;
+  left: 44px;
+  right: 132px;
+  overflow: hidden;
+  color: #949ba4;
+  font-family: var(--ds-font-family);
+  font-size: 1rem;
+  line-height: 1.375rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tool-root-chat-simulator.skin-theme-discord
@@ -553,6 +647,13 @@
   align-items: center;
   gap: 1px;
   margin-right: -2px;
+}
+
+@media (max-width: 640px) {
+  .tool-root-chat-simulator.skin-theme-discord
+    .ds-discord-compose-placeholder {
+    right: 110px;
+  }
 }
 
 .tool-root-chat-simulator.skin-theme-discord .ds-discord-compose-action-button {

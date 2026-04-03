@@ -101,7 +101,8 @@ function createWelcomeMessage(
   channelName = 'general',
   activeSkin: PlatformType = 'discord'
 ): ChatMessage {
-  const normalizedChannel = channelName.trim() || 'general';
+  const normalizedChannel =
+    channelName.trim().replace(/^#+\s*/, '') || 'general';
 
   return {
     id: `msg-system-${Date.now()}`,
