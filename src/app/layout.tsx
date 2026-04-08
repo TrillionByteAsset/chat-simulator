@@ -4,8 +4,9 @@ import { getLocale, setRequestLocale } from 'next-intl/server';
 import NextTopLoader from 'nextjs-toploader';
 
 import { envConfigs } from '@/config';
-import { locales } from '@/config/locale';
+import { defaultLocale, locales } from '@/config/locale';
 import { UtmCapture } from '@/shared/blocks/common/utm-capture';
+import { buildLocalizedUrl, getLocaleLanguageTag } from '@/shared/lib/seo';
 import { getAllConfigs } from '@/shared/models/config';
 import { getAdsService } from '@/shared/services/ads';
 import { getAffiliateService } from '@/shared/services/affiliate';
@@ -22,9 +23,6 @@ export default async function RootLayout({
 
   const isProduction = process.env.NODE_ENV === 'production';
   const isDebug = process.env.NEXT_PUBLIC_DEBUG === 'true';
-
-  // app url
-  const appUrl = envConfigs.app_url || '';
 
   // ads components
   let adsMetaTags = null;
@@ -92,10 +90,15 @@ export default async function RootLayout({
               <link
                 key={loc}
                 rel="alternate"
-                hrefLang={loc}
-                href={`${appUrl}${loc === 'en' ? '' : `/${loc}`}`}
+                hrefLang={getLocaleLanguageTag(loc)}
+                href={buildLocalizedUrl('/', loc)}
               />
             ))}
+            <link
+              rel="alternate"
+              hrefLang="x-default"
+              href={buildLocalizedUrl('/', defaultLocale)}
+            />
           </>
         ) : null}
 

@@ -3,6 +3,55 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { envConfigs } from '@/config';
 import { defaultLocale } from '@/config/locale';
 
+export function buildAbsoluteUrl(path: string) {
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+
+  const normalizedBase = envConfigs.app_url.replace(/\/$/, '');
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  return `${normalizedBase}${normalizedPath}`;
+}
+
+export function buildLocalizedPath(path: string, locale?: string) {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  if (!locale || locale === defaultLocale) {
+    return normalizedPath;
+  }
+
+  return `/${locale}${normalizedPath}`;
+}
+
+export function buildLocalizedUrl(path: string, locale?: string) {
+  return buildAbsoluteUrl(buildLocalizedPath(path, locale));
+}
+
+export function getLocaleLanguageTag(locale: string) {
+  if (locale === 'zh') {
+    return 'zh-CN';
+  }
+
+  return 'en';
+}
+
+export function getLanguageAlternates(paths: Partial<Record<string, string>>) {
+  const languages: Record<string, string> = {};
+
+  Object.entries(paths).forEach(([locale, path]) => {
+    if (!path) return;
+    languages[getLocaleLanguageTag(locale)] = buildLocalizedUrl(path, locale);
+  });
+
+  const defaultPath = paths[defaultLocale];
+  if (defaultPath) {
+    languages['x-default'] = buildLocalizedUrl(defaultPath, defaultLocale);
+  }
+
+  return languages;
+}
+
 // get metadata for page component
 export function getMetadata(
   options: {
@@ -138,18 +187,7 @@ async function getCanonicalUrl(canonicalUrl: string, locale: string) {
     // full url
     canonicalUrl = canonicalUrl;
   } else {
-    // relative path
-    if (!canonicalUrl.startsWith('/')) {
-      canonicalUrl = `/${canonicalUrl}`;
-    }
-
-    canonicalUrl = `${envConfigs.app_url}${
-      !locale || locale === defaultLocale ? '' : `/${locale}`
-    }${canonicalUrl}`;
-
-    if (locale !== defaultLocale && canonicalUrl.endsWith('/')) {
-      canonicalUrl = canonicalUrl.slice(0, -1);
-    }
+    canonicalUrl = buildLocalizedUrl(canonicalUrl, locale);
   }
 
   return canonicalUrl;

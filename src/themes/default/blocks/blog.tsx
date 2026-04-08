@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 import { Calendar } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/core/i18n/navigation';
 import { Tabs } from '@/shared/blocks/common/tabs';
@@ -12,7 +12,7 @@ import {
 import { Tab } from '@/shared/types/blocks/common';
 import { Section } from '@/shared/types/blocks/landing';
 
-export function Blog({
+export async function Blog({
   section,
   className,
   categories,
@@ -25,7 +25,7 @@ export function Blog({
   currentCategory: CategoryType;
   posts: PostType[];
 }) {
-  const t = useTranslations('pages.blog.messages');
+  const t = await getTranslations('pages.blog.messages');
   const tabs: Tab[] = [];
   categories?.map((category: CategoryType) => {
     tabs.push({

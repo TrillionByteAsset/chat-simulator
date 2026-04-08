@@ -16,13 +16,17 @@ export interface Blog {
 export interface Post {
   id?: string;
   slug?: string;
+  slug_en?: string;
+  slug_zh?: string;
   title?: string;
   description?: string;
   image?: string;
   content?: string;
   created_at?: string;
+  updated_at?: string;
   author_name?: string;
   author_role?: string;
+  author_bio?: string;
   author_image?: string;
   url?: string;
   target?: string;
@@ -32,11 +36,16 @@ export interface Post {
   tags?: string[];
   version?: string;
   date?: string;
+  seo_title?: string;
+  seo_description?: string;
+  noindex?: boolean;
 }
 
 export interface Category {
   id?: string;
   slug?: string;
+  slug_en?: string;
+  slug_zh?: string;
   title?: string;
   description?: string;
   image?: string;

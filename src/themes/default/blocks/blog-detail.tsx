@@ -1,15 +1,14 @@
-'use client';
-
 import { CalendarIcon, ListIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
-import { MarkdownPreview } from '@/shared/blocks/common';
 import { Crumb } from '@/shared/blocks/common/crumb';
 import { type Post as PostType } from '@/shared/types/blocks/blog';
 import { NavItem } from '@/shared/types/blocks/common';
 
-export function BlogDetail({ post }: { post: PostType }) {
-  const t = useTranslations('pages.blog.messages');
+import '@/config/style/docs.css';
+
+export async function BlogDetail({ post }: { post: PostType }) {
+  const t = await getTranslations('pages.blog.messages');
 
   const crumbItems: NavItem[] = [
     {
@@ -95,11 +94,7 @@ export function BlogDetail({ post }: { post: PostType }) {
                     {post.body}
                   </div>
                 ) : (
-                  post.content && (
-                    <div className="prose prose-lg text-muted-foreground max-w-none space-y-6 *:leading-relaxed">
-                      <MarkdownPreview content={post.content} />
-                    </div>
-                  )
+                  post.content && null
                 )}
               </article>
             </div>

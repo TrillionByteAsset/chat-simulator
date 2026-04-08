@@ -20,6 +20,11 @@ function hasSessionCookie(request: NextRequest) {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Sanity Studio lives at a root-level route and should bypass locale routing.
+  if (pathname === '/studio' || pathname.startsWith('/studio/')) {
+    return NextResponse.next();
+  }
+
   // Handle internationalization first
   const intlResponse = intlMiddleware(request);
 
