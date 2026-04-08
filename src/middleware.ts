@@ -22,7 +22,12 @@ export function middleware(request: NextRequest) {
 
   // Sanity Studio lives at a root-level route and should bypass locale routing.
   if (pathname === '/studio' || pathname.startsWith('/studio/')) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    response.headers.set(
+      'X-Robots-Tag',
+      'noindex, nofollow, noarchive, nosnippet, noai, noimageai'
+    );
+    return response;
   }
 
   // Handle internationalization first

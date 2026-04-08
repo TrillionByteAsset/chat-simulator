@@ -13,48 +13,58 @@ export default function robots(): MetadataRoute.Robots {
     '/studio',
     '/studio/*',
   ];
-  const aiCrawlerDisallow = ['/'];
+  const aiCrawlerDisallow = defaultDisallow;
 
   return {
     rules: [
       {
         userAgent: 'GPTBot',
+        allow: '/',
         disallow: aiCrawlerDisallow,
       },
       {
         userAgent: 'ChatGPT-User',
+        allow: '/',
         disallow: aiCrawlerDisallow,
       },
       {
         userAgent: 'ClaudeBot',
+        allow: '/',
         disallow: aiCrawlerDisallow,
       },
       {
         userAgent: 'Claude-Web',
+        allow: '/',
         disallow: aiCrawlerDisallow,
       },
       {
         userAgent: 'anthropic-ai',
+        allow: '/',
         disallow: aiCrawlerDisallow,
       },
       {
         userAgent: 'PerplexityBot',
+        allow: '/',
         disallow: aiCrawlerDisallow,
       },
       {
         userAgent: 'Perplexity-User',
+        allow: '/',
         disallow: aiCrawlerDisallow,
       },
       {
         userAgent: 'CCBot',
+        allow: '/',
         disallow: aiCrawlerDisallow,
       },
       {
         userAgent: 'Google-Extended',
+        allow: '/',
         disallow: aiCrawlerDisallow,
       },
       {
         userAgent: 'Bytespider',
+        allow: '/',
         disallow: aiCrawlerDisallow,
       },
       {
