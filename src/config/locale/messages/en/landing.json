@@ -24,9 +24,9 @@
           "icon": "Box"
         },
         {
-          "title": "Pricing",
-          "url": "/pricing",
-          "icon": "DollarSign"
+          "title": "Blog",
+          "url": "/blog",
+          "icon": "Newspaper"
         },
         {
           "title": "AI",
@@ -62,12 +62,6 @@
           "title": "Content",
           "icon": "FileText",
           "children": [
-            {
-              "title": "Blog",
-              "description": "Read Blog Posts",
-              "url": "/blog",
-              "icon": "Newspaper"
-            },
             {
               "title": "Updates",
               "description": "Read Update Logs",
@@ -134,13 +128,8 @@
               "target": "_self"
             },
             {
-              "title": "Showcases",
-              "url": "/showcases",
-              "target": "_self"
-            },
-            {
-              "title": "Pricing",
-              "url": "/pricing",
+              "title": "Fun Cases",
+              "url": "/#fun-cases",
               "target": "_self"
             }
           ]

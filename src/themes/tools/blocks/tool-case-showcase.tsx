@@ -35,7 +35,10 @@ export function ToolCaseShowcase({ toolName }: { toolName?: string }) {
   };
 
   return (
-    <section className="container py-4 md:py-6">
+    <section
+      id="fun-cases"
+      className="container scroll-mt-20 py-4 md:py-6"
+    >
       <div className="border-foreground/10 bg-card/90 rounded-[28px] border p-7 shadow-[0_24px_70px_-38px_rgba(0,0,0,0.45)] backdrop-blur md:p-10">
         <div className="max-w-none lg:max-w-[72rem]">
           <p className="text-primary/75 text-[0.76rem] font-semibold tracking-[0.14em] uppercase">

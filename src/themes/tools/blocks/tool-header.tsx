@@ -16,7 +16,7 @@ export function ToolHeader({ manifest }: { manifest: ToolManifest }) {
   const logoSrc = manifest.header?.logo || '/logo.webp';
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-foreground/5 bg-background/75 backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b border-foreground/8 bg-background/85 backdrop-blur">
       <div className="container flex h-14 items-center justify-between">
         {/* 左侧：LOGO 图片 + 工具名称 */}
         <Link href="/" title={manifest.name} className="flex items-center space-x-2.5">
@@ -30,14 +30,14 @@ export function ToolHeader({ manifest }: { manifest: ToolManifest }) {
 
         {/* 右侧：导航链接（仅在配置时显示） */}
         {hasNav && (
-          <nav className="flex items-center gap-6">
+          <nav className="flex items-center gap-7">
             {manifest.header!.nav!.map((item, idx) => (
               <Link
                 key={idx}
                 href={item.url || ''}
                 title={item.title}
                 target={item.target || '_self'}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150"
+                className="text-[0.96rem] font-semibold tracking-[0.01em] text-foreground/82 hover:text-foreground transition-colors duration-150"
               >
                 {item.title}
               </Link>

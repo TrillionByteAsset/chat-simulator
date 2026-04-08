@@ -8,12 +8,35 @@ export function getChatSimulatorLocalizedManifest(
   manifest: ToolManifest,
   locale?: string
 ): ToolManifest {
+  const isZh = isChineseLocale(locale);
+  const headerNav = isZh
+    ? [
+        { title: '功能亮点', url: '/#features' },
+        { title: '案例展示', url: '/#fun-cases' },
+        { title: '博客', url: '/blog' },
+      ]
+    : [
+        { title: 'Features', url: '/#features' },
+        { title: 'Showcases', url: '/#fun-cases' },
+        { title: 'Blog', url: '/blog' },
+      ];
+
   if (!isChineseLocale(locale)) {
-    return manifest;
+    return {
+      ...manifest,
+      header: {
+        ...manifest.header,
+        nav: headerNav,
+      },
+    };
   }
 
   return {
     ...manifest,
+    header: {
+      ...manifest.header,
+      nav: headerNav,
+    },
     seo: {
       ...manifest.seo,
       title: 'Chat Simulator | Discord、WhatsApp 与 Telegram 聊天模拟器',

@@ -12,7 +12,10 @@ export function ToolStage({
   children: React.ReactNode;
 }) {
   return (
-    <section className="container pt-5 pb-4 md:pt-6 md:pb-4">
+    <section
+      id="features"
+      className="container scroll-mt-20 pt-5 pb-4 md:pt-6 md:pb-4"
+    >
       {heading ? (
         <div className="mb-5 flex min-w-0 items-center justify-between gap-4">
           <div className="min-w-0">

@@ -24,9 +24,9 @@
           "icon": "Box"
         },
         {
-          "title": "价格",
-          "url": "/pricing",
-          "icon": "DollarSign"
+          "title": "博客",
+          "url": "/blog",
+          "icon": "Newspaper"
         },
         {
           "title": "AI",
@@ -62,12 +62,6 @@
           "title": "内容",
           "icon": "FileText",
           "children": [
-            {
-              "title": "博客",
-              "description": "阅读博客文章",
-              "url": "/blog",
-              "icon": "Newspaper"
-            },
             {
               "title": "更新日志",
               "description": "阅读更新日志",
@@ -134,13 +128,8 @@
               "target": "_self"
             },
             {
-              "title": "案例展示",
-              "url": "/showcases",
-              "target": "_self"
-            },
-            {
-              "title": "价格",
-              "url": "/pricing",
+              "title": "有趣案例",
+              "url": "/#fun-cases",
               "target": "_self"
             }
           ]
