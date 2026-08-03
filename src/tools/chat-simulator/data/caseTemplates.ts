@@ -681,7 +681,7 @@ export function getChatSimulatorCaseTemplates(locale?: string) {
             '17-paragraph apology',
             'cold thumbs-up',
             'reaction evidence',
-            '8 cat memes赔偿',
+            '8 cat memes as damages',
           ],
     },
     {

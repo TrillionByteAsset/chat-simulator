@@ -1,41 +1,23 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { ToolSitePage } from '@/tools/shared/tool-site-page';
-import { getToolSitePageMetadata } from '@/tools/shared/tool-site-page-metadata';
+import { notFound, permanentRedirect } from 'next/navigation';
+import { getDefaultToolName } from '@/tools/shared/default-tool-manifest';
 
-import { getToolManifest } from '@/core/tooling-engine/DynamicLoader';
+import { buildLocalizedPath } from '@/shared/lib/seo';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string; toolName: string }>;
-}): Promise<Metadata> {
-  const { locale, toolName } = await params;
-  const manifest = await getToolManifest(toolName);
-
-  if (!manifest) {
-    return { title: 'Page Not Found' };
-  }
-
-  return getToolSitePageMetadata({
-    kind: 'privacy',
-    locale,
-    manifest,
-    canonicalPath: `/tools/${toolName}/privacy`,
-  });
+export function generateMetadata(): Metadata {
+  return { robots: { index: false, follow: true } };
 }
 
-export default async function ToolPrivacyPage({
+export default async function LegacyToolPrivacyPage({
   params,
 }: {
   params: Promise<{ locale: string; toolName: string }>;
 }) {
   const { locale, toolName } = await params;
-  const manifest = await getToolManifest(toolName);
 
-  if (!manifest) {
+  if (toolName !== getDefaultToolName()) {
     notFound();
   }
 
-  return <ToolSitePage kind="privacy" locale={locale} manifest={manifest} />;
+  permanentRedirect(buildLocalizedPath('/privacy', locale));
 }

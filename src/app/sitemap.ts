@@ -1,152 +1,89 @@
 import type { MetadataRoute } from 'next';
-import { getDefaultToolName } from '@/tools/shared/default-tool-manifest';
-
-import { envConfigs } from '@/config';
-import { defaultLocale, locales } from '@/config/locale';
 import { getBlogSitemapEntries } from '@/lib/sanity/blog';
-import {
-  buildLocalizedUrl,
-  getLanguageAlternates,
-} from '@/shared/lib/seo';
 
-function withLocale(path: string, locale: string) {
-  if (locale === defaultLocale) {
-    return path;
-  }
+import { locales } from '@/config/locale';
+import { buildLocalizedUrl, getLanguageAlternates } from '@/shared/lib/seo';
 
-  return `/${locale}${path}`;
-}
-
-function getPathPriority(path: string, defaultTool: string) {
-  if (path === '/' || path === `/tools/${defaultTool}`) {
-    return 1;
-  }
-
-  if (path === '/faq' || path === `/tools/${defaultTool}/faq`) {
-    return 0.85;
-  }
-
-  if (
-    path === '/about' ||
-    path === '/privacy' ||
-    path === '/terms' ||
-    path === `/tools/${defaultTool}/about` ||
-    path === `/tools/${defaultTool}/privacy` ||
-    path === `/tools/${defaultTool}/terms`
-  ) {
-    return 0.7;
-  }
-
-  return 0.6;
-}
-
-function getChangeFrequency(path: string, defaultTool: string) {
-  if (path === '/' || path === `/tools/${defaultTool}`) {
-    return 'weekly' as const;
-  }
-
-  if (path === '/faq' || path === `/tools/${defaultTool}/faq`) {
-    return 'monthly' as const;
-  }
-
-  return 'yearly' as const;
-}
+const staticPages = [
+  { path: '/', changeFrequency: 'weekly' as const, priority: 1 },
+  { path: '/about', changeFrequency: 'yearly' as const, priority: 0.7 },
+  { path: '/faq', changeFrequency: 'monthly' as const, priority: 0.85 },
+  { path: '/privacy', changeFrequency: 'yearly' as const, priority: 0.7 },
+  { path: '/terms', changeFrequency: 'yearly' as const, priority: 0.7 },
+];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const defaultTool = getDefaultToolName();
-  const now = new Date();
-  const pagePaths = [
-    '/',
-    '/about',
-    '/faq',
-    '/privacy',
-    '/terms',
-    `/tools/${defaultTool}`,
-    `/tools/${defaultTool}/about`,
-    `/tools/${defaultTool}/faq`,
-    `/tools/${defaultTool}/privacy`,
-    `/tools/${defaultTool}/terms`,
-  ];
+  const staticEntries: MetadataRoute.Sitemap = staticPages.flatMap((page) => {
+    const languages = getLanguageAlternates({
+      en: page.path,
+      zh: page.path,
+    });
 
-  const staticEntries = locales.flatMap((locale) =>
-    pagePaths.map((path) => ({
-      url:
-        path === '/'
-          ? `${envConfigs.app_url}${locale === defaultLocale ? '' : `/${locale}`}`
-          : buildLocalizedUrl(withLocale(path, locale)),
-      lastModified: now,
-      changeFrequency: getChangeFrequency(path, defaultTool),
-      priority: getPathPriority(path, defaultTool),
-    }))
-  );
+    return locales.map((locale) => ({
+      url: buildLocalizedUrl(page.path, locale),
+      changeFrequency: page.changeFrequency,
+      priority: page.priority,
+      alternates: { languages },
+    }));
+  });
 
   const { categories, posts } = await getBlogSitemapEntries();
+  const blogEntries: MetadataRoute.Sitemap = [];
+  const blogLanguages = getLanguageAlternates({
+    en: '/blog',
+    zh: '/blog',
+  });
 
-  const blogEntries: MetadataRoute.Sitemap = [
-    {
-      url: buildLocalizedUrl('/blog', defaultLocale),
-      lastModified: now,
+  locales.forEach((locale) => {
+    blogEntries.push({
+      url: buildLocalizedUrl('/blog', locale),
       changeFrequency: 'daily',
       priority: 0.8,
-      alternates: {
-        languages: getLanguageAlternates({
-          en: '/blog',
-          zh: '/blog',
-        }),
-      },
-    },
-  ];
+      alternates: { languages: blogLanguages },
+    });
+  });
 
   categories.forEach((category) => {
-    if (category.slugZh || category.slugEn) {
-      const languages = getLanguageAlternates({
-        en: category.slugEn ? `/blog/category/${category.slugEn}` : undefined,
-        zh: category.slugZh ? `/blog/category/${category.slugZh}` : undefined,
-      });
+    const paths = {
+      en: category.slugEn ? `/blog/category/${category.slugEn}` : undefined,
+      zh: category.slugZh ? `/blog/category/${category.slugZh}` : undefined,
+    };
+    const languages = getLanguageAlternates(paths);
 
-      const canonicalLocale = category.slugZh ? 'zh' : 'en';
-      const canonicalPath =
-        canonicalLocale === 'zh'
-          ? `/blog/category/${category.slugZh}`
-          : `/blog/category/${category.slugEn}`;
+    Object.entries(paths).forEach(([locale, path]) => {
+      if (!path) return;
 
       blogEntries.push({
-        alternates: {
-          languages,
-        },
+        url: buildLocalizedUrl(path, locale),
         changeFrequency: 'weekly',
-        lastModified: category._updatedAt
-          ? new Date(category._updatedAt)
-          : now,
         priority: 0.7,
-        url: buildLocalizedUrl(canonicalPath, canonicalLocale),
+        alternates: { languages },
+        ...(category._updatedAt
+          ? { lastModified: new Date(category._updatedAt) }
+          : {}),
       });
-    }
+    });
   });
 
   posts.forEach((post) => {
-    if (post.slugZh || post.slugEn) {
-      const languages = getLanguageAlternates({
-        en: post.slugEn ? `/blog/${post.slugEn}` : undefined,
-        zh: post.slugZh ? `/blog/${post.slugZh}` : undefined,
-      });
+    const paths = {
+      en: post.slugEn ? `/blog/${post.slugEn}` : undefined,
+      zh: post.slugZh ? `/blog/${post.slugZh}` : undefined,
+    };
+    const languages = getLanguageAlternates(paths);
+    const lastModified = post._updatedAt || post.publishedAt;
 
-      const canonicalLocale = post.slugZh ? 'zh' : 'en';
-      const canonicalPath =
-        canonicalLocale === 'zh'
-          ? `/blog/${post.slugZh}`
-          : `/blog/${post.slugEn}`;
+    Object.entries(paths).forEach(([locale, path]) => {
+      if (!path) return;
 
       blogEntries.push({
-        alternates: {
-          languages,
-        },
+        url: buildLocalizedUrl(path, locale),
         changeFrequency: 'monthly',
-        lastModified: new Date(post._updatedAt || post.publishedAt || now),
         priority: 0.75,
-        url: buildLocalizedUrl(canonicalPath, canonicalLocale),
+        alternates: { languages },
+        ...(lastModified ? { lastModified: new Date(lastModified) } : {}),
       });
-    }
+    });
   });
 
   return [...staticEntries, ...blogEntries];

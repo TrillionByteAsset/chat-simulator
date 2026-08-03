@@ -2,6 +2,7 @@ import { getLocale } from 'next-intl/server';
 
 import { Link } from '@/core/i18n/navigation';
 import { ToolManifest, ToolNavItem } from '@/core/tooling-engine/types';
+import { PrivacyCookieSettings } from '@/shared/blocks/common/privacy-cookie-settings';
 
 const CONTACT_EMAIL = 'info@chat-simulator.top';
 
@@ -87,6 +88,9 @@ export async function ToolFooter({ manifest }: { manifest: ToolManifest }) {
   const secondaryNote = isZh
     ? '上传的头像、图片和文件在正常使用中默认仅在浏览器本地处理，不会作为站点内容资产保存到服务器。'
     : 'Uploaded avatars, images, and files are handled locally in the browser during normal use and are not stored on the server as site content assets.';
+  const independenceNote = isZh
+    ? '本网站为独立工具，与 Discord、WhatsApp、Telegram、Meta 及其权利人不存在隶属、赞助或官方背书关系；相关商标归各自权利人所有。'
+    : 'This independent tool is not affiliated with, sponsored by, or endorsed by Discord, WhatsApp, Telegram, Meta, or their owners. Their trademarks belong to their respective owners.';
 
   return (
     <footer className="overflow-x-hidden pt-12 pb-8 sm:pt-14 sm:pb-9">
@@ -113,7 +117,8 @@ export async function ToolFooter({ manifest }: { manifest: ToolManifest }) {
                     item.url.startsWith('http://') ||
                     item.url.startsWith('https://');
                   const target =
-                    item.target || (isExternal || isMailto ? '_blank' : '_self');
+                    item.target ||
+                    (isExternal || isMailto ? '_blank' : '_self');
                   const rel = target === '_blank' ? 'noreferrer' : undefined;
 
                   return isMailto ? (
@@ -152,6 +157,9 @@ export async function ToolFooter({ manifest }: { manifest: ToolManifest }) {
           <p className="text-muted-foreground/90 text-sm leading-6">
             {secondaryNote}
           </p>
+          <p className="text-muted-foreground/90 text-sm leading-6">
+            {independenceNote}
+          </p>
         </div>
 
         <div className="flex flex-col gap-4 pt-8 text-sm sm:flex-row sm:items-center sm:justify-between">
@@ -172,6 +180,11 @@ export async function ToolFooter({ manifest }: { manifest: ToolManifest }) {
           </div>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <PrivacyCookieSettings
+              label={
+                isZh ? '隐私与 Cookie 设置' : 'Privacy and cookie settings'
+              }
+            />
             {bottomLegalLinks.map((item) => (
               <Link
                 key={item.url}

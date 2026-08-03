@@ -1,6 +1,6 @@
+import type { ToolManifest } from '@/core/tooling-engine/types';
 import { envConfigs } from '@/config';
 import { defaultLocale } from '@/config/locale';
-import type { ToolManifest } from '@/core/tooling-engine/types';
 
 import { isChineseLocale } from './localization';
 
@@ -26,6 +26,10 @@ function buildLocalizedUrl(path: string, locale?: string) {
 
   if (!locale || locale === defaultLocale) {
     return buildAbsoluteUrl(normalizedPath);
+  }
+
+  if (normalizedPath === '/') {
+    return buildAbsoluteUrl(`/${locale}`);
   }
 
   return buildAbsoluteUrl(`/${locale}${normalizedPath}`);
@@ -58,7 +62,7 @@ export function getChatSimulatorStructuredData({
     },
     featureList: isZh
       ? [
-          '创建逼真的聊天截图',
+          '创建平台风格的聊天演示图',
           '支持 Discord、WhatsApp、Telegram 和自定义模式',
           '编辑消息、头像、名称、时间和背景',
           '上传本地图片和附件',
@@ -66,7 +70,7 @@ export function getChatSimulatorStructuredData({
           '支持导出 PNG 或 JPG 聊天图片',
         ]
       : [
-          'Create realistic chat screenshots',
+          'Create platform-inspired chat mockups',
           'Support for Discord, WhatsApp, Telegram, and Custom mode',
           'Edit messages, avatars, names, timestamps, and backgrounds',
           'Upload local images and attachments',

@@ -42,16 +42,16 @@ export function getChatSimulatorLocalizedManifest(
       title: 'Chat Simulator | Discord、WhatsApp 与 Telegram 聊天模拟器',
       h1: 'Discord、WhatsApp 与 Telegram 聊天模拟器',
       description:
-        '创建逼真的 Discord、WhatsApp 和 Telegram 聊天截图，支持身份编辑、本地上传、聊天回放，以及网页或手机导出。',
+        '创建 Discord、WhatsApp 和 Telegram 风格的可编辑聊天演示图，支持本地上传、聊天回放，以及网页或手机导出。',
     },
     usage: {
       ...manifest.usage,
       title: '如何使用 Chat Simulator',
       description:
         '快速制作 Discord、WhatsApp、Telegram 或完全自定义的聊天截图，支持身份编辑、本地上传、聊天回放，以及网页或手机导出。',
-      content: `## 快速生成逼真的聊天截图
+      content: `## 快速制作可编辑的聊天演示图
 
-**Chat Simulator** 可以帮你快速制作 **Discord**、**WhatsApp** 和 **Telegram** 的聊天截图，不需要设计软件，也不需要把聊天素材上传到服务器。你可以直接从案例开始，或者自己从零搭建一段对话。
+**Chat Simulator** 可以帮你快速制作 **Discord**、**WhatsApp** 和 **Telegram** 风格的聊天演示图，不需要设计软件，也不需要把聊天素材上传到服务器。你可以直接从案例开始，或者自己从零搭建一段对话。
 
 ## 快速开始
 
@@ -64,11 +64,13 @@ export function getChatSimulatorLocalizedManifest(
 
 > **提示：** 上传的图片、头像和文件默认都只在浏览器本地处理，不会保存到服务器。设置面板不会出现在导出图片里。
 
-## 支持的平台
+## 支持的界面风格
 
-- **Discord**：深色频道风格布局，带频道头部、身份信息、平台化操作区和附件展示。
-- **WhatsApp**：移动端聊天风格，支持聊天头部、日期分隔、已读状态和附件预览。
-- **Telegram**：Telegram 风格头部、背景区域、消息状态和平台特定的附件展示。
+- **Discord 风格**：深色频道布局，带频道头部、身份信息、操作区和附件展示。
+- **WhatsApp 风格**：移动端聊天布局，支持聊天头部、日期分隔、已读状态和附件预览。
+- **Telegram 风格**：熟悉的头部、背景区域、消息状态和附件展示。
+
+这些均为独立制作的平台风格演示界面。Chat Simulator 与上述平台及其权利人不存在隶属、赞助或官方背书关系。
 
 ## 消息编辑与附件能力
 
@@ -107,7 +109,7 @@ export function getChatSimulatorLocalizedManifest(
 
 ## 后续扩展方向
 
-未来新增平台时，会重点还原对应产品的消息行为、视觉层级、附件呈现和导出质感，尽量让每种聊天样式都更接近真实原生体验。`,
+未来新增平台时，会重点完善消息行为、视觉层级、附件呈现和导出质感，让每种聊天样式保持熟悉且易于编辑。`,
     },
   };
 }
@@ -363,7 +365,8 @@ export function getChatSimulatorUiText(locale?: string) {
     uploadImage: 'Upload image',
     localOnly: 'Local',
     exportFailed: 'Export failed.',
-    mobileSaveReady: 'Your image is ready. Tap “Save to phone” to save it to your device.',
+    mobileSaveReady:
+      'Your image is ready. Tap “Save to phone” to save it to your device.',
     addPersonFirstForChat: 'Add a person first to start the custom chat.',
     addPersonFirstForFiles:
       'Add a person first to upload files in custom mode.',
@@ -483,7 +486,8 @@ export function getChatSimulatorUiText(locale?: string) {
       {
         value: 'multiple',
         label: 'Split into pages',
-        description: 'Split overflow into multiple screenshots by viewport height.',
+        description:
+          'Split overflow into multiple screenshots by viewport height.',
       },
     ],
     discordHeaderFallback: 'Set a channel topic from the group settings panel.',

@@ -1,63 +1,23 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { getChatSimulatorFaqStructuredData } from '@/tools/chat-simulator/faq-structured-data';
-import { ToolSitePage } from '@/tools/shared/tool-site-page';
-import { getToolSitePageMetadata } from '@/tools/shared/tool-site-page-metadata';
+import { notFound, permanentRedirect } from 'next/navigation';
+import { getDefaultToolName } from '@/tools/shared/default-tool-manifest';
 
-import { getToolManifest } from '@/core/tooling-engine/DynamicLoader';
+import { buildLocalizedPath } from '@/shared/lib/seo';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string; toolName: string }>;
-}): Promise<Metadata> {
-  const { locale, toolName } = await params;
-  const manifest = await getToolManifest(toolName);
-
-  if (!manifest) {
-    return { title: 'Page Not Found' };
-  }
-
-  return getToolSitePageMetadata({
-    kind: 'faq',
-    locale,
-    manifest,
-    canonicalPath: `/tools/${toolName}/faq`,
-  });
+export function generateMetadata(): Metadata {
+  return { robots: { index: false, follow: true } };
 }
 
-export default async function ToolFaqPage({
+export default async function LegacyToolFaqPage({
   params,
 }: {
   params: Promise<{ locale: string; toolName: string }>;
 }) {
   const { locale, toolName } = await params;
-  const manifest = await getToolManifest(toolName);
 
-  if (!manifest) {
+  if (toolName !== getDefaultToolName()) {
     notFound();
   }
 
-  const faqStructuredData =
-    toolName === 'chat-simulator'
-      ? getChatSimulatorFaqStructuredData({
-          canonicalPath: `/tools/${toolName}/faq`,
-          locale,
-          manifest,
-        })
-      : null;
-
-  return (
-    <>
-      {faqStructuredData ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(faqStructuredData),
-          }}
-        />
-      ) : null}
-      <ToolSitePage kind="faq" locale={locale} manifest={manifest} />
-    </>
-  );
+  permanentRedirect(buildLocalizedPath('/faq', locale));
 }

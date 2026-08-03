@@ -21,6 +21,8 @@ const CONTACT_EMAIL = 'info@chat-simulator.top';
 const GOOGLE_ADS_SETTINGS_URL = 'https://adssettings.google.com/';
 const GOOGLE_PRIVACY_URL = 'https://policies.google.com/privacy';
 const GOOGLE_COOKIES_URL = 'https://policies.google.com/technologies/cookies';
+const POLICY_LAST_UPDATED_EN = 'July 27, 2026';
+const POLICY_LAST_UPDATED_ZH = '2026 年 7 月 27 日';
 
 function getContactEmailMarkdown(displayName: string, isZh: boolean) {
   const title = isZh
@@ -54,7 +56,7 @@ export function getToolSitePageContent({
       return {
         eyebrow: '隐私说明',
         title: `${displayName} 隐私政策`,
-        description: `${displayName} 由个人开发者独立维护。工具内容默认遵循本地优先处理原则；同时，作为网站服务的一部分，站点可能使用 Cookie、日志、统计与广告服务来保障运行并支持后续商业化。`,
+        description: `${displayName} 由个人开发者独立维护。工具内容默认遵循本地优先处理原则；网站层面会使用必要存储、日志，并可能启用统计与广告服务。`,
         seoTitle: `${displayName} 隐私政策 | Cookie、广告与数据说明`,
         seoDescription: `${displayName} 的隐私说明，涵盖工具本地处理原则、站点 Cookie 使用、广告与统计披露以及联系方式。`,
         content: `## 隐私适用范围
@@ -62,6 +64,8 @@ export function getToolSitePageContent({
 ### 适用范围
 
 本页面适用于 **${displayName}** 网站及其当前提供的在线工具页面。
+
+**最后更新：${POLICY_LAST_UPDATED_ZH}**
 
 ## 工具内容与网站数据
 
@@ -86,15 +90,20 @@ export function getToolSitePageContent({
 
 ### 广告服务说明
 
-- 本网站计划接入或在未来接入 **Google AdSense** 及类似广告服务，以支持网站持续运营。
-- 当广告服务启用后，Google 及其合作伙伴可能会使用 Cookie 或类似技术，根据用户访问情况展示广告、限制广告重复展示次数，并衡量广告效果。
-- 如启用了个性化广告，相关服务可能会基于你的访问行为提供更相关的广告内容。
-- 你可以通过 [Google Ads Settings](${GOOGLE_ADS_SETTINGS_URL}) 管理广告个性化偏好，并可查看 Google 的 [隐私政策](${GOOGLE_PRIVACY_URL}) 与 [Cookie 政策](${GOOGLE_COOKIES_URL}) 了解更多说明。
+- 本网站的部分内容页可能使用 **Google AdSense** 支持运营；编辑器、账户、政策及其他非内容页面不作为广告投放页。
+- 包括 Google 在内的第三方供应商会使用 Cookie，根据用户此前对本网站或其他网站的访问情况投放广告。Google 使用广告 Cookie，可让 Google 及其合作伙伴根据用户对本网站及互联网上其他网站的访问情况投放广告。
+- 你可以通过 [Google Ads Settings](${GOOGLE_ADS_SETTINGS_URL}) 停用个性化广告，并可查看 Google 的 [隐私政策](${GOOGLE_PRIVACY_URL}) 与 [Cookie 政策](${GOOGLE_COOKIES_URL})。
+- 在法律要求取得同意的地区，个性化广告投放前必须通过 Google 认证的同意管理平台（CMP）提供选择。Google 的隐私消息发布并加载后，页面底部会显示“隐私与 Cookie 设置”，用于重新打开选择界面。
 
 ### 统计与第三方服务
 
-- 为了解网站稳定性、访问趋势或页面表现，网站未来可能接入统计分析、性能监控、托管安全或反滥用服务。
+- 为了解网站稳定性、访问趋势或页面表现，网站可能使用统计分析、性能监控、托管安全或反滥用服务。
 - 这些服务通常会处理技术性标识、页面访问数据或设备相关信息，用于站点维护、诊断和优化。
+
+### 保存期限与用户选择
+
+- 工具编辑内容通常仅保留在当前浏览器会话或设备中；必要 Cookie、偏好和技术日志会在实现其用途所需的期限内保存，之后删除或匿名化，法律另有要求的除外。
+- 你可以清除浏览器 Cookie 与本地存储、调整广告偏好，或通过下方邮箱咨询访问、更正或删除与来信相关的个人信息。
 
 ## 不主动收集的内容与联系渠道
 
@@ -116,14 +125,14 @@ export function getToolSitePageContent({
 
 ### 更新说明
 
-当网站功能、数据处理方式或联系方式发生变化时，本页面会同步调整。继续使用网站，即表示你理解当前页面中披露的处理方式。`,
+当网站功能、数据处理方式或联系方式发生变化时，本页面会同步调整，并更新页面顶部日期。继续使用网站，即表示你理解当前页面中披露的处理方式。`,
       };
     }
 
     return {
       eyebrow: 'Privacy',
       title: `${displayName} Privacy Policy`,
-      description: `${displayName} is independently maintained. Tool content is designed to be handled locally whenever possible, while the website itself may use cookies, logs, analytics, and advertising services to operate and support monetization.`,
+      description: `${displayName} is independently maintained. Tool content is handled locally whenever possible, while the website uses essential storage and logs and may enable analytics and advertising services.`,
       seoTitle: `${displayName} Privacy Policy | Cookies, Ads, and Data Use`,
       seoDescription: `Explore the Chat Simulator Privacy Policy, detailing user data handling, cookies usage, and our commitment to privacy while ensuring a smooth user experience.`,
       content: `## Privacy scope
@@ -131,6 +140,8 @@ export function getToolSitePageContent({
 ### Scope
 
 This page applies to the **${displayName}** website and its current tool pages.
+
+**Last updated: ${POLICY_LAST_UPDATED_EN}**
 
 ## Tool content and website data
 
@@ -155,14 +166,20 @@ This page applies to the **${displayName}** website and its current tool pages.
 
 ### Advertising disclosure
 
-- This website may use **Google AdSense** or similar advertising services to support ongoing operation of the site.
-- When advertising is enabled, Google and its partners may use cookies or similar technologies to serve ads, limit how often ads are shown, personalize ads where permitted, and measure ad performance.
-- You can manage ad personalization through [Google Ads Settings](${GOOGLE_ADS_SETTINGS_URL}) and learn more from Google's [Privacy Policy](${GOOGLE_PRIVACY_URL}) and [Cookies Policy](${GOOGLE_COOKIES_URL}).
+- Selected content pages may use **Google AdSense** to support site operation. The editor, account pages, policies, and other non-content pages are not intended as ad-serving pages.
+- Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to this website or other websites. Google's use of advertising cookies enables it and its partners to serve ads based on visits to this site and other sites on the Internet.
+- You can opt out of personalized advertising through [Google Ads Settings](${GOOGLE_ADS_SETTINGS_URL}) and learn more from Google's [Privacy Policy](${GOOGLE_PRIVACY_URL}) and [Cookies Policy](${GOOGLE_COOKIES_URL}).
+- Where consent is legally required, personalized advertising must not be served until choices are collected through a Google-certified consent management platform (CMP). Once a Google privacy message is published and loaded, the footer shows **Privacy and cookie settings** so the message can be reopened.
 
 ### Analytics and third-party services
 
 - The website may also use analytics, performance monitoring, hosting, security, or anti-abuse services to understand traffic patterns, maintain stability, and improve the product.
 - These services commonly process technical identifiers, device information, and page interaction data within their own service scope.
+
+### Retention and your choices
+
+- Tool content normally remains only in the current browser session or device. Essential cookies, preferences, and technical logs are retained only as long as reasonably needed for their stated purpose, unless law requires longer retention.
+- You can clear browser cookies and local storage, adjust advertising preferences, or use the email below to ask about access, correction, or deletion of personal information associated with your correspondence.
 
 ## Data we do not intentionally collect and contact
 
@@ -184,7 +201,7 @@ If you voluntarily email ${getContactEmailMarkdown(displayName, false)}, we only
 
 ### Updates
 
-If the website features, processing method, or contact details change, this page will be updated accordingly. By continuing to use the website, you acknowledge the current practices described here.`,
+If the website features, processing method, or contact details change, this page and the date above will be updated accordingly. By continuing to use the website, you acknowledge the current practices described here.`,
     };
   }
 
@@ -356,6 +373,7 @@ You can email ${getContactEmailMarkdown(displayName, false)} for support, feedba
 - 网站可能接入 Google AdSense、统计、托管、客户服务或其他第三方服务
 - 这些服务可能根据其自身规则处理必要的技术信息、Cookie 或访问数据
 - 相关隐私说明请同时查看隐私政策页面
+- 本网站与 Discord、WhatsApp、Telegram、Meta 及其权利人不存在隶属、赞助或官方背书关系；相关名称和商标归各自权利人所有
 
 ### 8. 免责声明
 
@@ -427,6 +445,7 @@ By accessing or using **${displayName}**, you agree to use the website in accord
 - The website may use Google AdSense, analytics providers, hosting services, customer support tools, or other third-party services
 - Those services may process technical information, cookies, and usage data according to their own operating rules
 - Please also review the privacy policy for related disclosures
+- This website is not affiliated with, sponsored by, or endorsed by Discord, WhatsApp, Telegram, Meta, or their owners; their names and trademarks remain the property of their respective owners
 
 ### 8. Disclaimer
 
@@ -485,7 +504,7 @@ ${summary ? `> ${summary}` : '> 我们希望它能让用户不用设计软件，
 
 - **直接可用**：打开页面就能开始编辑，不需要复杂学习成本
 - **本地优先**：能在浏览器本地完成的处理尽量不上传
-- **真实可控**：尽量保留聊天界面的真实感，同时让编辑更灵活
+- **熟悉可控**：保留聊天界面的常见视觉结构，同时让编辑更灵活
 - **透明说明**：隐私、条款、广告和联系方式都会尽量写清楚
 - **持续迭代**：根据真实使用反馈持续优化导出效果和编辑体验
 
@@ -515,7 +534,7 @@ ${summary ? `> ${summary}` : '> 我们希望它能让用户不用设计软件，
 
 **${displayName}** is an online tool for creating chat screenshots and conversation mockups, with a focus on familiar messaging styles such as **Discord, WhatsApp, Telegram, and Custom mode**. It lets users edit participants, messages, timestamps, avatars, attachments, and backgrounds directly in the browser, then export the result as a polished image.
 
-${summary ? `> ${summary}` : '> The goal is to help people create realistic, editable chat visuals quickly without relying on complex design software.'}
+${summary ? `> ${summary}` : '> The goal is to help people create familiar, editable chat visuals quickly without relying on complex design software.'}
 
 ## What this tool helps you do
 
@@ -530,7 +549,7 @@ ${summary ? `> ${summary}` : '> The goal is to help people create realistic, edi
 
 ### Typical scenarios
 
-- Creating realistic chat screenshots and conversation-based visuals
+- Creating platform-inspired chat screenshots and conversation-based visuals
 - Producing assets for product demos, marketing, creator content, and case studies
 - Building scripted or fictional conversations for previews and storytelling
 - Replacing heavier design workflows with a faster browser-based editing tool
@@ -541,7 +560,7 @@ ${summary ? `> ${summary}` : '> The goal is to help people create realistic, edi
 
 - **Immediate usability**: the tool should be easy to start using right away
 - **Local first**: if a task can stay in the browser, that is preferred
-- **Realistic but flexible**: chat layouts should feel recognizable while still being easy to edit
+- **Familiar but flexible**: chat layouts should feel recognizable while still being easy to edit
 - **Transparent communication**: privacy, terms, advertising, and contact details should be clearly explained
 - **Continuous improvement**: export quality and editing workflows improve through real user feedback
 

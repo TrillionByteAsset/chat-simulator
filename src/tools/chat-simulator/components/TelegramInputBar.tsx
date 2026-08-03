@@ -36,7 +36,7 @@ export default function TelegramInputBar({
         handleSend();
       }
     },
-    [handleSend],
+    [handleSend]
   );
 
   return (
@@ -53,6 +53,7 @@ export default function TelegramInputBar({
 
       <input
         type="text"
+        aria-label={placeholder}
         value={value}
         onChange={(event) => setValue(event.target.value)}
         onKeyDown={handleKeyDown}

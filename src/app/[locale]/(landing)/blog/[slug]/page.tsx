@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
-
 import { getPostBySlug } from '@/lib/sanity/blog';
+import { type SanityLocale } from '@/lib/sanity/queries';
 import {
   getBlogBreadcrumbStructuredData,
   getBlogPostStructuredData,
 } from '@/lib/seo/blog-structured-data';
-import { type SanityLocale } from '@/lib/sanity/queries';
+import { setRequestLocale } from 'next-intl/server';
+
+import { AdsensePageScript } from '@/shared/blocks/common/adsense-page-script';
 import { BlogDetail } from '@/themes/default/blocks/blog-detail';
+
 import { getBlogPostMetadata } from '../shared';
 
 export async function generateMetadata({
@@ -59,9 +61,9 @@ export default async function BlogDetailPage({
     currentTitle: post.title || '',
     locale,
   });
-
   return (
     <>
+      <AdsensePageScript />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

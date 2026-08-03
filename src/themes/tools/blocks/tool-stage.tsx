@@ -19,10 +19,7 @@ export function ToolStage({
       {heading ? (
         <div className="mb-5 flex min-w-0 items-center justify-between gap-4">
           <div className="min-w-0">
-            <h1
-              className="truncate text-left text-xl font-semibold tracking-tight sm:text-2xl"
-              title={heading}
-            >
+            <h1 className="text-left text-xl leading-tight font-semibold tracking-tight break-words sm:text-2xl">
               {heading}
             </h1>
             {description ? <p className="sr-only">{description}</p> : null}

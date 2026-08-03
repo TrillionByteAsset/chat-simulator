@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 
 import { envConfigs } from '@/config';
 import { defaultLocale } from '@/config/locale';
+import { getLanguageAlternates } from '@/shared/lib/seo';
 
 import { ToolManifest } from './types';
 
@@ -68,6 +69,10 @@ export function generateToolMetadata(
       ? {
           alternates: {
             canonical,
+            languages: getLanguageAlternates({
+              en: options.canonicalPath,
+              zh: options.canonicalPath,
+            }),
           },
         }
       : {}),

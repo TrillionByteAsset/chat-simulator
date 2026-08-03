@@ -12,4 +12,8 @@ export const routing = defineRouting({
   defaultLocale,
   localePrefix,
   localeDetection,
+  // Page metadata and sitemap define route-aware hreflang URLs. Disabling
+  // middleware-wide Link headers avoids duplicate or incorrect alternates on
+  // redirects, private routes, and pages with locale-specific blog slugs.
+  alternateLinks: false,
 });

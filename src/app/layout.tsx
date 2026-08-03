@@ -4,9 +4,7 @@ import { getLocale, setRequestLocale } from 'next-intl/server';
 import NextTopLoader from 'nextjs-toploader';
 
 import { envConfigs } from '@/config';
-import { defaultLocale, locales } from '@/config/locale';
 import { UtmCapture } from '@/shared/blocks/common/utm-capture';
-import { buildLocalizedUrl, getLocaleLanguageTag } from '@/shared/lib/seo';
 import { getAllConfigs } from '@/shared/models/config';
 import { getAdsService } from '@/shared/services/ads';
 import { getAffiliateService } from '@/shared/services/affiliate';
@@ -26,7 +24,6 @@ export default async function RootLayout({
 
   // ads components
   let adsMetaTags = null;
-  let adsHeadScripts = null;
   let adsBodyScripts = null;
 
   // analytics components
@@ -57,7 +54,6 @@ export default async function RootLayout({
 
     // get ads components
     adsMetaTags = adsService.getMetaTags();
-    adsHeadScripts = adsService.getHeadScripts();
     adsBodyScripts = adsService.getBodyScripts();
 
     // get analytics components
@@ -83,29 +79,8 @@ export default async function RootLayout({
         <link rel="alternate icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        {/* inject locales */}
-        {locales ? (
-          <>
-            {locales.map((loc) => (
-              <link
-                key={loc}
-                rel="alternate"
-                hrefLang={getLocaleLanguageTag(loc)}
-                href={buildLocalizedUrl('/', loc)}
-              />
-            ))}
-            <link
-              rel="alternate"
-              hrefLang="x-default"
-              href={buildLocalizedUrl('/', defaultLocale)}
-            />
-          </>
-        ) : null}
-
         {/* inject ads meta tags */}
         {adsMetaTags}
-        {/* inject ads head scripts */}
-        {adsHeadScripts}
 
         {/* inject analytics meta tags */}
         {analyticsMetaTags}

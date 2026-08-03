@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
+
+import { buildLocalizedPath } from '@/shared/lib/seo';
 
 export async function generateMetadata({
   params,
@@ -15,5 +17,5 @@ export default async function PrivacyPolicyPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  redirect(`/${locale}/privacy`);
+  permanentRedirect(buildLocalizedPath('/privacy', locale));
 }

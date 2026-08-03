@@ -2,7 +2,7 @@
 // Headless UI —— 输入栏组件
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 export interface InputBarProps {
   placeholder?: string;
@@ -13,8 +13,8 @@ export interface InputBarProps {
   textareaStyle?: React.CSSProperties;
   disabled?: boolean;
   onSend: (content: string) => void;
-  renderPrefix?: () => React.ReactNode;  // 附件按钮、表情按钮等前缀插槽
-  renderSuffix?: () => React.ReactNode;  // 发送按钮等后缀插槽
+  renderPrefix?: () => React.ReactNode; // 附件按钮、表情按钮等前缀插槽
+  renderSuffix?: () => React.ReactNode; // 发送按钮等后缀插槽
   renderAfterInput?: () => React.ReactNode;
 }
 
@@ -57,16 +57,19 @@ export default function InputBar({
         handleSend();
       }
     },
-    [handleSend],
+    [handleSend]
   );
 
   // 自动增长高度
-  const handleInput = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setValue(e.target.value);
-    const el = e.target;
-    el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
-  }, []);
+  const handleInput = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setValue(e.target.value);
+      const el = e.target;
+      el.style.height = 'auto';
+      el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+    },
+    []
+  );
 
   return (
     <div className={`ds-input-bar flex items-end gap-3 ${className}`}>
@@ -82,13 +85,14 @@ export default function InputBar({
 
         <textarea
           ref={textareaRef}
+          aria-label={placeholder}
           value={value}
           onChange={handleInput}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
           rows={1}
-          className={`ds-input-textarea min-h-[36px] max-h-[120px] flex-1 resize-none border-0 bg-transparent text-sm leading-5 text-[#f2f3f5] outline-none placeholder:text-[#9ca3af] ${textareaClassName}`}
+          className={`ds-input-textarea max-h-[120px] min-h-[36px] flex-1 resize-none border-0 bg-transparent text-sm leading-5 text-[#f2f3f5] outline-none placeholder:text-[#9ca3af] ${textareaClassName}`}
           style={{
             backgroundColor: 'transparent',
             color: '#f2f3f5',

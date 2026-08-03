@@ -1,6 +1,6 @@
+import type { ToolManifest } from '@/core/tooling-engine/types';
 import { envConfigs } from '@/config';
 import { defaultLocale } from '@/config/locale';
-import type { ToolManifest } from '@/core/tooling-engine/types';
 
 import { isChineseLocale } from './localization';
 
@@ -46,7 +46,7 @@ export function getChatSimulatorFaqStructuredData({
             name: `${manifest.name} 是做什么的？`,
             acceptedAnswer: {
               '@type': 'Answer',
-              text: `${manifest.name} 是一个实用型网页工具，用来创建逼真的聊天截图和对话演示，不需要复杂的前置配置。`,
+              text: `${manifest.name} 是一个实用型网页工具，用来创建平台风格的聊天演示图和模拟对话，不需要复杂的前置配置。`,
             },
           },
           {
@@ -104,7 +104,7 @@ export function getChatSimulatorFaqStructuredData({
             name: `What is ${manifest.name} for?`,
             acceptedAnswer: {
               '@type': 'Answer',
-              text: `${manifest.name} is a practical web tool for creating realistic chat screenshots and mock conversations without a heavy setup flow.`,
+              text: `${manifest.name} is a practical web tool for creating platform-inspired chat mockups and fictional conversations without a heavy setup flow.`,
             },
           },
           {

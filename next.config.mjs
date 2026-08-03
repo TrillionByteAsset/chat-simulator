@@ -9,6 +9,50 @@ const withNextIntl = createNextIntlPlugin({
   requestConfig: './src/core/i18n/request.ts',
 });
 
+const legacyBlogRedirects = [
+  {
+    source: '/zh/blog/shejiaomeiti-moniqi',
+    destination: '/zh/blog/social-media-chat-simulator-guide',
+    statusCode: 301,
+  },
+  {
+    source: '/blog/why-social-media-marketers-are-using-chat-simulator',
+    destination: '/blog/how-social-media-marketers-use-chat-simulators',
+    statusCode: 301,
+  },
+  {
+    source: '/zh/blog/whatsapp-chat',
+    destination: '/zh/blog/whatsapp-style-marketing-mockup-guide',
+    statusCode: 301,
+  },
+  {
+    source: '/blog/how-to-create-high-converting-whatsapp-marketing-screenshots',
+    destination: '/blog/responsible-whatsapp-style-marketing-mockups',
+    statusCode: 301,
+  },
+  {
+    source: '/zh/blog/2026-discord',
+    destination: '/zh/blog/discord-style-chat-video-tutorial',
+    statusCode: 301,
+  },
+  {
+    source:
+      '/blog/the-best-fake-discord-chat-generator-for-videos-no-watermark-100-safe',
+    destination: '/blog/discord-style-chat-video-guide',
+    statusCode: 301,
+  },
+  {
+    source: '/zh/blog/whatsapp',
+    destination: '/zh/blog/whatsapp-style-conversation-mockup-guide',
+    statusCode: 301,
+  },
+  {
+    source: '/blog/how-to-create-fake-whatsapp-conversation-online-free',
+    destination: '/blog/whatsapp-style-conversation-mockup-online',
+    statusCode: 301,
+  },
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: process.env.VERCEL ? undefined : 'standalone',
@@ -26,7 +70,7 @@ const nextConfig = {
     ],
   },
   async redirects() {
-    return [];
+    return legacyBlogRedirects;
   },
   async headers() {
     return [

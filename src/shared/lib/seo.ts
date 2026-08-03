@@ -21,6 +21,10 @@ export function buildLocalizedPath(path: string, locale?: string) {
     return normalizedPath;
   }
 
+  if (normalizedPath === '/') {
+    return `/${locale}`;
+  }
+
   return `/${locale}${normalizedPath}`;
 }
 
@@ -96,10 +100,9 @@ export function getMetadata(
     }
 
     // canonical url
-    const canonicalUrl = await getCanonicalUrl(
-      options.canonicalUrl || '',
-      locale || ''
-    );
+    const canonicalUrl = options.canonicalUrl
+      ? await getCanonicalUrl(options.canonicalUrl, locale || '')
+      : undefined;
 
     const title =
       passedMetadata.title || translatedMetadata.title || defaultMetadata.title;
@@ -135,14 +138,22 @@ export function getMetadata(
         passedMetadata.keywords ||
         translatedMetadata.keywords ||
         defaultMetadata.keywords,
-      alternates: {
-        canonical: canonicalUrl,
-      },
+      ...(canonicalUrl
+        ? {
+            alternates: {
+              canonical: canonicalUrl,
+              languages: getLanguageAlternates({
+                en: options.canonicalUrl,
+                zh: options.canonicalUrl,
+              }),
+            },
+          }
+        : {}),
 
       openGraph: {
         type: 'website',
         locale: locale,
-        url: canonicalUrl,
+        ...(canonicalUrl ? { url: canonicalUrl } : {}),
         title,
         description,
         siteName: appName,
@@ -179,10 +190,6 @@ async function getTranslatedMetadata(metadataKey: string, locale: string) {
 }
 
 async function getCanonicalUrl(canonicalUrl: string, locale: string) {
-  if (!canonicalUrl) {
-    canonicalUrl = '/';
-  }
-
   if (canonicalUrl.startsWith('http')) {
     // full url
     canonicalUrl = canonicalUrl;

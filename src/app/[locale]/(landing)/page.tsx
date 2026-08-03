@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getToolManifest } from '@/core/tooling-engine/DynamicLoader';
 import { generateToolMetadata } from '@/core/tooling-engine/metadata';
 import { envConfigs } from '@/config';
+import { AdsensePageScript } from '@/shared/blocks/common/adsense-page-script';
 import { DynamicPage } from '@/shared/types/blocks/landing';
 
 export const revalidate = 3600;
@@ -52,5 +53,10 @@ export default async function LandingPage({
       ? (await import('@/themes/tools/pages/dynamic-page')).default
       : (await import('@/themes/default/pages/dynamic-page')).default;
 
-  return <Page locale={locale} page={page} />;
+  return (
+    <>
+      <AdsensePageScript />
+      <Page locale={locale} page={page} />
+    </>
+  );
 }

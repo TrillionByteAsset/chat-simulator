@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import type { ToolManifest } from '@/core/tooling-engine/types';
 import { envConfigs } from '@/config';
 import { defaultLocale } from '@/config/locale';
+import { getLanguageAlternates } from '@/shared/lib/seo';
 
 import {
   getToolSitePageContent,
@@ -14,6 +15,10 @@ export function buildLocalizedPath(path: string, locale?: string) {
 
   if (!locale || locale === defaultLocale) {
     return normalizedPath;
+  }
+
+  if (normalizedPath === '/') {
+    return `/${locale}`;
   }
 
   return `/${locale}${normalizedPath}`;
@@ -56,6 +61,10 @@ export function getToolSitePageMetadata({
     description: page.seoDescription,
     alternates: {
       canonical,
+      languages: getLanguageAlternates({
+        en: canonicalPath,
+        zh: canonicalPath,
+      }),
     },
     openGraph: {
       type: 'website',

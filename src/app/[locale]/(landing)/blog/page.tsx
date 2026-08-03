@@ -1,11 +1,16 @@
 import type { Metadata } from 'next';
+import { getBlogListing } from '@/lib/sanity/blog';
+import { type SanityLocale } from '@/lib/sanity/queries';
+import {
+  getBlogBreadcrumbStructuredData,
+  getBlogCollectionStructuredData,
+} from '@/lib/seo/blog-structured-data';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { getBlogListing } from '@/lib/sanity/blog';
-import { getBlogCollectionStructuredData, getBlogBreadcrumbStructuredData } from '@/lib/seo/blog-structured-data';
-import { type SanityLocale } from '@/lib/sanity/queries';
-import { Blog } from '@/themes/default/blocks/blog';
+import { AdsensePageScript } from '@/shared/blocks/common/adsense-page-script';
 import { type DynamicPage } from '@/shared/types/blocks/landing';
+import { Blog } from '@/themes/default/blocks/blog';
+
 import { getBlogIndexMetadata } from './shared';
 
 export async function generateMetadata({
@@ -18,8 +23,7 @@ export async function generateMetadata({
   const page: DynamicPage = t.raw('page');
 
   return getBlogIndexMetadata({
-    description:
-      page.sections?.blog?.description || t('metadata.description'),
+    description: page.sections?.blog?.description || t('metadata.description'),
     languagePaths: {
       en: '/blog',
       zh: '/blog',
@@ -57,6 +61,7 @@ export default async function BlogPage({
 
   return (
     <>
+      <AdsensePageScript />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

@@ -163,6 +163,7 @@ export default function DiscordInputBar({
         <textarea
           ref={textareaRef}
           value={value}
+          aria-label={placeholder}
           onChange={handleInput}
           onKeyDown={handleKeyDown}
           placeholder=""
@@ -177,7 +178,7 @@ export default function DiscordInputBar({
           </span>
         ) : null}
 
-        <div className="ds-discord-compose-actions" aria-hidden="true">
+        <div className="ds-discord-compose-actions">
           <button
             type="button"
             className="ds-discord-compose-action-button ds-discord-compose-action-button-line"

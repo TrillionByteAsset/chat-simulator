@@ -1,15 +1,17 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
-
 import { getCategoryListing } from '@/lib/sanity/blog';
+import { type SanityLocale } from '@/lib/sanity/queries';
 import {
   getBlogBreadcrumbStructuredData,
   getBlogCollectionStructuredData,
 } from '@/lib/seo/blog-structured-data';
-import { type SanityLocale } from '@/lib/sanity/queries';
-import { Blog } from '@/themes/default/blocks/blog';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+
+import { AdsensePageScript } from '@/shared/blocks/common/adsense-page-script';
 import { type DynamicPage } from '@/shared/types/blocks/landing';
+import { Blog } from '@/themes/default/blocks/blog';
+
 import { getBlogIndexMetadata } from '../../shared';
 
 export async function generateMetadata({
@@ -79,12 +81,14 @@ export default async function CategoryBlogPage({
   });
   const breadcrumbStructuredData = getBlogBreadcrumbStructuredData({
     currentPath: `/blog/category/${result.currentCategory.slug}`,
-    currentTitle: result.currentCategory.title || page.sections?.blog?.title || '',
+    currentTitle:
+      result.currentCategory.title || page.sections?.blog?.title || '',
     locale,
   });
 
   return (
     <>
+      <AdsensePageScript />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
