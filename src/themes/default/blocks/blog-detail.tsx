@@ -57,6 +57,16 @@ export async function BlogDetail({ post }: { post: PostType }) {
             </div>
           </div>
 
+          {post.image && (
+            <div className="mx-auto mt-10 max-w-5xl overflow-hidden rounded-2xl border shadow-sm">
+              <img
+                src={post.image}
+                alt={post.title || ''}
+                className="aspect-16/9 h-auto w-full object-cover"
+              />
+            </div>
+          )}
+
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 gap-8 md:mt-12 lg:grid-cols-12">
             {/* Table of Contents - Left Sidebar */}
