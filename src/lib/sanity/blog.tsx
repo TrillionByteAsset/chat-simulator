@@ -1,6 +1,8 @@
 import type { Category, Post } from '@/shared/types/blocks/blog';
 
-import { sanityFetch, isSanityConfigured } from './client';
+import { isSanityConfigured, sanityFetch } from './client';
+import { urlForImage } from './image';
+import { getPortableTextToc, SanityPortableText } from './portable-text';
 import {
   categoryBySlugQuery,
   categoryListQuery,
@@ -11,8 +13,6 @@ import {
   sitemapPostsQuery,
   type SanityLocale,
 } from './queries';
-import { urlForImage } from './image';
-import { SanityPortableText, getPortableTextToc } from './portable-text';
 
 type SanityImageLike = {
   asset?: {
@@ -133,14 +133,14 @@ export async function getBlogListing(locale: SanityLocale) {
   const [categories, posts] = await Promise.all([
     sanityFetch<SanityCategory[]>({
       query: categoryListQuery(locale),
-      // Blog landing pages should reflect webhook-driven publish/delete changes
-      // immediately after revalidation, so we bypass Sanity's API CDN and rely on
-      // Next.js/Vercel caching instead.
+      revalidate: 0,
+      // Blog landing pages must reflect Studio publish/delete changes immediately.
       source: 'live',
       tags: ['blog:categories'],
     }),
     sanityFetch<SanityPostSummary[]>({
       query: postListQuery(locale),
+      revalidate: 0,
       source: 'live',
       tags: ['blog:posts'],
     }),
@@ -160,18 +160,21 @@ export async function getCategoryListing(locale: SanityLocale, slug: string) {
   const [categories, currentCategory, posts] = await Promise.all([
     sanityFetch<SanityCategory[]>({
       query: categoryListQuery(locale),
+      revalidate: 0,
       source: 'live',
       tags: ['blog:categories'],
     }),
     sanityFetch<SanityCategory | null>({
       query: categoryBySlugQuery(locale),
       params: { slug },
+      revalidate: 0,
       source: 'live',
       tags: [`blog:category:${slug}`],
     }),
     sanityFetch<SanityPostSummary[]>({
       query: postsByCategorySlugQuery(locale),
       params: { slug },
+      revalidate: 0,
       source: 'live',
       tags: ['blog:posts', `blog:category:${slug}`],
     }),
