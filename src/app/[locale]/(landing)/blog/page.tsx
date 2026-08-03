@@ -13,6 +13,8 @@ import { Blog } from '@/themes/default/blocks/blog';
 
 import { getBlogIndexMetadata } from './shared';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({
   params,
 }: {
