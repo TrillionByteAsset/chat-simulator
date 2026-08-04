@@ -83,8 +83,8 @@ export async function ToolFooter({ manifest }: { manifest: ToolManifest }) {
     { title: 'FAQ', url: '/faq' },
   ];
   const primaryNote = isZh
-    ? '生成的聊天截图仅用于演示、创意或说明场景，正式发布前请自行核对信息。'
-    : 'Generated chat screenshots are intended for mockups, demos, and creative use. Please verify important information before publishing.';
+    ? '本工具仅用于界面演示、故事创作、教育、娱乐和内容制作。请勿使用生成的图片冒充他人、伪造证据、实施欺诈或误导他人。'
+    : 'This tool is intended for UI mockups, storytelling, education, entertainment, and content creation. Do not use generated images to impersonate others, fabricate evidence, commit fraud, or mislead people.';
   const secondaryNote = isZh
     ? '上传的头像、图片和文件在正常使用中默认仅在浏览器本地处理，不会作为站点内容资产保存到服务器。'
     : 'Uploaded avatars, images, and files are handled locally in the browser during normal use and are not stored on the server as site content assets.';
