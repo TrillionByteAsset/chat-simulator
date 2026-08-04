@@ -89,8 +89,8 @@ export async function ToolFooter({ manifest }: { manifest: ToolManifest }) {
     ? '上传的头像、图片和文件在正常使用中默认仅在浏览器本地处理，不会作为站点内容资产保存到服务器。'
     : 'Uploaded avatars, images, and files are handled locally in the browser during normal use and are not stored on the server as site content assets.';
   const independenceNote = isZh
-    ? '本网站为独立工具，与 Discord、WhatsApp、Telegram、Meta 及其权利人不存在隶属、赞助或官方背书关系；相关商标归各自权利人所有。'
-    : 'This independent tool is not affiliated with, sponsored by, or endorsed by Discord, WhatsApp, Telegram, Meta, or their owners. Their trademarks belong to their respective owners.';
+    ? '本网站为独立工具，与 Discord、WhatsApp、Telegram 及其权利人不存在隶属、赞助或官方背书关系；相关商标归各自权利人所有。'
+    : 'This independent tool is not affiliated with, sponsored by, or endorsed by Discord, WhatsApp, Telegram, or their owners. Their trademarks belong to their respective owners.';
 
   return (
     <footer className="overflow-x-hidden pt-12 pb-8 sm:pt-14 sm:pb-9">
@@ -150,7 +150,7 @@ export async function ToolFooter({ manifest }: { manifest: ToolManifest }) {
           ))}
         </div>
 
-        <div className="space-y-3 pt-7 text-center sm:space-y-4 sm:pt-8">
+        <div className="mx-auto max-w-5xl space-y-3 pt-7 text-left sm:space-y-4 sm:pt-8">
           <p className="text-muted-foreground text-sm leading-6">
             {primaryNote}
           </p>

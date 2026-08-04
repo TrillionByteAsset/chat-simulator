@@ -373,7 +373,7 @@ You can email ${getContactEmailMarkdown(displayName, false)} for support, feedba
 - 网站可能接入 Google AdSense、统计、托管、客户服务或其他第三方服务
 - 这些服务可能根据其自身规则处理必要的技术信息、Cookie 或访问数据
 - 相关隐私说明请同时查看隐私政策页面
-- 本网站与 Discord、WhatsApp、Telegram、Meta 及其权利人不存在隶属、赞助或官方背书关系；相关名称和商标归各自权利人所有
+- 本网站与 Discord、WhatsApp、Telegram 及其权利人不存在隶属、赞助或官方背书关系；相关名称和商标归各自权利人所有
 
 ### 8. 免责声明
 
@@ -445,7 +445,7 @@ By accessing or using **${displayName}**, you agree to use the website in accord
 - The website may use Google AdSense, analytics providers, hosting services, customer support tools, or other third-party services
 - Those services may process technical information, cookies, and usage data according to their own operating rules
 - Please also review the privacy policy for related disclosures
-- This website is not affiliated with, sponsored by, or endorsed by Discord, WhatsApp, Telegram, Meta, or their owners; their names and trademarks remain the property of their respective owners
+- This website is not affiliated with, sponsored by, or endorsed by Discord, WhatsApp, Telegram, or their owners; their names and trademarks remain the property of their respective owners
 
 ### 8. Disclaimer
 
