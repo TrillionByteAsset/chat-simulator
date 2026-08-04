@@ -150,7 +150,7 @@ export async function ToolFooter({ manifest }: { manifest: ToolManifest }) {
           ))}
         </div>
 
-        <div className="mx-auto max-w-5xl space-y-3 pt-7 text-left sm:space-y-4 sm:pt-8">
+        <div className="space-y-3 pt-7 text-left sm:space-y-4 sm:pt-8">
           <p className="text-muted-foreground text-sm leading-6">
             {primaryNote}
           </p>
