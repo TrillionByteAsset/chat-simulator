@@ -17,6 +17,7 @@ export const envConfigs: ConfigMap = {
   default_tool: process.env.NEXT_PUBLIC_DEFAULT_TOOL ?? 'chat-simulator',
   appearance: process.env.NEXT_PUBLIC_APPEARANCE ?? 'system',
   locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE ?? 'en',
+  clarity_id: process.env.CLARITY_ID ?? 'yemwuq49ld',
   database_url: process.env.DATABASE_URL ?? '',
   database_auth_token: process.env.DATABASE_AUTH_TOKEN ?? '',
   database_provider: process.env.DATABASE_PROVIDER ?? 'postgresql',
